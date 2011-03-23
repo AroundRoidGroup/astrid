@@ -25,6 +25,7 @@ import com.todoroo.andlib.utility.AndroidUtilities;
 
 /**
  * alon gay!!!!!
+ * bla bla bla.
  * Displays an EULA ("End User License Agreement") that the user has to accept
  * before using the application. Your application should call
  * {@link Eula#showEula(android.app.Activity)} in the onCreate() method of the
