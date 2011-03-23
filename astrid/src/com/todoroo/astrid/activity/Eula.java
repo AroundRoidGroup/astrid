@@ -24,7 +24,7 @@ import com.timsu.astrid.R;
 import com.todoroo.andlib.utility.AndroidUtilities;
 
 /**
- * Shiran is Of again
+ * MNO
  * Displays an EULA ("End User License Agreement") that the user has to accept
  * before using the application. Your application should call
  * {@link Eula#showEula(android.app.Activity)} in the onCreate() method of the
