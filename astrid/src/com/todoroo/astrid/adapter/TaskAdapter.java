@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.Filterable;
@@ -52,6 +53,7 @@ import com.todoroo.andlib.service.ExceptionService;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
+import com.todoroo.astrid.activity.MapLocationActivity;
 import com.todoroo.astrid.activity.TaskEditActivity;
 import com.todoroo.astrid.activity.TaskListActivity;
 import com.todoroo.astrid.api.AstridApiConstants;
@@ -211,6 +213,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         viewHolder.actions = (LinearLayout)view.findViewById(R.id.actions);
         viewHolder.taskRow = (LinearLayout)view.findViewById(R.id.task_row);
         viewHolder.importance = (View)view.findViewById(R.id.importance);
+        viewHolder.mapbutton = (Button)view.findViewById(R.id.MapButton);
 
         view.setTag(viewHolder);
         for(int i = 0; i < view.getChildCount(); i++)
@@ -266,6 +269,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         public View importance;
         public LinearLayout actions;
         public LinearLayout taskRow;
+        public Button mapbutton;
 
         public View[] decorations;
     }
@@ -361,6 +365,8 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         // check box listener
         viewHolder.completeBox.setOnClickListener(completeBoxListener);
+
+        viewHolder.mapbutton.setOnClickListener(mapButtonListener);
 
         // context menu listener
         container.setOnCreateContextMenuListener(listener);
@@ -732,6 +738,16 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
             // set check box to actual action item state
             setTaskAppearance(viewHolder, task);
+        }
+    };
+
+    protected final View.OnClickListener mapButtonListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            ViewHolder viewHolder = (ViewHolder)((View)v.getParent()).getTag();
+            Intent intent = new Intent(ContextManager.getContext(), MapLocationActivity.class);
+            intent.putExtra(MapLocationActivity.MAP_EXTRA_TASK, viewHolder.task);
+            activity.startActivity(intent);
+            return;
         }
     };
 
