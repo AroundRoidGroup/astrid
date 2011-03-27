@@ -8,7 +8,7 @@
     android:paddingBottom="4dip"
     android:paddingLeft="4dip"
     android:paddingRight="4dip"
-    android:orientation="vertical">
+    android:orientation="horizontal">
             
     <LinearLayout android:id="@+id/task_row"
         android:layout_width="fill_parent"
@@ -85,6 +85,16 @@
           android:layout_height="wrap_content"
           android:layout_weight="1" />
           
+          
     </LinearLayout>
+
+	<!-- Show Task On Map -->
+      <Button android:id="@+id/MapButton"
+    	android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:paddingLeft="4dip"
+        android:background="@drawable/google_64"
+        android:layout_gravity="center"
+        />                  
             
 </LinearLayout>
