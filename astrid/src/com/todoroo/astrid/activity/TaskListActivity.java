@@ -63,7 +63,6 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
-import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
@@ -84,7 +83,6 @@ import com.todoroo.astrid.dao.Database;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
-import com.todoroo.astrid.data.TaskApiDao;
 import com.todoroo.astrid.helper.MetadataHelper;
 import com.todoroo.astrid.helper.TaskListContextMenuExtensionLoader;
 import com.todoroo.astrid.helper.TaskListContextMenuExtensionLoader.ContextMenuItem;
@@ -222,12 +220,15 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         Intent serviceIntent = new Intent(this,myService.class);
         Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
 
-        TaskService taskService = new TaskService();
+  //      TaskService taskService = new TaskService();
 
-        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID).
-                where(TaskApiDao.TaskCriteria.isActive()));
+        //TodorooCursor<Task> cursor = taskService.fetchFiltered(sqlQueryTemplate.get(), null, TaskAdapter.PROPERTIES);
 
-      //  Toast.makeText(this, cursor.get(Task.ID)+"", Toast.LENGTH_LONG).show();
+
+//        startManagingCursor(cursor);
+
+
+       //Toast.makeText(this, cursor.get(Task.ID)+"", Toast.LENGTH_LONG).show();
 
 
 

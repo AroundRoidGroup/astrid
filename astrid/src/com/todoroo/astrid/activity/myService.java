@@ -5,6 +5,17 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.aroundroidgroup.locationTags.LocationTagService;
+import com.todoroo.andlib.data.TodorooCursor;
+import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Query;
+import com.todoroo.astrid.core.SortHelper;
+import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
+import com.todoroo.astrid.data.Task;
+import com.todoroo.astrid.reminders.Notifications;
+import com.todoroo.astrid.reminders.ReminderService;
+import com.todoroo.astrid.service.TaskService;
+
 public class myService extends Service{
     Integer sum = 0;
     boolean isThreadOn = false;
@@ -49,14 +60,57 @@ public class myService extends Service{
 
         @Override
         public void run() {
-        	/*TaskService taskService = new TaskService();
 
-        	TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID).
-                    where(TaskApiDao.TaskCriteria.isActive()));
-        	cursor.get(Task.TITLE);
+            //Task task = (Task) b.getParcelable(MAP_EXTRA_TASK);
+            //long itemId = task.getId();
 
-        	taskService.query(new Query())
-        */}
+         //   Toast.makeText(myService.this,"onStartCommand. Run New Thread", Toast.LENGTH_LONG).show();
+
+        	TaskService taskService = new TaskService();
+
+
+
+
+            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
+                    Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
+                            TaskCriteria.isVisible())).
+                    orderBy(SortHelper.defaultTaskOrder()).limit(30));
+            try {
+
+                Task task = new Task();
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    cursor.moveToNext();
+                    task.readFromCursor(cursor);
+                    if (LocationTagService.getLocationTags(task.getId()).length!=0);
+                    new Notifications().showTaskNotification(task.getId(),
+                            ReminderService.TYPE_SNOOZE, "You are near!!!111");
+                    /*
+                    StringBuilder taskTags = new StringBuilder();
+                    TodorooCursor<Metadata> tagCursor = TagService.getInstance().getTags(task.getId());
+                    try {
+                        for(tagCursor.moveToFirst(); !tagCursor.isAfterLast(); tagCursor.moveToNext())
+                            taskTags.append(tagCursor.get(TagService.TAG)).append(TAG_SEPARATOR);
+                    } finally {
+                        tagCursor.close();
+                    }
+
+                    Object[] values = new Object[7];
+                    values[0] = task.getValue(Task.TITLE);
+                    values[1] = importanceColors[task.getValue(Task.IMPORTANCE)];
+                    values[2] = task.getValue(Task.DUE_DATE);
+                    values[3] = task.getValue(Task.DUE_DATE);
+                    values[4] = task.getValue(Task.IMPORTANCE);
+                    values[5] = task.getId();
+                    values[6] = taskTags.toString();
+
+                    ret.addRow(values);
+                */}
+            } finally {
+                cursor.close();
+            }
+
+        	//taskService.query(new Query())
+        }
     }
 
 
