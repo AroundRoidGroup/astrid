@@ -15,12 +15,12 @@ public class myService extends Service{
 	          super.onCreate();
 	     	   Toast.makeText(this,"onCreate", Toast.LENGTH_LONG).show();
 	   		Log.d(TAG," onCreate");
-
+	   		new nearReminder().start();
 	    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-  	   if(!isThreadOn)
+  	   /*if(!isThreadOn)
   	   {
   		   isThreadOn = true;
   		   SumCalc sumCalc = new SumCalc();
@@ -29,7 +29,7 @@ public class myService extends Service{
     	}
   	   else
 	   	   Toast.makeText(this,"onStartCommand. sum is:" + sum, Toast.LENGTH_LONG).show();
-
+*/
         return START_STICKY;
     }
     @Override
@@ -45,17 +45,18 @@ public class myService extends Service{
           return null;
     }
 
-    public class SumCalc extends Thread {
+    public class nearReminder extends Thread {
 
         @Override
         public void run() {
-        	sum = 0;
-            for(Integer idx = 0; idx< 1000000; idx ++)
-            {
-          	   sum++;
-            }
-            isThreadOn = false;
-        }
+        	/*TaskService taskService = new TaskService();
+
+        	TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID).
+                    where(TaskApiDao.TaskCriteria.isActive()));
+        	cursor.get(Task.TITLE);
+
+        	taskService.query(new Query())
+        */}
     }
 
 

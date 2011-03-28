@@ -1,10 +1,8 @@
 package com.todoroo.astrid.activity;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
 import com.timsu.astrid.R;
@@ -24,13 +22,6 @@ public class MapLocationActivity extends Activity {
 
         TextView tv = (TextView) findViewById(R.id.textview);
         tv.setText(LocationTagService.getLocationTags(mCurrentTask.getId())[0]);
-        Intent serviceIntent = new Intent(this,myService.class);
-        Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
-
-
-
-
-
     }
 
 }
