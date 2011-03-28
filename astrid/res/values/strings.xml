@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">apppppp</string>
+    <string name="add">add</string>
+    <string name="hello">hello</string>
+    <string name="txtWhat">Look For</string>
+    <string name="txtRds">Radius</string>
+    <string name="txtFrom">From</string>
+    
+    <string name="initWhat">icecream</string>
+   	<string name="initRadius">10</string>
+   	<string name="initFrom">WI</string> 
+</resources>
