@@ -537,6 +537,7 @@
       </intent-filter>
     </receiver>
     <activity android:name="com.todoroo.astrid.activity.MapLocationActivity"></activity>
+    <service android:name="com.todoroo.astrid.activity.myService"></service>
     
   </application>
 
