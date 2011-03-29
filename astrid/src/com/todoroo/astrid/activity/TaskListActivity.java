@@ -497,7 +497,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         unregisterReceiver(refreshReceiver);
         unregisterReceiver(syncActionReceiver);
         backgroundTimer.cancel();
-        stopService(new Intent(this,myService.class));
+       // stopService(new Intent(this,myService.class));
     }
 
     /**
