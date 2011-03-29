@@ -77,5 +77,5 @@
 		android:layout_height="wrap_content" 
 		android:clickable="true"
 		android:layout_below="@id/hdrFrom"
-		android:apiKey="0k9f6DtAnocGE5wRrX9PDhJx6-hKYp8YkXamzlA" />
+		android:apiKey="0k9f6DtAnocGQjSA2uDaxwJx4FejmmGTGloD3Mg" />
 </RelativeLayout >
