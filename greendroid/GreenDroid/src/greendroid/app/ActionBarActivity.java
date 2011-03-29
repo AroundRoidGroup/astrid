@@ -64,7 +64,7 @@ public interface ActionBarActivity {
      * @see {@link ActionBarActivity#addActionBarItem(greendroid.widget.ActionBarItem.Type)}
      * @return The {@link ActionBar} currently displayed on screen
      */
-    ActionBar getActionBar();
+    ActionBar getGDActionBar();
 
     /**
      * A simple utility method that casts the {@link Application} returned by

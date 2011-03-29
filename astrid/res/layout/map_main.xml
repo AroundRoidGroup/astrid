@@ -1,7 +1,81 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-  android:id="@+id/textview"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent"
-  android:text="@string/write_permission_label"
-  />
+<?xml version="1.0" encoding="utf-8" ?>
+<RelativeLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<TextView
+		android:id="@+id/hdrWhat" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/txtWhat"
+		android:layout_weight=".8"
+		android:layout_marginTop="10dip"
+		android:layout_marginBottom="30dip" />
+	<TextView
+		android:id="@+id/hdrRds" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/txtRds"
+		android:layout_below="@id/hdrWhat"
+		android:layout_marginBottom="30dip" 
+		android:layout_weight=".8" />
+	<TextView
+		android:id="@+id/hdrFrom" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:text="@string/txtFrom"
+		android:layout_below="@id/hdrRds"
+		android:layout_marginBottom="20dip" 
+		android:layout_weight=".8" />
+	
+	<EditText 
+		android:id="@+id/fldWhat" 
+		android:layout_width="wrap_content"
+		android:width="200dip"
+		android:layout_height="wrap_content"
+		android:text="@string/initWhat" 
+		android:layout_toRightOf="@id/hdrWhat"
+		android:layout_marginLeft="40dip"
+		android:layout_weight=".2" />
+	<EditText 
+		android:id="@+id/fldRds" 
+		android:layout_width="wrap_content"
+		android:width="200dip"
+		android:layout_height="wrap_content" 
+		android:text="@string/initRadius" 
+		android:layout_toRightOf="@id/hdrRds"
+		android:layout_below="@id/fldWhat"
+		android:layout_marginLeft="54dip"
+		android:layout_weight=".2" />
+	<EditText 
+		android:id="@+id/fldFrom" 
+		android:layout_width="wrap_content"
+		android:width="200dip"
+		android:layout_height="wrap_content" 
+		android:text="@string/initFrom" 
+		android:layout_toRightOf="@id/hdrFrom"
+		android:layout_below="@id/fldRds"
+		android:layout_marginLeft="60dip"
+		android:layout_weight=".2" />
+
+	<Button
+		android:id="@+id/send"
+		android:layout_width="wrap_content"
+		android:width="60dip"
+		android:layout_height="wrap_content"
+		android:height="90dip"
+		android:layout_toRightOf="@id/fldRds"
+		android:layout_marginLeft="100dip"
+		android:layout_marginTop="25dip"
+		android:text="@string/add"
+		android:onClick="addLocation" />
+	
+	<com.google.android.maps.MapView
+		android:id="@+id/mapview" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:clickable="true"
+		android:layout_below="@id/hdrFrom"
+		android:apiKey="0k9f6DtAnocGQjSA2uDaxwJx4FejmmGTGloD3Mg" />
+</RelativeLayout >
