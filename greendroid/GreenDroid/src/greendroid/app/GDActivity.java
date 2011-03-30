@@ -215,17 +215,17 @@ public class GDActivity extends Activity implements ActionBarActivity {
         setTitle(getString(titleId));
     }
 
-    public ActionBar getActionBar() {
+    public ActionBar getGDActionBar() {
         ensureLayout();
         return mActionBarHost.getActionBar();
     }
 
     public void addActionBarItem(ActionBarItem item) {
-        getActionBar().addItem(item);
+        getGDActionBar().addItem(item);
     }
 
     public void addActionBarItem(ActionBarItem.Type actionBarItemType) {
-        getActionBar().addItem(actionBarItemType);
+        getGDActionBar().addItem(actionBarItemType);
     }
 
     public FrameLayout getContentView() {
@@ -278,7 +278,7 @@ public class GDActivity extends Activity implements ActionBarActivity {
                 }
 
             } else {
-                if (!onHandleActionBarItemClick(getActionBar().getItem(position), position)) {
+                if (!onHandleActionBarItemClick(getGDActionBar().getItem(position), position)) {
                     if (Config.GD_WARNING_LOGS_ENABLED) {
                         Log.w(LOG_TAG, "Click on item at position " + position + " dropped down to the floor");
                     }
