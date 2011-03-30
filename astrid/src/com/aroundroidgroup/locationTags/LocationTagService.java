@@ -23,4 +23,8 @@ public final class LocationTagService {
         }
         return ls.toArray(new String[ls.size()]);
     }
+
+    public static boolean isLocationTask(long taskId){
+        return (getLocationTags(taskId).length>0);
+    }
 }

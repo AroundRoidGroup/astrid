@@ -43,6 +43,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.aroundroidgroup.locationTags.LocationTagService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -215,6 +216,8 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         viewHolder.importance = (View)view.findViewById(R.id.importance);
         viewHolder.mapbutton = (Button)view.findViewById(R.id.MapButton);
 
+
+
         view.setTag(viewHolder);
         for(int i = 0; i < view.getChildCount(); i++)
             view.getChildAt(i).setTag(viewHolder);
@@ -334,6 +337,16 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                 importanceView.setBackgroundColor(0);
         }
 
+        // set mapbutton invisible when there is no @location tag
+        final Button mapButton = viewHolder.mapbutton; {
+            if (!LocationTagService.isLocationTask(task.getId())){
+                mapButton.setVisibility(View.INVISIBLE);
+            }
+            else{
+                mapButton.setVisibility(View.VISIBLE);
+            }
+        }
+
         String details;
         if(viewHolder.details != null) {
             if(taskDetailLoader.containsKey(task.getId()))
@@ -350,6 +363,8 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                         "<br>"), detailImageGetter, null)); //$NON-NLS-1$
             }
         }
+
+
 
         // details and decorations, expanded
         decorationManager.request(viewHolder);
