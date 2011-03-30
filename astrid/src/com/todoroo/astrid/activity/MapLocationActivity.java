@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.IPoint;
 import com.aroundroidgroup.map.ListOfLocations;
@@ -29,7 +30,7 @@ public class MapLocationActivity extends MapActivity  {
 
     public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
 
-    private final Task mCurrentTask = null;
+    private Task mCurrentTask = null;
 
 
 	MapView mapView;
@@ -45,6 +46,11 @@ public class MapLocationActivity extends MapActivity  {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map_main);
 		mapView = (MapView) findViewById(R.id.mapview);
+
+		Bundle b = getIntent().getExtras();
+		mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
+		String[] locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
+
 
 		/* determine the central point in the map to be Tel-Aviv, Israel */
 
