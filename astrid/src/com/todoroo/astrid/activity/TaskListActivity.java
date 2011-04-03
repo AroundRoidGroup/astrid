@@ -217,6 +217,11 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         database.openForWriting();
         setUpUiComponents();
         onNewIntent(getIntent());
+
+        if (myService.isRunning()){
+            stopService(new Intent(this,myService.class));
+        }
+
         Intent serviceIntent = new Intent(this,myService.class);
         Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
 

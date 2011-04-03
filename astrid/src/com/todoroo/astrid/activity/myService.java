@@ -12,13 +12,23 @@ public class myService extends Service{
     boolean isThreadOn = false;
     public final String TAG = "myService";
 
+    private static Object serviceSingelton = null;
+
+
+    public static boolean isRunning(){
+        return (serviceSingelton!=null);
+    }
+
+
     @Override
     public void onCreate() {
+        serviceSingelton = new Object();
         super.onCreate();
         Toast.makeText(this,"onCreate", Toast.LENGTH_LONG).show();
         Log.d(TAG," onCreate");
-        new nearReminder().start();
+
     }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -27,6 +37,7 @@ public class myService extends Service{
   		   isThreadOn = true;
   		   //SumCalc sumCalc = new SumCalc();
   		   //sumCalc.start();
+  	       new nearReminder().start();
    	   	   Toast.makeText(this,"onStartCommand. Run New Thread", Toast.LENGTH_LONG).show();
     	}
   	   else
@@ -36,6 +47,7 @@ public class myService extends Service{
     }
     @Override
     public void onDestroy() {
+        serviceSingelton = null;
         super.onDestroy();
         Toast.makeText(this, "The Service was destroyed ...", Toast.LENGTH_LONG).show();
         Log.d(TAG," onDestroy");
@@ -49,6 +61,7 @@ public class myService extends Service{
 
     public class nearReminder extends Thread {
 
+
         @Override
         public void run() {
 
@@ -59,7 +72,18 @@ public class myService extends Service{
 
             TaskService taskService = new TaskService();
 
-            int a =0;
+            while (true){
+
+
+                try {
+                    Thread.sleep(1000 * 5);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+
+            }
             /*
             while(DateUtilities.now()%120000>200)
                 a++;
