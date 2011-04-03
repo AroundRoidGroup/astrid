@@ -5,13 +5,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.todoroo.andlib.data.TodorooCursor;
-import com.todoroo.andlib.sql.Criterion;
-import com.todoroo.andlib.sql.Query;
-import com.todoroo.andlib.utility.DateUtilities;
-import com.todoroo.astrid.core.SortHelper;
-import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
-import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
@@ -29,16 +22,16 @@ public class myService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        /*if(!isThreadOn)
+        if(!isThreadOn)
   	   {
   		   isThreadOn = true;
-  		   SumCalc sumCalc = new SumCalc();
-  		   sumCalc.start();
+  		   //SumCalc sumCalc = new SumCalc();
+  		   //sumCalc.start();
    	   	   Toast.makeText(this,"onStartCommand. Run New Thread", Toast.LENGTH_LONG).show();
     	}
   	   else
 	   	   Toast.makeText(this,"onStartCommand. sum is:" + sum, Toast.LENGTH_LONG).show();
-         */
+
         return START_STICKY;
     }
     @Override
@@ -67,6 +60,7 @@ public class myService extends Service{
             TaskService taskService = new TaskService();
 
             int a =0;
+            /*
             while(DateUtilities.now()%120000>200)
                 a++;
 
@@ -89,6 +83,7 @@ public class myService extends Service{
             }*/
 
             //taskService.query(new Query())
+
         }
     }
 
