@@ -18,16 +18,11 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
 
 public class Misc {
 
-    static Location deviceLocation = null;
+    //static Location deviceLocation = null;
 
 	/**
 	 * The function receives type of place, radius and a coordinate.
@@ -132,6 +127,7 @@ public class Misc {
 		return points;
 	}
 
+	/*
 	private static final LocationListener locationListener = new LocationListener() {
 	    public void onLocationChanged(Location location) {
 	        deviceLocation = location;
@@ -144,7 +140,9 @@ public class Misc {
 
 	    public void onProviderDisabled(String provider) {}
 	};
+	*/
 
+	/*
 	public static void gpsSetup(Context context) {
 	    LocationManager locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
 	    Criteria criteria = new Criteria();
@@ -157,14 +155,12 @@ public class Misc {
 	    Location location = locationManager.getLastKnownLocation(provider);
 	    locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
 	}
+	*/
 
+	/*
 	public static Location getDeviceLocation() {
 	    return deviceLocation;
 	}
+	*/
 
-	public static Map<String, String> getPlacesAroundMe(String str, double radius, int zoomLevel) {
-	    if (deviceLocation != null)
-	        return getPlaces(str, radius, getDeviceLocation(), zoomLevel);
-	    return null;
-	}
 }
