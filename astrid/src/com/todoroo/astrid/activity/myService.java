@@ -27,6 +27,7 @@ import com.todoroo.astrid.reminders.ReminderService;
 import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
+    private static Location userLastLocation;
     Integer sum = 0;
     boolean isThreadOn = false;
     public final String TAG = "myService";
@@ -62,19 +63,9 @@ public class myService extends Service{
         return null;
     }
 
-    public class nearReminder extends Thread {
-
-        @Override
-        public void run() {
-
-        }
-    }
-
-
-
     public void onCreate(Bundle savedInstanceState) {
         Toast.makeText(this, "The Service was popoed ...", Toast.LENGTH_LONG).show();
-        gpsSetup();
+ //       gpsSetup();
     }
 
     private final LocationListener locationListener = new LocationListener() {
@@ -106,7 +97,7 @@ public class myService extends Service{
 
 
     public void makeUseOfNewLocation(Location location) {
-
+        userLastLocation = location;
         Toast.makeText(this, location.getLatitude() + ", " + location.getLongitude(), Toast.LENGTH_LONG).show();
         TaskService taskService = new TaskService();
 
@@ -147,6 +138,9 @@ public class myService extends Service{
             }
         }
 
+    }
+    public static Location getLastUserLocation() {
+        return userLastLocation;
     }
 
 
