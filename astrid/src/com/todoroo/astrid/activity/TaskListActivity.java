@@ -218,9 +218,19 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         setUpUiComponents();
         onNewIntent(getIntent());
 
+        /*
+        Misc.gpsSetup(this);
+        Location l = Misc.getDeviceLocation();
+        if (l==null){
+            int x = 2;
+        }else{
+            int y = 2;
+        }
+
         if (myService.isRunning()){
             stopService(new Intent(this,myService.class));
         }
+        */
 
         Intent serviceIntent = new Intent(this,myService.class);
         Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();

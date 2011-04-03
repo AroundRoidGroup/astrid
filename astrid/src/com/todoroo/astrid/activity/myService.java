@@ -5,8 +5,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.todoroo.astrid.service.TaskService;
-
 public class myService extends Service{
     Integer sum = 0;
     boolean isThreadOn = false;
@@ -70,10 +68,14 @@ public class myService extends Service{
 
             //   Toast.makeText(myService.this,"onStartCommand. Run New Thread", Toast.LENGTH_LONG).show();
 
-            TaskService taskService = new TaskService();
+            //TaskService taskService = new TaskService();
+
+
 
             while (true){
 
+                //Location l = Misc.getDeviceLocation();
+                //double d = l.getLongitude();
 
                 try {
                     Thread.sleep(1000 * 5);

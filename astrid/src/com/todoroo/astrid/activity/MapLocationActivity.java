@@ -1,21 +1,13 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.EditText;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
-import com.aroundroidgroup.map.DPoint;
-import com.aroundroidgroup.map.IPoint;
-import com.aroundroidgroup.map.ListOfLocations;
-import com.aroundroidgroup.map.SimpleParser;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -27,6 +19,7 @@ import com.todoroo.astrid.data.Task;
 
 
 public class MapLocationActivity extends MapActivity  {
+
 
     public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
 
@@ -51,6 +44,10 @@ public class MapLocationActivity extends MapActivity  {
 		mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
 		String[] locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
 
+		//Misc.gpsSetup(this);
+
+
+
 
 		/* determine the central point in the map to be Tel-Aviv, Israel */
 
@@ -69,7 +66,7 @@ public class MapLocationActivity extends MapActivity  {
 				itemizedoverlay.addOverlay(overlayitem2);
 		mapOverlays.add(itemizedoverlay);
 	}
-
+/*
 	public IPoint degToGeo(DPoint dp) {
 		return new IPoint((int)(dp.getX() * 1000000), (int)(dp.getY() * 1000000));
 	}
@@ -98,6 +95,7 @@ public class MapLocationActivity extends MapActivity  {
 			e.printStackTrace();
 		}
 	}
+	*/
 
 	public class HelloItemizedOverlay extends ItemizedOverlay<OverlayItem> {
 		private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
@@ -138,6 +136,7 @@ public class MapLocationActivity extends MapActivity  {
 //		}
 	}
 }
+
 
 /*
 public class MapLocationActivity extends Activity {

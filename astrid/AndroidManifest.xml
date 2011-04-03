@@ -8,6 +8,9 @@
   <!--    android:installLocation="internalOnly"> -->
       
   <!-- ================================================== Used Permissions = -->
+  
+  <!-- for GPS use -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
   <!-- for notifications -->
   <uses-permission android:name="android.permission.VIBRATE"/>
