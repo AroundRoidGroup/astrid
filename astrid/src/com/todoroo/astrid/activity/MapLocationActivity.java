@@ -1,6 +1,5 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.map.DPoint;
-import com.aroundroidgroup.map.Misc;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -77,12 +75,12 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                 Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
             }
             else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
-
+            Toast.makeText(this, "places is :O", Toast.LENGTH_LONG).show();
+            /*
             places = Misc.getPlaces(kind, getParameterizedRadius(), lll, 5);
             if (places == null) {
-                ;
-            }
-            if (places != null) {
+                Toast.makeText(this, "places is nullllllllll", Toast.LENGTH_LONG).show();
+            }else {
                 StringBuilder sb = new StringBuilder("");
                 for (Map.Entry<String, String> p : places.entrySet()) {
                     sb.append("coodistan: "+p.getKey()+ " ");
@@ -100,6 +98,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                 Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
                 Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
             }
+            */
         }
     }
 
@@ -120,7 +119,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             x.setText(locationTags[0] + "");
         }
         Toast.makeText(this, "alon gay", Toast.LENGTH_LONG).show();
-        // addToMap();
+         addToMap();
 
         /* determine the central point in the map to be current location of the device */
         if (deviceLocation != null)
