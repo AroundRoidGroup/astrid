@@ -73,11 +73,11 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             x.setText(kind);
 
 
-            Location lll = myService.getLastUserLocation();
-            if (lll == null) {
-                Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
-            }
-            else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
+//            Location lll = myService.getLastUserLocation();
+//            if (lll == null) {
+//                Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
+//            }
+//            else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
         }
 //            DPoint d = null;
 //            try {
@@ -132,7 +132,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             x.setText(locationTags[0] + "");
         }
         Toast.makeText(this, "alon gay", Toast.LENGTH_LONG).show();
-        addToMap();
+       // addToMap();
 
         /* determine the central point in the map to be current location of the device */
         if (deviceLocation != null)
