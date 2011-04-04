@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
@@ -68,20 +69,14 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         DPoint placeCoord = null;
         Map<String, String> places;
         GeoPoint geoP;
-
+        String s = "";
         for (String kind : locationTags) {
-            if (deviceLocation == null) {
-                Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
-            }
-            else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
-
+            s += kind + ": ";
             places = Misc.getPlaces(kind, getParameterizedRadius(), deviceLocation, 5);
-            if (places == null) {
-                Toast.makeText(this, "places is nullllllllll", Toast.LENGTH_LONG).show();
-            }else {
-
+            s += places.size() + " result found.\n";
+            if (places != null) {
                 for (Map.Entry<String, String> p : places.entrySet()) {
-                     try {
+                    try {
                         placeCoord = Misc.getCoords(p.getValue());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -89,12 +84,12 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                     if (placeCoord != null) {
                         geoP = degToGeo(placeCoord);
                         itemizedoverlay.addOverlay(new OverlayItem(geoP, kind,  p.getKey()));
-                      mapOverlays.add(itemizedoverlay);
+                        mapOverlays.add(itemizedoverlay);
                     }
                 }
-
             }
-
+            TextView results = (TextView)findViewById(R.id.searchResults);
+            results.setText(s.substring(0, s.length() - 1));
         }
     }
 
@@ -111,7 +106,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         Bundle b = getIntent().getExtras();
         mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
         locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
-
+        TextView title = (TextView)findViewById(R.id.takeTitle);
+        title.setText(mCurrentTask.getValue(Task.TITLE));
         /* determine the central point in the map to be current location of the device */
         if (deviceLocation != null)
             mapView.getController().setCenter(locToGeo(deviceLocation));
@@ -122,8 +118,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mapOverlays = mapView.getOverlays();
         Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
         itemizedoverlay = new HelloItemizedOverlay(drawable);
+        //mapOverlays.add(itemizedoverlay);
         addToMap();
-        mapController.setZoom(14);
+        mapController.setZoom(15);
         mapView.setClickable(true);
     }
 
