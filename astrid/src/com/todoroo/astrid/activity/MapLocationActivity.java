@@ -12,7 +12,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
@@ -71,21 +70,18 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         GeoPoint geoP;
 
         for (String kind : locationTags) {
-
-            Location lll = myService.getLastUserLocation();
-            if (lll == null) {
+            if (deviceLocation == null) {
                 Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
             }
             else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
 
-            places = Misc.getPlaces(kind, getParameterizedRadius(), lll, 5);
+            places = Misc.getPlaces(kind, getParameterizedRadius(), deviceLocation, 5);
             if (places == null) {
                 Toast.makeText(this, "places is nullllllllll", Toast.LENGTH_LONG).show();
             }else {
-                StringBuilder sb = new StringBuilder("");
+
                 for (Map.Entry<String, String> p : places.entrySet()) {
-                    sb.append("coodistan: "+ p.getKey()+ " ");
-                    try {
+                     try {
                         placeCoord = Misc.getCoords(p.getValue());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -93,11 +89,10 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                     if (placeCoord != null) {
                         geoP = degToGeo(placeCoord);
                         itemizedoverlay.addOverlay(new OverlayItem(geoP, kind,  p.getKey()));
-//                        mapOverlays.add(itemizedoverlay);
+                      mapOverlays.add(itemizedoverlay);
                     }
                 }
-//                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
-//                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
+
             }
 
         }
@@ -109,18 +104,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_main);
         gpsSetup();
+        deviceLocation = myService.getLastUserLocation();
         mapView = (MapView) findViewById(R.id.mapview);
         mapController = mapView.getController();
         /* receiving task from the previous activity and extracting the tags from it */
         Bundle b = getIntent().getExtras();
         mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
         locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
-        if (locationTags.length > 0){
-            EditText x = (EditText)findViewById(R.id.A);
-            x.setText(locationTags[0] + "");
-        }
-        Toast.makeText(this, "alon gay", Toast.LENGTH_LONG).show();
-
 
         /* determine the central point in the map to be current location of the device */
         if (deviceLocation != null)
@@ -132,11 +122,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mapOverlays = mapView.getOverlays();
         Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
         itemizedoverlay = new HelloItemizedOverlay(drawable);
-        GeoPoint point = new GeoPoint(19240000,-99120000);
-        OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm angrito la birdo!");
-        itemizedoverlay.addOverlay(overlayitem);
-        mapOverlays.add(itemizedoverlay);
         addToMap();
+        mapController.setZoom(14);
+        mapView.setClickable(true);
     }
 
     private GeoPoint degToGeo(DPoint dp) {
@@ -193,6 +181,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         @Override
         protected boolean onTap(int index) {
+            OverlayItem item = mOverlays.get(index);
+            Toast.makeText(MapLocationActivity.this, item.getSnippet(), Toast.LENGTH_LONG).show();
             return true;
         }
 
@@ -210,10 +200,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             mOverlays.add(overlay);
             populate();
         }
-        //		public void removeOverlay(OverlayItem overlay) {
-        //			mOverlays.remove(overlay);
-        //			populate();
-        //		}
     }
 
 
@@ -223,29 +209,3 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
     }
 }
-
-/*
-public class MapLocationActivity extends Activity {
-    public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
-
-    private Task mCurrentTask = null;
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_main);
-        Bundle b = getIntent().getExtras();
-        mCurrentTask = (Task)b.getParcelable(MAP_EXTRA_TASK) ;
-
-        TextView tv = (TextView) findViewById(R.id.textview);
-        tv.setText(LocationTagService.getLocationTags(mCurrentTask.getId())[0]);
-
-
-
-
-
-    }
-
-}
- */
