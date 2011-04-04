@@ -1,5 +1,6 @@
 package com.todoroo.astrid.activity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Misc;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -75,15 +77,14 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                 Toast.makeText(this, "dfdfdf", Toast.LENGTH_LONG).show();
             }
             else Toast.makeText(this, "432345", Toast.LENGTH_LONG).show();
-            Toast.makeText(this, "places is :O", Toast.LENGTH_LONG).show();
-            /*
+
             places = Misc.getPlaces(kind, getParameterizedRadius(), lll, 5);
             if (places == null) {
                 Toast.makeText(this, "places is nullllllllll", Toast.LENGTH_LONG).show();
             }else {
                 StringBuilder sb = new StringBuilder("");
                 for (Map.Entry<String, String> p : places.entrySet()) {
-                    sb.append("coodistan: "+p.getKey()+ " ");
+                    sb.append("coodistan: "+ p.getKey()+ " ");
                     try {
                         placeCoord = Misc.getCoords(p.getValue());
                     } catch (IOException e) {
@@ -92,13 +93,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                     if (placeCoord != null) {
                         geoP = degToGeo(placeCoord);
                         itemizedoverlay.addOverlay(new OverlayItem(geoP, kind,  p.getKey()));
-                        mapOverlays.add(itemizedoverlay);
+//                        mapOverlays.add(itemizedoverlay);
                     }
                 }
-                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
-                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, sb, Toast.LENGTH_LONG).show();
             }
-            */
+
         }
     }
 
@@ -119,7 +120,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             x.setText(locationTags[0] + "");
         }
         Toast.makeText(this, "alon gay", Toast.LENGTH_LONG).show();
-         addToMap();
+
 
         /* determine the central point in the map to be current location of the device */
         if (deviceLocation != null)
@@ -135,6 +136,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         OverlayItem overlayitem = new OverlayItem(point, "Hola, Mundo!", "I'm angrito la birdo!");
         itemizedoverlay.addOverlay(overlayitem);
         mapOverlays.add(itemizedoverlay);
+        addToMap();
     }
 
     private GeoPoint degToGeo(DPoint dp) {
