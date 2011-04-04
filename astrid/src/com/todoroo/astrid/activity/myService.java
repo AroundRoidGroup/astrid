@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
+import com.aroundroidgroup.locationTags.NotesDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
@@ -28,11 +29,15 @@ import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
     private static Location userLastLocation;
+    private final
     Integer sum = 0;
     boolean isThreadOn = false;
     public final String TAG = "myService";
 
     Set<Long> alreadyNotified = new HashSet<Long>();
+
+    private static NotesDbAdapter mDbHelper = null;
+
     Notifications notificatons = new Notifications();
 
     @Override
@@ -45,6 +50,10 @@ public class myService extends Service{
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mDbHelper==null){
+            mDbHelper = new NotesDbAdapter(this);
+            mDbHelper.open();
+        }
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
         gpsSetup();
 
@@ -52,6 +61,8 @@ public class myService extends Service{
     }
     @Override
     public void onDestroy() {
+        mDbHelper.close();
+        mDbHelper = null;
         super.onDestroy();
         Toast.makeText(this, "The Service was destroyed ...", Toast.LENGTH_LONG).show();
         Log.d(TAG," onDestroy");
@@ -125,14 +136,15 @@ public class myService extends Service{
 
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty()){
             Toast.makeText(this, "yes", Toast.LENGTH_LONG).show();
-            if (alreadyNotified.contains(id)){
-                alreadyNotified.remove(id);
+            if (mDbHelper.fetchNote(id).getCount()>0){
+                mDbHelper.deleteNote(id);
                 Notifications.cancelNotifications(id);
             }
         }else{
             Toast.makeText(this, "no", Toast.LENGTH_LONG).show();
-            if (!alreadyNotified.contains(id)){
-                alreadyNotified.add(id);
+            if (mDbHelper.fetchNote(id).getCount()==0){
+               long res = mDbHelper.createNote(id);
+               Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
                 notificatons.showTaskNotification(id,
                         ReminderService.TYPE_SNOOZE, "You are near");
             }

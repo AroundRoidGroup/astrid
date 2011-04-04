@@ -36,6 +36,8 @@ import android.util.Log;
  */
 public class NotesDbAdapter {
 
+    //public static final String KEY_TITLE = "title";
+    //public static final String KEY_BODY = "body";
     public static final String KEY_ROWID = "_id";
 
     private static final String TAG = "NotesDbAdapter";
@@ -46,8 +48,7 @@ public class NotesDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_CREATE =
-        "create table notes (_id integer primary key autoincrement, "
-        + "title text not null, body text not null);";
+        "create table notes (_id integer primary key);";
 
     private static final String DATABASE_NAME = "data";
     private static final String DATABASE_TABLE = "notes";
@@ -113,11 +114,12 @@ public class NotesDbAdapter {
      *
      * @param title the title of the note
      * @param body the body of the note
+     * @param mNoteNumber
      * @return rowId or -1 if failed
      */
-    public long createNote(String title, String body,int taskID) {
+    public long createNote(long mNoteNumber) {
         ContentValues initialValues = new ContentValues();
-        initialValues.put(KEY_ROWID, taskID);
+        initialValues.put(KEY_ROWID, mNoteNumber);
 
         return mDb.insert(DATABASE_TABLE, null, initialValues);
     }
@@ -150,7 +152,7 @@ public class NotesDbAdapter {
      * @return Cursor positioned to matching note, if found
      * @throws SQLException if note could not be found/retrieved
      */
-    public Cursor fetchNote(long rowId) throws SQLException {
+    public Cursor fetchNote(long rowId) {
 
         Cursor mCursor =
 
@@ -175,8 +177,8 @@ public class NotesDbAdapter {
      */
     public boolean updateNote(long rowId, String title, String body) {
         ContentValues args = new ContentValues();
-        args.put(KEY_TITLE, title);
-        args.put(KEY_BODY, body);
+        //args.put(KEY_TITLE, title);
+        //args.put(KEY_BODY, body);
 
         return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
     }
