@@ -7,10 +7,7 @@ import java.util.Map;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +32,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
 
     private Task mCurrentTask = null;
-    private Location deviceLocation = null;
+    //private final Location deviceLocation = null;
     private MapController mapController;
     private MapView mapView;
     private HelloItemizedOverlay itemizedoverlay;
@@ -72,7 +69,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         String s = "";
         for (String kind : locationTags) {
             s += kind + ": ";
-            places = Misc.getPlaces(kind, getParameterizedRadius(), deviceLocation, 5);
+            places = Misc.getPlaces(kind, getParameterizedRadius(), myService.getLastUserLocation(), 5);
             s += places.size() + " result found.\n";
             if (places != null) {
                 for (Map.Entry<String, String> p : places.entrySet()) {
@@ -98,8 +95,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_main);
-        gpsSetup();
-        deviceLocation = myService.getLastUserLocation();
+
+        //deviceLocation = myService.getLastUserLocation();
         mapView = (MapView) findViewById(R.id.mapview);
         mapController = mapView.getController();
         /* receiving task from the previous activity and extracting the tags from it */
@@ -109,19 +106,22 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         TextView title = (TextView)findViewById(R.id.takeTitle);
         title.setText(mCurrentTask.getValue(Task.TITLE));
         /* determine the central point in the map to be current location of the device */
-        if (deviceLocation != null)
-            mapView.getController().setCenter(locToGeo(deviceLocation));
+        if (myService.getLastUserLocation() != null){
+            mapView.getController().setCenter(locToGeo(myService.getLastUserLocation()));
+            /* enable zoom option */
+            mapView.setBuiltInZoomControls(true);
 
-        /* enable zoom option */
-        mapView.setBuiltInZoomControls(true);
-
-        mapOverlays = mapView.getOverlays();
-        Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
-        itemizedoverlay = new HelloItemizedOverlay(drawable);
-        //mapOverlays.add(itemizedoverlay);
-        addToMap();
-        mapController.setZoom(15);
-        mapView.setClickable(true);
+            mapOverlays = mapView.getOverlays();
+            Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
+            itemizedoverlay = new HelloItemizedOverlay(drawable);
+            //mapOverlays.add(itemizedoverlay);
+            addToMap();
+            mapController.setZoom(15);
+            mapView.setClickable(true);
+        }
+        else{
+            Toast.makeText(this, "null location", Toast.LENGTH_LONG);
+        }
     }
 
     private GeoPoint degToGeo(DPoint dp) {
@@ -132,6 +132,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         return new GeoPoint((int)(l.getLatitude() * 1000000), (int)(l.getLongitude() * 1000000));
     }
 
+    /*
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             makeUseOfNewLocation(location);
@@ -143,7 +144,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         public void onProviderDisabled(String provider) {}
     };
+    */
 
+    /*
     private void gpsSetup() {
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -157,10 +160,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         makeUseOfNewLocation(location);
         locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
     }
+    */
 
+    /*
     private void makeUseOfNewLocation(Location location) {
         deviceLocation = location;
     }
+    */
 
     public class HelloItemizedOverlay extends ItemizedOverlay<OverlayItem> {
         private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
