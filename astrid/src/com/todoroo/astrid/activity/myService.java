@@ -30,7 +30,6 @@ import com.todoroo.astrid.service.TaskService;
 public class myService extends Service{
     private static Location userLastLocation;
     private final
-    Integer sum = 0;
     boolean isThreadOn = false;
     public final String TAG = "myService";
 

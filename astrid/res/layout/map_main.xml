@@ -4,85 +4,22 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-  <LinearLayout
-      android:orientation="horizontal"
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:layout_weight="1">
-      <EditText
-      	android:id="@+id/A"
-          android:text="red"
-          android:gravity="center_horizontal"
-          android:background="#aa0000"
-          android:layout_width="wrap_content"
-          android:layout_height="fill_parent"
-          android:layout_weight="1"/>
-      <EditText
-      android:id="@+id/B"
-          android:text="green"
-          android:gravity="center_horizontal"
-          android:background="#00aa00"
-          android:layout_width="wrap_content"
-          android:layout_height="fill_parent"
-          android:layout_weight="1"/>
-      <EditText
-      android:id="@+id/C"
-          android:text="blue"
-          android:gravity="center_horizontal"
-          android:background="#0000aa"
-          android:layout_width="wrap_content"
-          android:layout_height="fill_parent"
-          android:layout_weight="1"/>
-      <EditText
-      android:id="@+id/D"
-          android:text="yellow"
-          android:gravity="center_horizontal"
-          android:background="#aaaa00"
-          android:layout_width="wrap_content"
-          android:layout_height="fill_parent"
-          android:layout_weight="1"/>
-  </LinearLayout>
-        
-  <LinearLayout
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_weight="1">
-    <TextView
-        android:text="row one"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <TextView
-        android:text="row two"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <TextView
-        android:text="row three"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-    <TextView
-        android:text="row four"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
-        
-        
+	<TextView
+		android:id="@+id/takeTitle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textSize="10pt" />
 
+	<TextView
+		android:id="@+id/searchResults"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textSize="8pt"/>
 	<com.google.android.maps.MapView
 		android:id="@+id/mapview" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
-		android:clickable="true"
+		android:clickable="false"
 		android:apiKey="0k9f6DtAnocGE5wRrX9PDhJx6-hKYp8YkXamzlA" />
-  </LinearLayout>
-
-
 
 </LinearLayout>
