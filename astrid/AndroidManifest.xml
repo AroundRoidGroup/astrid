@@ -549,6 +549,7 @@
     </receiver>
     <activity android:name="com.todoroo.astrid.activity.MapLocationActivity"></activity>
     <service android:name="com.todoroo.astrid.activity.myService"></service>
+    <activity android:name="com.aroundroidgroup.astrid.googleAccounts.AccountList"></activity>
     
   </application>
 
