@@ -23,13 +23,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.timsu.astrid.R;
+
 public class AppInfo extends Activity {
 	DefaultHttpClient http_client = new DefaultHttpClient();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.app_info);
+		setContentView(R.layout.login_info);
 	}
 
 	@Override
@@ -72,7 +74,8 @@ public class AppInfo extends Activity {
 	}
 
 	private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
-		protected Boolean doInBackground(String... tokens) {
+		@Override
+        protected Boolean doInBackground(String... tokens) {
 			try {
 				// Don't follow redirects
 				http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
@@ -100,7 +103,8 @@ public class AppInfo extends Activity {
 			return false;
 		}
 
-		protected void onPostExecute(Boolean result) {
+		@Override
+        protected void onPostExecute(Boolean result) {
 			new AuthenticatedRequestTask().execute("https://guestbook7734.appspot.com/");
 		}
 	}
@@ -121,20 +125,21 @@ public class AppInfo extends Activity {
 			return null;
 		}
 
-		protected void onPostExecute(HttpResponse result) {
+		@Override
+        protected void onPostExecute(HttpResponse result) {
 			try {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
 				android.widget.TextView results = (TextView)findViewById(R.id.myText);
 				StringBuffer sb = new StringBuffer();
 				String first_line;
-				
+
 				while ((first_line=reader.readLine())!=null){
 					sb.append(first_line+"\n");
 				}
 				results.setText(sb);
 				/*
 				String first_line;
-				
+
 				while ((first_line=reader.readLine())!=null){
 					Toast.makeText(getApplicationContext(), first_line, Toast.LENGTH_LONG).show();
 				}*/
