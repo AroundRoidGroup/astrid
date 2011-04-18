@@ -11,6 +11,10 @@
   
   <!-- for GPS use -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  
+  <!-- for google accounts authentication -->
+  <uses-permission android:name="android.permission.GET_ACCOUNTS"></uses-permission>
+  <uses-permission android:name="android.permission.USE_CREDENTIALS"></uses-permission>
 
   <!-- for notifications -->
   <uses-permission android:name="android.permission.VIBRATE"/>
