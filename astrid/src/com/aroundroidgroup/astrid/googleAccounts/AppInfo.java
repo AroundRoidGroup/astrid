@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.timsu.astrid.R;
+import com.todoroo.astrid.activity.myService;
 
 public class AppInfo extends Activity {
 	DefaultHttpClient http_client = new DefaultHttpClient();
@@ -109,7 +110,9 @@ public class AppInfo extends Activity {
 
 		@Override
         protected void onPostExecute(Boolean result) {
-			new AuthenticatedRequestTask().execute("https://aroundroid.appspot.com/");
+			//new AuthenticatedRequestTask().execute("https://aroundroid.appspot.com/");
+			//TODO : deal with singleton
+			myService.setCheckFriendThread(http_client);
 		}
 	}
 

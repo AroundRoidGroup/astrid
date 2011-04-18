@@ -1,6 +1,19 @@
 package com.todoroo.astrid.activity;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Service;
 import android.content.Context;
@@ -9,6 +22,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -29,6 +43,11 @@ import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
     private static Location userLastLocation;
+
+    private static DefaultHttpClient http_client;
+    private static CheckFriendThread cft;
+
+
     private final
     boolean isThreadOn = false;
     public final String TAG = "myService";
@@ -53,7 +72,6 @@ public class myService extends Service{
             mDbHelper = new NotesDbAdapter(this);
             mDbHelper.open();
         }
-
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
         gpsSetup();
 
@@ -75,9 +93,11 @@ public class myService extends Service{
     }
 
     public void onCreate(Bundle savedInstanceState) {
+
         Toast.makeText(this, "The Service was popoed ...", Toast.LENGTH_LONG).show();
  //       gpsSetup();
     }
+
 
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
@@ -153,6 +173,88 @@ public class myService extends Service{
     }
     public static Location getLastUserLocation() {
         return userLastLocation;
+    }
+
+    public static  boolean setCheckFriendThread(DefaultHttpClient dhc){
+        if (cft==null || !cft.isAlive()){
+            http_client = dhc;
+            cft = new CheckFriendThread();
+            cft.start();
+            return true;
+        }
+        return false;
+    }
+
+
+    protected static class CheckFriendThread extends Thread{
+
+        private final long sleepTime = 1000* 5;
+
+        @Override
+        public void run() {
+
+            while(true){
+                try {
+                    Thread.sleep(sleepTime);
+                    new GPSStatusTask().execute("https://aroundroid.appspot.com/aroundgps");
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        private class GPSStatusTask extends AsyncTask<String, Void, HttpResponse> {
+            @Override
+            protected HttpResponse doInBackground(String... urls) {
+                try {
+                    HttpPost http_post = new HttpPost(urls[0]);
+
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                    nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
+                    nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
+                    nameValuePairs.add(new BasicNameValuePair("USERS", "example@gmail.com"));
+                    http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                    // Execute HTTP Post Request
+                    return http_client.execute(http_post);
+                } catch (ClientProtocolException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(HttpResponse result) {
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
+
+                    StringBuffer sb = new StringBuffer();
+                    String first_line;
+                    while ((first_line=reader.readLine())!=null){
+                        sb.append(first_line+"\n");
+                    }
+
+                   String x = sb.toString();
+                   String k = new String();
+
+                    //Toast.makeText(myService.this,sb,Toast.LENGTH_LONG);
+
+                } catch (IllegalStateException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
 
