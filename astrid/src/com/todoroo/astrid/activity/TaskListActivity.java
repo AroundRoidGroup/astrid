@@ -48,6 +48,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -56,6 +57,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AccountList;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -427,6 +429,17 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
                 Intent intent = new Intent(TaskListActivity.this, TaskEditActivity.class);
                 intent.putExtra(TaskEditActivity.TOKEN_ID, task.getId());
                 startActivityForResult(intent, ACTIVITY_EDIT_TASK);
+            }
+        });
+
+        //TODO : check this
+        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnClickListener(new OnClickListener() {
+
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(TaskListActivity.this, AccountList.class);
+                startActivity(intent);
             }
         });
 

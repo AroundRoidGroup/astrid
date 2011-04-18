@@ -53,6 +53,7 @@ public class myService extends Service{
             mDbHelper = new NotesDbAdapter(this);
             mDbHelper.open();
         }
+
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
         gpsSetup();
 

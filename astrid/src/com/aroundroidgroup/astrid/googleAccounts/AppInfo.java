@@ -44,7 +44,11 @@ public class AppInfo extends Activity {
 	}
 
 	private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
+
+
 		public void run(AccountManagerFuture<Bundle> result) {
+
+
 			Bundle bundle;
 			try {
 				bundle = result.getResult();
@@ -80,7 +84,7 @@ public class AppInfo extends Activity {
 				// Don't follow redirects
 				http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 
-				HttpGet http_get = new HttpGet("https://guestbook7734.appspot.com/_ah/login?continue=http://localhost/&auth=" + tokens[0]);
+				HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/_ah/login?continue=http://localhost/&auth=" + tokens[0]);
 				HttpResponse response;
 				response = http_client.execute(http_get);
 				if(response.getStatusLine().getStatusCode() != 302)
@@ -105,7 +109,7 @@ public class AppInfo extends Activity {
 
 		@Override
         protected void onPostExecute(Boolean result) {
-			new AuthenticatedRequestTask().execute("https://guestbook7734.appspot.com/");
+			new AuthenticatedRequestTask().execute("https://aroundroid.appspot.com/");
 		}
 	}
 
