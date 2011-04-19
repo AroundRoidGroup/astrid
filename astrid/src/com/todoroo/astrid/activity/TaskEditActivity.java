@@ -66,14 +66,19 @@ import android.widget.ToggleButton;
 
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
+import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
+import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.alarms.AlarmControlSet;
 import com.todoroo.astrid.api.AstridApiConstants;
 import com.todoroo.astrid.dao.Database;
+import com.todoroo.astrid.dao.MetadataDao;
+import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.MetadataApiDao.MetadataCriteria;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.gcal.GCalControlSet;
 import com.todoroo.astrid.producteev.ProducteevControlSet;
@@ -153,7 +158,7 @@ public final class TaskEditActivity extends TabActivity {
     @Autowired
     private AddOnService addOnService;
 
-	// --- UI components
+    // --- UI components
 
     private ImageButton voiceAddNoteButton;
 
@@ -163,19 +168,19 @@ public final class TaskEditActivity extends TabActivity {
     private final List<TaskEditControlSet> controls =
         Collections.synchronizedList(new ArrayList<TaskEditControlSet>());
 
-	// --- other instance variables
+    // --- other instance variables
 
     /** true if editing started with a new task */
     boolean isNewTask = false;
 
-	/** task model */
-	private Task model = null;
+    /** task model */
+    private Task model = null;
 
-	/** whether task should be saved when this activity exits */
-	private boolean shouldSaveState = true;
+    /** whether task should be saved when this activity exits */
+    private boolean shouldSaveState = true;
 
-	/** edit control receiver */
-	private final ControlReceiver controlReceiver = new ControlReceiver();
+    /** edit control receiver */
+    private final ControlReceiver controlReceiver = new ControlReceiver();
 
     /** voice assistant for notes-creation */
     private VoiceInputAssistant voiceNoteAssistant = null;
@@ -192,25 +197,25 @@ public final class TaskEditActivity extends TabActivity {
         DependencyInjectionService.getInstance().inject(this);
     }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		new StartupService().onStartupApplication(this);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        new StartupService().onStartupApplication(this);
 
         setUpUIComponents();
 
-		// disable keyboard until user requests it
-		AndroidUtilities.suppressVirtualKeyboard(title);
+        // disable keyboard until user requests it
+        AndroidUtilities.suppressVirtualKeyboard(title);
 
-		// if we were editing a task already, restore it
-		if(savedInstanceState != null && savedInstanceState.containsKey(TASK_IN_PROGRESS)) {
-		    Task task = savedInstanceState.getParcelable(TASK_IN_PROGRESS);
-		    if(task != null) {
-		        model = task;
-		    }
-		}
+        // if we were editing a task already, restore it
+        if(savedInstanceState != null && savedInstanceState.containsKey(TASK_IN_PROGRESS)) {
+            Task task = savedInstanceState.getParcelable(TASK_IN_PROGRESS);
+            if(task != null) {
+                model = task;
+            }
+        }
 
-		setResult(RESULT_OK);
+        setResult(RESULT_OK);
     }
 
     /* ======================================================================
@@ -246,6 +251,7 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
+        controls.add(new MytadataControlSet(Metadata.VALUE4, R.id.location));
 
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
@@ -392,6 +398,9 @@ public final class TaskEditActivity extends TabActivity {
             } catch (Exception e) {
                 // oops, can't serialize
             }
+
+
+
             model = TaskListActivity.createWithValues(values, null, taskService, metadataService);
         }
 
@@ -442,7 +451,7 @@ public final class TaskEditActivity extends TabActivity {
         if(title.getText().length() > 0)
             model.setValue(Task.DELETION_DATE, 0L);
 
-        if(taskService.save(model) && title.getText().length() > 0)
+        if(taskService.save(model) && title.getText().length() > 0) //TODO: also update when changing in metadata
             showSaveToast(toast.toString());
     }
 
@@ -550,21 +559,21 @@ public final class TaskEditActivity extends TabActivity {
 
     protected void deleteButtonClick() {
         new AlertDialog.Builder(this)
-            .setTitle(R.string.DLG_confirm_title)
-            .setMessage(R.string.DLG_delete_this_task_question)
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .setPositiveButton(android.R.string.ok,
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    taskService.delete(model);
-                    shouldSaveState = false;
-                    showDeleteToast();
-                    setResult(RESULT_CANCELED);
-                    finish();
-                }
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+        .setTitle(R.string.DLG_confirm_title)
+        .setMessage(R.string.DLG_delete_this_task_question)
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setPositiveButton(android.R.string.ok,
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                taskService.delete(model);
+                shouldSaveState = false;
+                showDeleteToast();
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
     }
 
     /**
@@ -713,6 +722,48 @@ public final class TaskEditActivity extends TabActivity {
         }
     }
 
+    /**
+     * Control set for mapping a Metadata Property to an EditText
+     *
+     */
+    public class MytadataControlSet implements TaskEditControlSet {
+        private final EditText editText;
+        private final StringProperty property;
+        private final MetadataDao metadatadao;
+
+        public MytadataControlSet(StringProperty property, int editText) {
+            this.property = property;
+            this.editText = (EditText)findViewById(editText);
+            this.metadatadao = new MetadataDao();
+        }
+
+        @Override
+        public void readFromTask(Task task) {
+            TodorooCursor<Metadata> curser =
+                metadatadao.query(Query.select(property).
+                        where(MetadataCriteria.byTask(task.getId())));
+            if (curser.isAfterLast())
+                return;
+            curser.move(1);
+            editText.setText(curser.get(property));
+        }
+
+        @Override
+        public String writeToModel(Task task) {
+            TodorooCursor<Metadata> curser =
+                metadatadao.query(Query.select(property).
+                        where(MetadataCriteria.byTask(task.getId())));
+            Metadata metadata = new Metadata();
+            metadata.setValue(property, editText.getText().toString());
+            if (curser.isAfterLast()){
+                metadata.setValue(Metadata.TASK, task.getId());
+                metadatadao.createNew(metadata);
+            }else
+                metadatadao.update(Metadata.TASK.eq(model.getId()),metadata);
+            return null;
+        }
+    }
+
     // --- ImportanceControlSet
 
     /**
@@ -799,8 +850,8 @@ public final class TaskEditActivity extends TabActivity {
     // --- UrgencyControlSet
 
     private class UrgencyControlSet implements TaskEditControlSet,
-            OnItemSelectedListener, OnDeadlineTimeSetListener,
-            OnCancelListener {
+    OnItemSelectedListener, OnDeadlineTimeSetListener,
+    OnCancelListener {
 
         private static final int SPECIFIC_DATE = -1;
         private static final int EXISTING_TIME_UNSET = -2;
@@ -1030,8 +1081,8 @@ public final class TaskEditActivity extends TabActivity {
      *
      */
     private class HideUntilControlSet implements TaskEditControlSet,
-            OnItemSelectedListener, OnCancelListener,
-            OnDeadlineTimeSetListener {
+    OnItemSelectedListener, OnCancelListener,
+    OnDeadlineTimeSetListener {
 
         private static final int SPECIFIC_DATE = -1;
         private static final int EXISTING_TIME_UNSET = -2;
