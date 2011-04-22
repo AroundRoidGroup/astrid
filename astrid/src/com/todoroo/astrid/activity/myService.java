@@ -134,18 +134,16 @@ public class myService extends Service{
         Toast.makeText(this, "popo", Toast.LENGTH_LONG).show();
 
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty()){
-            Toast.makeText(this, "yes", Toast.LENGTH_LONG).show();
             if (mDbHelper.fetchNote(id).getCount()>0){
                 mDbHelper.deleteNote(id);
-                Notifications.cancelNotifications(id);
+                Notifications.cancelLocationNotification(id);
             }
         }else{
-            Toast.makeText(this, "no", Toast.LENGTH_LONG).show();
             if (mDbHelper.fetchNote(id).getCount()==0){
                long res = mDbHelper.createNote(id);
                Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
                 notificatons.showTaskNotification(id,
-                        ReminderService.TYPE_SNOOZE, "You are near");
+                        ReminderService.TYPE_LOCATION, "You are near");
             }
         }
 

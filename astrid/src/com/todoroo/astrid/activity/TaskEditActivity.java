@@ -759,7 +759,7 @@ public final class TaskEditActivity extends TabActivity {
                 metadata.setValue(Metadata.TASK, task.getId());
                 metadatadao.createNew(metadata);
             }else
-                metadatadao.update(Metadata.TASK.eq(model.getId()),metadata);
+                metadatadao.update(Metadata.TASK.eq(task.getId()),metadata);
             return null;
         }
     }

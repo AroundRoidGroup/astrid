@@ -60,6 +60,8 @@ public final class ReminderService  {
     public static final int TYPE_SNOOZE = 3;
     /** flag for an alarm reminder */
     public static final int TYPE_ALARM = 4;
+    /** flag for a location reminder */
+    public static final int TYPE_LOCATION = 5;
 
     static final Random random = new Random();
 

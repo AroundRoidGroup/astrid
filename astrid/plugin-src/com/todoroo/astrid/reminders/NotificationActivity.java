@@ -120,6 +120,7 @@ public class NotificationActivity extends TaskListActivity implements OnTimeSetL
         ((Button)findViewById(R.id.goAway)).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
+                Notifications.setToBeCancelledByUser(taskId);
                 finish();
             }
         });
