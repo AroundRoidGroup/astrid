@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.aroundroidgroup.locationTags.NotificationFields;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
@@ -45,18 +46,6 @@ public class Notifications extends BroadcastReceiver {
     /** notification type extra */
     public static final String TYPE_KEY = "type"; //$NON-NLS-1$
 
-    /** no notifications active for the task */
-    private static final String none = "none"; //$NON-NLS-1$
-
-    /** only location based notifications active for the task */
-    private static final String locationOnly = "location only"; //$NON-NLS-1$
-
-    /** only non-location based notifications active for the task */
-    private static final String otherOnly = "other only"; //$NON-NLS-1$
-
-    /** both location and non-location based notifications active for the task */
-    private static final String locationAndOther = "location and other"; //$NON-NLS-1$
-
     /** preference values */
     public static final int ICON_SET_PINK = 0;
     public static final int ICON_SET_BORING = 1;
@@ -66,6 +55,8 @@ public class Notifications extends BroadcastReceiver {
 
     @Autowired
     private TaskDao taskDao;
+
+    private static MetadataDao metadatadao = new MetadataDao();
 
     @Autowired
     private ExceptionService exceptionService;
@@ -196,71 +187,67 @@ public class Notifications extends BroadcastReceiver {
     }
 
     private void setToBeNotifiedNotAboutLocation(long id) {
-        String str = getLocationNotificationField(id);
-        if (str!=null && (str.compareTo(locationAndOther)==0 || str.compareTo(otherOnly)==0))
-            setLocationNotificationField(id, locationAndOther);
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.locationAndOther || stat==NotificationFields.otherOnly)
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
         else
-            setLocationNotificationField(id, otherOnly);
+            setLocationNotificationField(id, NotificationFields.otherOnly);
 
     }
 
     private static void setToBeNotifiedAboutLocation(long id) {
-       String str = getLocationNotificationField(id);
-       if (str==null || str.compareTo(none)==0)
-           setLocationNotificationField(id, locationOnly);
-       else
-           setLocationNotificationField(id, locationAndOther);
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.none || stat==NotificationFields.locationOnly)
+            setLocationNotificationField(id, NotificationFields.locationOnly);
+        else
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
     }
 
     private static boolean notifiedAboutLocation(long id) {
-        String str = getLocationNotificationField(id);
-        if (str==null)
-            return false;
-        return str.compareTo(locationOnly)==0 || str.compareTo(locationAndOther)==0;
+        int stat = getLocationNotificationField(id);
+        return stat==NotificationFields.locationOnly || stat==NotificationFields.locationAndOther;
     }
 
-    private static void setLocationNotificationField(long taskID, String str){
-        MetadataDao metadatadao = new MetadataDao();
-        TodorooCursor<Metadata> curser =
-            metadatadao.query(Query.select(Metadata.VALUE5).
-                    where(MetadataCriteria.byTask(taskID)));
+    private static void setLocationNotificationField(long taskID, int stat){
+        Metadata item = new Metadata();
+        item.setValue(Metadata.KEY, NotificationFields.METADATA_KEY);
+        item.setValue(Metadata.TASK, taskID);
+        item.setValue(NotificationFields.notificationStatus, stat);
+        metadatadao.saveExisting(item);
+    }
+
+    private static int getLocationNotificationField(long taskID){
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
         Metadata metadata = new Metadata();
-        metadata.setValue(Metadata.VALUE5, str);
-        if (curser.isAfterLast()){
-            metadata.setValue(Metadata.TASK, taskID);
-            metadatadao.createNew(metadata);
-        }else
-            metadatadao.update(Metadata.TASK.eq(taskID),metadata);
-    }
-
-    private static String getLocationNotificationField(long taskID){
-        MetadataDao metadatadao = new MetadataDao();
-        TodorooCursor<Metadata> curser =
-            metadatadao.query(Query.select(Metadata.VALUE5).
-                    where(MetadataCriteria.byTask(taskID)));
-        if (curser.isAfterLast())
-            return null;
-        curser.move(1);
-        return curser.get(Metadata.VALUE5);
+        try {
+            cursor.moveToFirst();
+            if (cursor.isAfterLast())
+                return NotificationFields.none;
+            metadata.readFromCursor(cursor);
+            return metadata.getValue(NotificationFields.notificationStatus);
+        } finally {
+            cursor.close();
+        }
     }
 
     public static void cancelLocationNotification(long taskID){
         if (!notifiedAboutLocation(taskID)) //not sure i have to check
             return;
-        String str = getLocationNotificationField(taskID);
-        if (str.compareTo(locationOnly)==0){
+        int stat = getLocationNotificationField(taskID);
+        if (stat==NotificationFields.locationOnly){
             cancelNotifications(taskID);
-            setLocationNotificationField(taskID, none);
-            return;
-        }
-        setLocationNotificationField(taskID, locationOnly);
+            setLocationNotificationField(taskID, NotificationFields.none);
+        }else
+            setLocationNotificationField(taskID, NotificationFields.otherOnly);
 
     }
 
     public static void setToBeCancelledByUser(long taskID){
-        String str = getLocationNotificationField(taskID);
-        setLocationNotificationField(taskID, str==null || (str.compareTo(otherOnly)==0)?
-                none:locationOnly);
+        setLocationNotificationField(taskID, notifiedAboutLocation(taskID)?
+                NotificationFields.locationOnly:NotificationFields.none);
     }
 
     /**

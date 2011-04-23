@@ -1,7 +1,4 @@
 package com.todoroo.astrid.activity;
-import java.util.HashSet;
-import java.util.Set;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +12,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
-import com.aroundroidgroup.locationTags.NotesDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
@@ -29,15 +25,10 @@ import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
     private static Location userLastLocation;
-    private final
-    boolean isThreadOn = false;
+
     public final String TAG = "myService";
 
-    Set<Long> alreadyNotified = new HashSet<Long>();
-
-    private static NotesDbAdapter mDbHelper = null;
-
-    Notifications notificatons = new Notifications();
+    private final Notifications notificatons = new Notifications();
 
     @Override
     public void onStart(Intent intent, int startId) {
@@ -49,19 +40,12 @@ public class myService extends Service{
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mDbHelper==null){
-            mDbHelper = new NotesDbAdapter(this);
-            mDbHelper.open();
-        }
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
         gpsSetup();
-
         return START_STICKY;
     }
     @Override
     public void onDestroy() {
-        mDbHelper.close();
-        mDbHelper = null;
         super.onDestroy();
         Toast.makeText(this, "The Service was destroyed ...", Toast.LENGTH_LONG).show();
         Log.d(TAG," onDestroy");
@@ -75,7 +59,7 @@ public class myService extends Service{
 
     public void onCreate(Bundle savedInstanceState) {
         Toast.makeText(this, "The Service was popoed ...", Toast.LENGTH_LONG).show();
- //       gpsSetup();
+        //       gpsSetup();
     }
 
     private final LocationListener locationListener = new LocationListener() {
@@ -133,20 +117,10 @@ public class myService extends Service{
     private void notify(long id,Location myLocation, String str) {
         Toast.makeText(this, "popo", Toast.LENGTH_LONG).show();
 
-        if (Misc.getPlaces(str,10,myLocation,5).isEmpty()){
-            if (mDbHelper.fetchNote(id).getCount()>0){
-                mDbHelper.deleteNote(id);
-                Notifications.cancelLocationNotification(id);
-            }
-        }else{
-            if (mDbHelper.fetchNote(id).getCount()==0){
-               long res = mDbHelper.createNote(id);
-               Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
-                notificatons.showTaskNotification(id,
-                        ReminderService.TYPE_LOCATION, "You are near");
-            }
-        }
-
+        if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
+            Notifications.cancelLocationNotification(id);
+        else
+            notificatons.showTaskNotification(id, ReminderService.TYPE_LOCATION, "You are near");
     }
     public static Location getLastUserLocation() {
         return userLastLocation;

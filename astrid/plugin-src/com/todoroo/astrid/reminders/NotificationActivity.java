@@ -94,6 +94,7 @@ public class NotificationActivity extends TaskListActivity implements OnTimeSetL
                 new QueryTemplate().where(TaskCriteria.byId(taskId)),
                 null);
         intent.putExtra(TaskListActivity.TOKEN_FILTER, itemFilter);
+        Notifications.setToBeCancelledByUser(taskId);
     }
 
     /**
@@ -120,7 +121,6 @@ public class NotificationActivity extends TaskListActivity implements OnTimeSetL
         ((Button)findViewById(R.id.goAway)).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                Notifications.setToBeCancelledByUser(taskId);
                 finish();
             }
         });
