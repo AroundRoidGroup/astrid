@@ -27,12 +27,16 @@ import com.timsu.astrid.R;
 import com.todoroo.astrid.activity.myService;
 
 public class AppInfo extends Activity {
-	DefaultHttpClient http_client = new DefaultHttpClient();
+    private Account chosenAccount;
+    private String lastToken;
+
+	DefaultHttpClient http_client;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login_info);
+		http_client = myService.getHttpClient();
 	}
 
 	@Override
@@ -41,6 +45,7 @@ public class AppInfo extends Activity {
 		Intent intent = getIntent();
 		AccountManager accountManager = AccountManager.get(getApplicationContext());
 		Account account = (Account)intent.getExtras().get("account");
+		chosenAccount = account;
 		accountManager.getAuthToken(account, "ah", false, new GetAuthTokenCallback(), null);
 	}
 
@@ -88,12 +93,22 @@ public class AppInfo extends Activity {
 				HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/_ah/login?continue=http://localhost/&auth=" + tokens[0]);
 				HttpResponse response;
 				response = http_client.execute(http_get);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                android.widget.TextView results = (TextView)findViewById(R.id.myText);
+                StringBuffer sb = new StringBuffer();
+                String first_line;
+
+                while ((first_line=reader.readLine())!=null){
+                    sb.append(first_line+"\n");
+                }
+                String x =sb.toString();
+                //results.setText(sb);
 				if(response.getStatusLine().getStatusCode() != 302)
 					// Response should be a redirect
 					return false;
 
 				for(Cookie cookie : http_client.getCookieStore().getCookies()) {
-					if(cookie.getName().equals("ACSID"))
+					if(cookie.getName().equals("ACSID") || cookie.getName().equals("SACSID"))
 						return true;
 				}
 			} catch (ClientProtocolException e) {
@@ -105,14 +120,28 @@ public class AppInfo extends Activity {
 			} finally {
 				http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			}
+			lastToken = tokens[0];
 			return false;
 		}
 
 		@Override
         protected void onPostExecute(Boolean result) {
+		    if (result){
+
 			//new AuthenticatedRequestTask().execute("https://aroundroid.appspot.com/");
+
 			//TODO : deal with singleton
-			myService.setCheckFriendThread(http_client);
+			myService.startCheckFriendThread();
+		    }
+		    else{
+		        //Intent intent = getIntent();
+		        AccountManager accountManager = AccountManager.get(getApplicationContext());
+		        //Account account = (Account)intent.getExtras().get("account");
+		        //chosenAccount = account;
+		        accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
+		        accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null);
+		        //invalid
+		    }
 		}
 	}
 
@@ -159,5 +188,9 @@ public class AppInfo extends Activity {
 			}
 		}
 	}
+
+
+
+
 }
 

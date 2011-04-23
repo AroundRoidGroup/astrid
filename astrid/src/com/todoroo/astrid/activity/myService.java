@@ -2,18 +2,15 @@ package com.todoroo.astrid.activity;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Service;
 import android.content.Context;
@@ -22,7 +19,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -44,12 +40,13 @@ import com.todoroo.astrid.service.TaskService;
 public class myService extends Service{
     private static Location userLastLocation;
 
-    private static DefaultHttpClient http_client;
+    private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
 
 
-    private final
-    boolean isThreadOn = false;
+    public static final Lock httpLock = new ReentrantLock();
+
+    private final  boolean isThreadOn = false;
     public final String TAG = "myService";
 
     Set<Long> alreadyNotified = new HashSet<Long>();
@@ -95,7 +92,7 @@ public class myService extends Service{
     public void onCreate(Bundle savedInstanceState) {
 
         Toast.makeText(this, "The Service was popoed ...", Toast.LENGTH_LONG).show();
- //       gpsSetup();
+        //       gpsSetup();
     }
 
 
@@ -163,8 +160,8 @@ public class myService extends Service{
         }else{
             Toast.makeText(this, "no", Toast.LENGTH_LONG).show();
             if (mDbHelper.fetchNote(id).getCount()==0){
-               long res = mDbHelper.createNote(id);
-               Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
+                long res = mDbHelper.createNote(id);
+                Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
                 notificatons.showTaskNotification(id,
                         ReminderService.TYPE_SNOOZE, "You are near");
             }
@@ -175,14 +172,17 @@ public class myService extends Service{
         return userLastLocation;
     }
 
-    public static  boolean setCheckFriendThread(DefaultHttpClient dhc){
+    public static  boolean startCheckFriendThread(){
         if (cft==null || !cft.isAlive()){
-            http_client = dhc;
             cft = new CheckFriendThread();
             cft.start();
             return true;
         }
         return false;
+    }
+
+    public static DefaultHttpClient getHttpClient(){
+        return myService.http_client;
     }
 
 
@@ -196,29 +196,50 @@ public class myService extends Service{
             while(true){
                 try {
                     Thread.sleep(sleepTime);
-                    new GPSStatusTask().execute("https://aroundroid.appspot.com/aroundgps");
+                    HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/");
+                    HttpResponse result = http_client.execute(http_get);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
+                    //android.widget.TextView results = (TextView)findViewById(R.id.myText);
+                    StringBuffer sb = new StringBuffer();
+                    String first_line;
+                    while ((first_line=reader.readLine())!=null){
+                        sb.append(first_line+"\n");
+                    }
+                    String x = sb.toString();
+                } catch (ClientProtocolException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
 
-            }
         }
+    }
 
+
+    /*
         private class GPSStatusTask extends AsyncTask<String, Void, HttpResponse> {
             @Override
             protected HttpResponse doInBackground(String... urls) {
                 try {
-                    HttpPost http_post = new HttpPost(urls[0]);
 
-                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-                    nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
-                    nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
-                    nameValuePairs.add(new BasicNameValuePair("USERS", "example@gmail.com"));
-                    http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    //HttpPost http_post = new HttpPost(urls[0]);
+
+                    //List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
+                    //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
+                    //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
+                    //nameValuePairs.add(new BasicNameValuePair("USERS", "example@gmail.com"));
+                    //http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                    HttpGet http_get = new HttpGet(urls[0]);
+                    return http_client.execute(http_get);
 
                     // Execute HTTP Post Request
-                    return http_client.execute(http_post);
+                    //return http_client.execute(http_post);
                 } catch (ClientProtocolException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -254,8 +275,9 @@ public class myService extends Service{
                 }
             }
         }
+     */
 
-    }
+}
 
 
 }
