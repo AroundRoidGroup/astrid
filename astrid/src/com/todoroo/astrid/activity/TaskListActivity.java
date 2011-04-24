@@ -235,7 +235,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         */
 
       Intent serviceIntent = new Intent(this,myService.class);
-      TODO: Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
+      Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
 
   //      TaskService taskService = new TaskService();
 
