@@ -1,11 +1,14 @@
 package com.todoroo.astrid.activity;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -14,6 +17,11 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import android.app.Service;
 import android.content.Context;
@@ -198,6 +206,58 @@ public class myService extends Service{
 
         private final long sleepTime = 1000* 0;
 
+        private final String gpsUri = "https://aroundroid.appspot.com/aroundgps"; //$NON-NLS-1$
+
+        private class FriendProps{
+
+            private String lat,lon;
+
+            private String mail;
+
+            public String getLat() {
+                return lat;
+            }
+
+            public void setLat(String lat) {
+                this.lat = lat;
+            }
+
+            public String getLon() {
+                return lon;
+            }
+
+            public void setLon(String lon) {
+                this.lon = lon;
+            }
+
+            public String getMail() {
+                return mail;
+            }
+
+            public void setMail(String mail) {
+                this.mail = mail;
+            }
+
+            public FriendProps() {
+                // TODO Auto-generated constructor stub
+            }
+
+            @Override
+            public String toString(){
+                return getMail() + "::" + getLat() + getLon(); //$NON-NLS-1$
+            }
+
+        }
+
+        private List<NameValuePair> createPostData(){
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
+            nameValuePairs.add(new BasicNameValuePair("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
+            return nameValuePairs;
+        }
+
+
         @Override
         public void run() {
 
@@ -205,24 +265,46 @@ public class myService extends Service{
                 try {
                     Thread.sleep(sleepTime);
 
-                    HttpPost http_post = new HttpPost("https://aroundroid.appspot.com/aroundgps");
-
-                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
-                    nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
-                    nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
-                    nameValuePairs.add(new BasicNameValuePair("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
-                    http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    HttpPost http_post = new HttpPost(gpsUri);
+                    http_post.setEntity(new UrlEncodedFormEntity(createPostData()));
 
                     HttpResponse result = http_client.execute(http_post);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
-                    //TODO : remove this check
-                    StringBuffer sb = new StringBuffer();
-                    String first_line;
-                    while ((first_line=reader.readLine())!=null){
-                        sb.append(first_line+"\n");
+                    InputStream is = result.getEntity().getContent();
+
+                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    Document doc = db.parse(is);
+                    doc.getDocumentElement().normalize();
+                    //System.out.println("Root element " + doc.getDocumentElement().getNodeName());
+                    NodeList nodeLst = doc.getElementsByTagName("Friend");
+                    //System.out.println("Information of all employees");
+
+                    List<FriendProps> lfp = new ArrayList<FriendProps>();
+
+                    for (int s = 0; s < nodeLst.getLength(); s++) {
+
+                        Node fstNode = nodeLst.item(s);
+                        FriendProps fp = new FriendProps();
+
+                        if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                            Element fstElmnt = (Element) fstNode;
+                            NodeList fstNmElmntLst = fstElmnt.getElementsByTagName("Latitude");
+                            Element fstNmElmnt = (Element) fstNmElmntLst.item(0);
+                            NodeList fstNm = fstNmElmnt.getChildNodes();
+                            fp.setLat(((Node) fstNm.item(0)).getNodeValue());
+                            NodeList lstNmElmntLst = fstElmnt.getElementsByTagName("Longtitude");
+                            Element lstNmElmnt = (Element) lstNmElmntLst.item(0);
+                            NodeList lstNm = lstNmElmnt.getChildNodes();
+                            fp.setLon(((Node) lstNm.item(0)).getNodeValue());
+                            NodeList mailNmElmntLst = fstElmnt.getElementsByTagName("Mail");
+                            Element mailNmElmnt = (Element) mailNmElmntLst.item(0);
+                            NodeList mailNm = mailNmElmnt.getChildNodes();
+                            fp.setMail(((Node) mailNm.item(0)).getNodeValue());
+
+                            lfp.add(fp);
+                        }
                     }
-                    @SuppressWarnings("unused")
-                    String x = sb.toString();
                 } catch (ClientProtocolException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -232,14 +314,21 @@ public class myService extends Service{
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                } catch (ParserConfigurationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (SAXException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
+
+
+
+            }
+
 
         }
     }
-
-
-}
-
 
 }
 
