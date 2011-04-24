@@ -1,8 +1,6 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -30,165 +28,111 @@ public class AppInfo extends Activity {
     private Account chosenAccount;
     private String lastToken;
 
-	DefaultHttpClient http_client;
+    private TextView statusText;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.login_info);
-		http_client = myService.getHttpClient();
-	}
+    DefaultHttpClient http_client;
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Intent intent = getIntent();
-		AccountManager accountManager = AccountManager.get(getApplicationContext());
-		Account account = (Account)intent.getExtras().get("account");
-		chosenAccount = account;
-		accountManager.getAuthToken(account, "ah", false, new GetAuthTokenCallback(), null);
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.login_info);
+        http_client = myService.getHttpClient();
+        statusText = (TextView)findViewById(R.id.loginStatusInformationText);
+    }
 
-	private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = getIntent();
+        AccountManager accountManager = AccountManager.get(getApplicationContext());
+        Account account = (Account)intent.getExtras().get("account");
+        chosenAccount = account;
+        statusText.setText("Loading Authentication Token...");
+        accountManager.getAuthToken(account, "ah", false, new GetAuthTokenCallback(), null);
+    }
+
+    private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
 
 
-		public void run(AccountManagerFuture<Bundle> result) {
+        public void run(AccountManagerFuture<Bundle> result) {
 
 
-			Bundle bundle;
-			try {
-				bundle = result.getResult();
-				Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);
-				if(intent != null) {
-					// User input required
-					startActivity(intent);
-				} else {
-					onGetAuthToken(bundle);
-				}
-			} catch (OperationCanceledException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (AuthenticatorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	};
-
-	protected void onGetAuthToken(Bundle bundle) {
-		String auth_token = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-		new GetCookieTask().execute(auth_token);
-	}
-
-	private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
-		@Override
-        protected Boolean doInBackground(String... tokens) {
-			try {
-				// Don't follow redirects
-				http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
-
-				HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/_ah/login?continue=http://localhost/&auth=" + tokens[0]);
-				HttpResponse response;
-				response = http_client.execute(http_get);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-                android.widget.TextView results = (TextView)findViewById(R.id.myText);
-                StringBuffer sb = new StringBuffer();
-                String first_line;
-
-                while ((first_line=reader.readLine())!=null){
-                    sb.append(first_line+"\n");
+            Bundle bundle;
+            try {
+                bundle = result.getResult();
+                Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);
+                if(intent != null) {
+                    // User input required
+                    startActivity(intent);
+                } else {
+                    onGetAuthToken(bundle);
                 }
-                String x =sb.toString();
-                //results.setText(sb);
-				if(response.getStatusLine().getStatusCode() != 302)
-					// Response should be a redirect
-					return false;
+            } catch (OperationCanceledException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (AuthenticatorException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    };
 
-				for(Cookie cookie : http_client.getCookieStore().getCookies()) {
-					if(cookie.getName().equals("ACSID") || cookie.getName().equals("SACSID"))
-						return true;
-				}
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			}
-			lastToken = tokens[0];
-			return false;
-		}
+    protected void onGetAuthToken(Bundle bundle) {
+        String auth_token = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+        statusText.setText("Recieving Cookie..");
+        new GetCookieTask().execute(auth_token);
+    }
 
-		@Override
+    private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... tokens) {
+            try {
+                // Don't follow redirects
+                http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
+
+                HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/_ah/login?continue=http://localhost/&auth=" + tokens[0]);
+                HttpResponse response;
+                response = http_client.execute(http_get);
+
+                if(response.getStatusLine().getStatusCode() != 302)
+                    // Response should be a redirect
+                    return false;
+
+                for(Cookie cookie : http_client.getCookieStore().getCookies()) {
+                    if(cookie.getName().equals("ACSID") || cookie.getName().equals("SACSID"))
+                        return true;
+                }
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+            }
+            lastToken = tokens[0];
+            return false;
+        }
+
+        @Override
         protected void onPostExecute(Boolean result) {
-		    if (result){
-
-			//new AuthenticatedRequestTask().execute("https://aroundroid.appspot.com/");
-
-			//TODO : deal with singleton
-			myService.startCheckFriendThread();
-		    }
-		    else{
-		        //Intent intent = getIntent();
-		        AccountManager accountManager = AccountManager.get(getApplicationContext());
-		        //Account account = (Account)intent.getExtras().get("account");
-		        //chosenAccount = account;
-		        accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
-		        accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null);
-		        //invalid
-		    }
-		}
-	}
-
-	private class AuthenticatedRequestTask extends AsyncTask<String, Void, HttpResponse> {
-		@Override
-		protected HttpResponse doInBackground(String... urls) {
-			try {
-				HttpGet http_get = new HttpGet(urls[0]);
-				return http_client.execute(http_get);
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		@Override
-        protected void onPostExecute(HttpResponse result) {
-			try {
-				BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
-				android.widget.TextView results = (TextView)findViewById(R.id.myText);
-				StringBuffer sb = new StringBuffer();
-				String first_line;
-
-				while ((first_line=reader.readLine())!=null){
-					sb.append(first_line+"\n");
-				}
-				results.setText(sb);
-				/*
-				String first_line;
-
-				while ((first_line=reader.readLine())!=null){
-					Toast.makeText(getApplicationContext(), first_line, Toast.LENGTH_LONG).show();
-				}*/
-			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
+            if (result){
+                statusText.setText("Cookie is OK! :D");
+                //TODO : deal with singleton
+                myService.startCheckFriendThread();
+            }
+            else{
+                statusText.setText("Authetication Token was invalid. Getting a new one..");
+                AccountManager accountManager = AccountManager.get(getApplicationContext());
+                accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
+                accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null);
+            }
+        }
+    }
 
 
 

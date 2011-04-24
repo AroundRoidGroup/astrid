@@ -2,15 +2,18 @@ package com.todoroo.astrid.activity;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Service;
 import android.content.Context;
@@ -42,9 +45,6 @@ public class myService extends Service{
 
     private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
-
-
-    public static final Lock httpLock = new ReentrantLock();
 
     private final  boolean isThreadOn = false;
     public final String TAG = "myService";
@@ -172,6 +172,14 @@ public class myService extends Service{
         return userLastLocation;
     }
 
+    public static boolean restartClient(){
+        //TODO : work
+        if (cft==null || !cft.isAlive()){
+            return false;
+        }
+        return true;
+    }
+
     public static  boolean startCheckFriendThread(){
         if (cft==null || !cft.isAlive()){
             cft = new CheckFriendThread();
@@ -188,7 +196,7 @@ public class myService extends Service{
 
     protected static class CheckFriendThread extends Thread{
 
-        private final long sleepTime = 1000* 5;
+        private final long sleepTime = 1000* 0;
 
         @Override
         public void run() {
@@ -196,15 +204,24 @@ public class myService extends Service{
             while(true){
                 try {
                     Thread.sleep(sleepTime);
-                    HttpGet http_get = new HttpGet("https://aroundroid.appspot.com/");
-                    HttpResponse result = http_client.execute(http_get);
+
+                    HttpPost http_post = new HttpPost("https://aroundroid.appspot.com/aroundgps");
+
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
+                    nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
+                    nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
+                    nameValuePairs.add(new BasicNameValuePair("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
+                    http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                    HttpResponse result = http_client.execute(http_post);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
-                    //android.widget.TextView results = (TextView)findViewById(R.id.myText);
+                    //TODO : remove this check
                     StringBuffer sb = new StringBuffer();
                     String first_line;
                     while ((first_line=reader.readLine())!=null){
                         sb.append(first_line+"\n");
                     }
+                    @SuppressWarnings("unused")
                     String x = sb.toString();
                 } catch (ClientProtocolException e) {
                     // TODO Auto-generated catch block
@@ -220,62 +237,6 @@ public class myService extends Service{
         }
     }
 
-
-    /*
-        private class GPSStatusTask extends AsyncTask<String, Void, HttpResponse> {
-            @Override
-            protected HttpResponse doInBackground(String... urls) {
-                try {
-
-                    //HttpPost http_post = new HttpPost(urls[0]);
-
-                    //List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
-                    //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLastLocation.getLatitude())));
-                    //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLastLocation.getLongitude())));
-                    //nameValuePairs.add(new BasicNameValuePair("USERS", "example@gmail.com"));
-                    //http_post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                    HttpGet http_get = new HttpGet(urls[0]);
-                    return http_client.execute(http_get);
-
-                    // Execute HTTP Post Request
-                    //return http_client.execute(http_post);
-                } catch (ClientProtocolException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(HttpResponse result) {
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(result.getEntity().getContent()));
-
-                    StringBuffer sb = new StringBuffer();
-                    String first_line;
-                    while ((first_line=reader.readLine())!=null){
-                        sb.append(first_line+"\n");
-                    }
-
-                   String x = sb.toString();
-                   String k = new String();
-
-                    //Toast.makeText(myService.this,sb,Toast.LENGTH_LONG);
-
-                } catch (IllegalStateException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-        }
-     */
 
 }
 
