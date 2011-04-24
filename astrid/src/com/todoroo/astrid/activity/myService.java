@@ -1,11 +1,9 @@
 package com.todoroo.astrid.activity;
-<<<<<<< HEAD
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,8 +22,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-=======
->>>>>>> origin/HEAD
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -53,17 +49,10 @@ import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
     private static Location userLastLocation;
-<<<<<<< HEAD
 
     private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
 
-    private final  boolean isThreadOn = false;
-    public final String TAG = "myService";
-
-    Set<Long> alreadyNotified = new HashSet<Long>();
-=======
->>>>>>> origin/HEAD
 
     public final String TAG = "myService";
 
@@ -158,29 +147,12 @@ public class myService extends Service{
     private void notify(Task task,Location myLocation, String str) {
         Toast.makeText(this, "popo", Toast.LENGTH_LONG).show();
 
-<<<<<<< HEAD
-        if (Misc.getPlaces(str,10,myLocation,5).isEmpty()){
-            Toast.makeText(this, "yes", Toast.LENGTH_LONG).show();
-            if (mDbHelper.fetchNote(id).getCount()>0){
-                mDbHelper.deleteNote(id);
-                Notifications.cancelNotifications(id);
-            }
-        }else{
-            Toast.makeText(this, "no", Toast.LENGTH_LONG).show();
-            if (mDbHelper.fetchNote(id).getCount()==0){
-                long res = mDbHelper.createNote(id);
-                Toast.makeText(this, "res is "+res+" count is "+mDbHelper.fetchNote(id).getCount(), Toast.LENGTH_LONG).show();
-                notificatons.showTaskNotification(id,
-                        ReminderService.TYPE_SNOOZE, "You are near");
-            }
-        }
 
-=======
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
             Notifications.cancelLocationNotification(task.getId());
         else
             ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
->>>>>>> origin/HEAD
+
     }
     public static Location getLastUserLocation() {
         return userLastLocation;
