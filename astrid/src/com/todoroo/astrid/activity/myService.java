@@ -16,6 +16,7 @@ import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
+import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
 import com.todoroo.astrid.data.Task;
@@ -106,7 +107,7 @@ public class myService extends Service{
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
                 for (String str: LocationTagService.getLocationTags(task.getId()))
-                    notify(task.getId(),location,str);
+                    notify(task,location,str);
             }
         } finally {
             cursor.close();
@@ -114,13 +115,13 @@ public class myService extends Service{
 
     }
 
-    private void notify(long id,Location myLocation, String str) {
+    private void notify(Task task,Location myLocation, String str) {
         Toast.makeText(this, "popo", Toast.LENGTH_LONG).show();
 
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
-            Notifications.cancelLocationNotification(id);
+            Notifications.cancelLocationNotification(task.getId());
         else
-            notificatons.showTaskNotification(id, ReminderService.TYPE_LOCATION, "You are near");
+            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
     }
     public static Location getLastUserLocation() {
         return userLastLocation;

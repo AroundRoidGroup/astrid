@@ -23,6 +23,7 @@ import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
 import com.todoroo.andlib.service.NotificationManager;
 import com.todoroo.andlib.service.NotificationManager.AndroidNotificationManager;
+import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
@@ -209,11 +210,25 @@ public class Notifications extends BroadcastReceiver {
     }
 
     private static void setLocationNotificationField(long taskID, int stat){
+
         Metadata item = new Metadata();
         item.setValue(Metadata.KEY, NotificationFields.METADATA_KEY);
         item.setValue(Metadata.TASK, taskID);
         item.setValue(NotificationFields.notificationStatus, stat);
-        metadatadao.saveExisting(item);
+
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
+        try {
+            if (cursor.isAfterLast())
+                metadatadao.createNew(item);
+            else
+                metadatadao.update(Criterion.and(Metadata.TASK.eq(taskID),Metadata.KEY.eq(NotificationFields.METADATA_KEY)),item);
+        } finally {
+            cursor.close();
+        }
+
     }
 
     private static int getLocationNotificationField(long taskID){
