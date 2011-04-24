@@ -27,7 +27,6 @@ import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.locationTags.PeopleLocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
-import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.DateUtilities;
@@ -136,22 +135,28 @@ public class myService extends Service{
     }
 
     private static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
-        Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
+        //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
+        float[] arr = new float[3];
+        //TODO : check array
+        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
+        float dist = arr[0];
 
-
-        if (isClose(myLocation,fp))
+        //distense - 100 kilometers
+        if (dist>100*1000)
             Notifications.cancelLocationNotification(task.getId());
         else
             ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
 
     }
 
-    private static boolean isClose(Location myLocation, FriendProps fp) {
-        return (myLocation.getLatitude()-Double.parseDouble(fp.getLat()))<1;
-    }
+
+//    private static boolean isFar(Location myLocation, FriendProps fp) {
+//        return !(Math.abs((myLocation.getLatitude()-Double.parseDouble(fp.getLat())))<1);
+//    }
+
 
     private static void notifyAboutLocation(Task task,Location myLocation, String str) {
-        Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
+        //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
 
 
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
@@ -219,7 +224,8 @@ public class myService extends Service{
                         task.readFromCursor(cursor);
                         List<FriendProps> lfp = null;
                         try {
-                            lfp = PeopleRequest.requestPeople(userLastLocation,PeopleLocationService.getPeopleToCheckAsString(task.getId()));
+                            String peopleString = PeopleLocationService.getPeopleToCheckAsString(task.getId());
+                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString);
                         } catch (ClientProtocolException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();

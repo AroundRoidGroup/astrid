@@ -28,11 +28,11 @@ import com.todoroo.astrid.activity.myService;
 
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(Location userLocation){
+    private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
         nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
         nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
-        nameValuePairs.add(new BasicNameValuePair("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
+        nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
         return nameValuePairs;
     }
 
@@ -45,7 +45,7 @@ public class PeopleRequest {
     public static List<FriendProps> requestPeople(Location userLocation,String people) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation)));
+        http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation,people)));
         InputStream is  = requestToStream(http_post);
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
