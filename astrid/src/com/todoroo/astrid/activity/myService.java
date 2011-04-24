@@ -244,7 +244,7 @@ public class myService extends Service{
 
             @Override
             public String toString(){
-                return getMail() + "::" + getLat() + getLon(); //$NON-NLS-1$
+                return getMail() + "::" + getLat() + "::" + getLon(); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
         }
