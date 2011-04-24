@@ -1,4 +1,5 @@
 package com.todoroo.astrid.activity;
+<<<<<<< HEAD
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+=======
+>>>>>>> origin/HEAD
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -36,11 +39,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationTagService;
-import com.aroundroidgroup.locationTags.NotesDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
+import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
 import com.todoroo.astrid.data.Task;
@@ -50,6 +53,7 @@ import com.todoroo.astrid.service.TaskService;
 
 public class myService extends Service{
     private static Location userLastLocation;
+<<<<<<< HEAD
 
     private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
@@ -58,10 +62,12 @@ public class myService extends Service{
     public final String TAG = "myService";
 
     Set<Long> alreadyNotified = new HashSet<Long>();
+=======
+>>>>>>> origin/HEAD
 
-    private static NotesDbAdapter mDbHelper = null;
+    public final String TAG = "myService";
 
-    Notifications notificatons = new Notifications();
+    private final Notifications notificatons = new Notifications();
 
     @Override
     public void onStart(Intent intent, int startId) {
@@ -73,19 +79,12 @@ public class myService extends Service{
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mDbHelper==null){
-            mDbHelper = new NotesDbAdapter(this);
-            mDbHelper.open();
-        }
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
         gpsSetup();
-
         return START_STICKY;
     }
     @Override
     public void onDestroy() {
-        mDbHelper.close();
-        mDbHelper = null;
         super.onDestroy();
         Toast.makeText(this, "The Service was destroyed ...", Toast.LENGTH_LONG).show();
         Log.d(TAG," onDestroy");
@@ -148,7 +147,7 @@ public class myService extends Service{
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
                 for (String str: LocationTagService.getLocationTags(task.getId()))
-                    notify(task.getId(),location,str);
+                    notify(task,location,str);
             }
         } finally {
             cursor.close();
@@ -156,9 +155,10 @@ public class myService extends Service{
 
     }
 
-    private void notify(long id,Location myLocation, String str) {
+    private void notify(Task task,Location myLocation, String str) {
         Toast.makeText(this, "popo", Toast.LENGTH_LONG).show();
 
+<<<<<<< HEAD
         if (Misc.getPlaces(str,10,myLocation,5).isEmpty()){
             Toast.makeText(this, "yes", Toast.LENGTH_LONG).show();
             if (mDbHelper.fetchNote(id).getCount()>0){
@@ -175,6 +175,12 @@ public class myService extends Service{
             }
         }
 
+=======
+        if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
+            Notifications.cancelLocationNotification(task.getId());
+        else
+            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+>>>>>>> origin/HEAD
     }
     public static Location getLastUserLocation() {
         return userLastLocation;

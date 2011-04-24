@@ -34,6 +34,24 @@
         android:text=""
         android:capitalize="sentences" />
         
+        
+       <!-- location -->
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TEA_location_label"
+        style="@style/TextAppearance.GEN_EditLabel" />
+      <com.todoroo.astrid.ui.ErrorCatchingEditText
+        android:id="@+id/location"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/TEA_location_hint"
+        android:autoText="true"
+        android:text=""
+        android:capitalize="sentences" />
+        
+        
+          
       <!-- importance -->
       <TextView
         android:layout_width="wrap_content"

@@ -14,17 +14,24 @@ import android.net.Uri;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.aroundroidgroup.locationTags.NotificationFields;
 import com.timsu.astrid.R;
+import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
 import com.todoroo.andlib.service.NotificationManager;
 import com.todoroo.andlib.service.NotificationManager.AndroidNotificationManager;
+import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
+import com.todoroo.astrid.dao.MetadataDao;
 import com.todoroo.astrid.dao.TaskDao;
+import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.MetadataApiDao.MetadataCriteria;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.service.AstridDependencyInjector;
 import com.todoroo.astrid.utility.Constants;
@@ -49,6 +56,8 @@ public class Notifications extends BroadcastReceiver {
 
     @Autowired
     private TaskDao taskDao;
+
+    private static MetadataDao metadatadao = new MetadataDao();
 
     @Autowired
     private ExceptionService exceptionService;
@@ -83,6 +92,8 @@ public class Notifications extends BroadcastReceiver {
                 reminder = getRandomReminder(r.getStringArray(R.array.reminders_due));
             else if(type == ReminderService.TYPE_SNOOZE)
                 reminder = getRandomReminder(r.getStringArray(R.array.reminders_snooze));
+            else if(type == ReminderService.TYPE_LOCATION)
+                reminder = getRandomReminder(r.getStringArray(R.array.reminders_location));
             else
                 reminder = getRandomReminder(r.getStringArray(R.array.reminders));
         } else
@@ -121,7 +132,7 @@ public class Notifications extends BroadcastReceiver {
         Task task;
         try {
             task = taskDao.fetch(id, Task.ID, Task.TITLE, Task.HIDE_UNTIL, Task.COMPLETION_DATE,
-                        Task.DUE_DATE, Task.DELETION_DATE, Task.REMINDER_FLAGS);
+                    Task.DUE_DATE, Task.DELETION_DATE, Task.REMINDER_FLAGS);
             if(task == null)
                 throw new IllegalArgumentException("cound not find item with id"); //$NON-NLS-1$
 
@@ -142,6 +153,16 @@ public class Notifications extends BroadcastReceiver {
         if((type == ReminderService.TYPE_DUE || type == ReminderService.TYPE_OVERDUE) &&
                 (!task.hasDueDate() || task.getValue(Task.DUE_DATE) > DateUtilities.now()))
             return true;
+
+        //handles location based reminders
+        if(type==ReminderService.TYPE_LOCATION && notifiedAboutLocation(id))
+            return true;
+        else{
+            if (type==ReminderService.TYPE_LOCATION)
+                setToBeNotifiedAboutLocation(id);
+            else
+                setToBeNotifiedNotAboutLocation(id);
+        }
 
         // read properties
         String taskTitle = task.getValue(Task.TITLE);
@@ -164,6 +185,84 @@ public class Notifications extends BroadcastReceiver {
 
         showNotification((int)id, notifyIntent, type, title, text, ringTimes);
         return true;
+    }
+
+    private void setToBeNotifiedNotAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.locationAndOther || stat==NotificationFields.otherOnly)
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
+        else
+            setLocationNotificationField(id, NotificationFields.otherOnly);
+
+    }
+
+    private static void setToBeNotifiedAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.none || stat==NotificationFields.locationOnly)
+            setLocationNotificationField(id, NotificationFields.locationOnly);
+        else
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
+    }
+
+    private static boolean notifiedAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        return stat==NotificationFields.locationOnly || stat==NotificationFields.locationAndOther;
+    }
+
+    private static void setLocationNotificationField(long taskID, int stat){
+
+        Metadata item = new Metadata();
+        item.setValue(Metadata.KEY, NotificationFields.METADATA_KEY);
+        item.setValue(Metadata.TASK, taskID);
+        item.setValue(NotificationFields.notificationStatus, stat);
+
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
+        try {
+            if (cursor.isAfterLast())
+                metadatadao.createNew(item);
+            else
+                metadatadao.update(Criterion.and(Metadata.TASK.eq(taskID),Metadata.KEY.eq(NotificationFields.METADATA_KEY)),item);
+        } finally {
+            cursor.close();
+        }
+
+    }
+
+    private static int getLocationNotificationField(long taskID){
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
+        Metadata metadata = new Metadata();
+        try {
+            cursor.moveToFirst();
+            if (cursor.isAfterLast())
+                return NotificationFields.none;
+            metadata.readFromCursor(cursor);
+            return metadata.getValue(NotificationFields.notificationStatus);
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public static void cancelLocationNotification(long taskID){
+        if (!notifiedAboutLocation(taskID)) //not sure i have to check
+            return;
+        int stat = getLocationNotificationField(taskID);
+        if (stat==NotificationFields.locationOnly){
+            cancelNotifications(taskID);
+            setLocationNotificationField(taskID, NotificationFields.none);
+        }else
+            setLocationNotificationField(taskID, NotificationFields.otherOnly);
+
+    }
+
+    public static void setToBeCancelledByUser(long taskID){
+        setLocationNotificationField(taskID, notifiedAboutLocation(taskID)?
+                NotificationFields.locationOnly:NotificationFields.none);
     }
 
     /**
@@ -199,14 +298,14 @@ public class Notifications extends BroadcastReceiver {
         int icon;
         switch(Preferences.getIntegerFromString(R.string.p_rmd_icon,
                 ICON_SET_ASTRID)) {
-        case ICON_SET_PINK:
-            icon = R.drawable.notif_pink_alarm;
-            break;
-        case ICON_SET_BORING:
-            icon = R.drawable.notif_boring_alarm;
-            break;
-        default:
-            icon = R.drawable.notif_astrid;
+                case ICON_SET_PINK:
+                    icon = R.drawable.notif_pink_alarm;
+                    break;
+                case ICON_SET_BORING:
+                    icon = R.drawable.notif_boring_alarm;
+                    break;
+                default:
+                    icon = R.drawable.notif_astrid;
         }
 
         // create notification object
@@ -219,7 +318,7 @@ public class Notifications extends BroadcastReceiver {
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
         if(Preferences.getBoolean(R.string.p_rmd_persistent, true)) {
             notification.flags |= Notification.FLAG_NO_CLEAR |
-                Notification.FLAG_SHOW_LIGHTS;
+            Notification.FLAG_SHOW_LIGHTS;
             notification.ledOffMS = 5000;
             notification.ledOnMS = 700;
             notification.ledARGB = Color.YELLOW;
@@ -328,6 +427,7 @@ public class Notifications extends BroadcastReceiver {
             }
 
         notificationManager.cancel((int)taskId);
+        setToBeCancelledByUser(taskId);
     }
 
     // --- notification manager
@@ -336,5 +436,6 @@ public class Notifications extends BroadcastReceiver {
             NotificationManager notificationManager) {
         Notifications.notificationManager = notificationManager;
     }
+
 
 }

@@ -94,6 +94,7 @@ public class NotificationActivity extends TaskListActivity implements OnTimeSetL
                 new QueryTemplate().where(TaskCriteria.byId(taskId)),
                 null);
         intent.putExtra(TaskListActivity.TOKEN_FILTER, itemFilter);
+        Notifications.setToBeCancelledByUser(taskId);
     }
 
     /**
