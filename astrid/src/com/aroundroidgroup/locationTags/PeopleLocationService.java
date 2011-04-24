@@ -26,7 +26,7 @@ public class PeopleLocationService {
         return ls.toArray(new String[ls.size()]);
     }
 
-    private static String getPeopleToCheckAsString(long taskId) {
+    public static String getPeopleToCheckAsString(long taskId) {
         TodorooCursor<Metadata> cursor = (new MetadataDao()).query(
                 Query.select(Metadata.PROPERTIES).where(
                         MetadataCriteria.byTaskAndwithKey(taskId,
