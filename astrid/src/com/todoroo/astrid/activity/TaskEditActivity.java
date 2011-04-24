@@ -64,12 +64,14 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.aroundroidgroup.locationTags.LocationFields;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
+import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
@@ -728,38 +730,52 @@ public final class TaskEditActivity extends TabActivity {
      */
     public class MytadataControlSet implements TaskEditControlSet {
         private final EditText editText;
-        private final StringProperty property;
         private final MetadataDao metadatadao;
 
         public MytadataControlSet(StringProperty property, int editText) {
-            this.property = property;
             this.editText = (EditText)findViewById(editText);
             this.metadatadao = new MetadataDao();
         }
 
         @Override
         public void readFromTask(Task task) {
-            TodorooCursor<Metadata> curser =
-                metadatadao.query(Query.select(property).
-                        where(MetadataCriteria.byTask(task.getId())));
-            if (curser.isAfterLast())
-                return;
-            curser.move(1);
-            editText.setText(curser.get(property));
+            TodorooCursor<Metadata> cursor = metadatadao.query(
+                    Query.select(Metadata.PROPERTIES).where(
+                            MetadataCriteria.byTaskAndwithKey(task.getId(),
+                                    LocationFields.METADATA_KEY)));
+            Metadata metadata = new Metadata();
+            try {
+                cursor.moveToFirst();
+                if (cursor.isAfterLast()){
+                    return;
+                }
+                metadata.readFromCursor(cursor);
+                editText.setText(metadata.getValue(LocationFields.peopleLocations));
+            } finally {
+                cursor.close();
+            }
         }
 
         @Override
         public String writeToModel(Task task) {
-            TodorooCursor<Metadata> curser =
-                metadatadao.query(Query.select(property).
-                        where(MetadataCriteria.byTask(task.getId())));
-            Metadata metadata = new Metadata();
-            metadata.setValue(property, editText.getText().toString());
-            if (curser.isAfterLast()){
-                metadata.setValue(Metadata.TASK, task.getId());
-                metadatadao.createNew(metadata);
-            }else
-                metadatadao.update(Metadata.TASK.eq(task.getId()),metadata);
+
+            Metadata item = new Metadata();
+            item.setValue(Metadata.KEY, LocationFields.METADATA_KEY);
+            item.setValue(Metadata.TASK, task.getId());
+            item.setValue(LocationFields.peopleLocations, editText.getText().toString());
+
+            TodorooCursor<Metadata> cursor = metadatadao.query(
+                    Query.select(Metadata.PROPERTIES).where(
+                            MetadataCriteria.byTaskAndwithKey(task.getId(),
+                                    LocationFields.METADATA_KEY)));
+            try {
+                if (cursor.isAfterLast())
+                    metadatadao.createNew(item);
+                else
+                    metadatadao.update(Criterion.and(Metadata.TASK.eq(task.getId()),Metadata.KEY.eq(LocationFields.METADATA_KEY)),item);
+            } finally {
+                cursor.close();
+            }
             return null;
         }
     }
