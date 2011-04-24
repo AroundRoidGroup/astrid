@@ -3,7 +3,7 @@ package com.aroundroid.aroundgps;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
 
-import java.util.Date;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
