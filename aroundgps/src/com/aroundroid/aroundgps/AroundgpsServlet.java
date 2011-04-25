@@ -20,7 +20,7 @@ public class AroundgpsServlet extends HttpServlet {
 	private final String GPSLat = "GPSLAT";
 	private final String GPSLon = "GPSLON";
 	private final String USERS = "USERS";
-	private final String DEL = "XXX";
+	private final String DEL = "::";
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {

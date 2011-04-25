@@ -21,9 +21,9 @@
 	<p> <u> Exmaple Form: </u> </p>
 	<p>
     <form action="/aroundgps" method="post">
-      <div><input name="GPSLAT" type="text" value="34.0" /></div>
-      <div><input name="GPSLON" type="text" value="32.0" /></div>
-      <div><input name="USERS" type="text" value="moti@gmail.comXXXshiran@gmail.comXXXalondener@gmail.com" /></div>
+      <div><input name="GPSLAT" type="text" value="32.1733156223" /></div>
+      <div><input name="GPSLON" type="text" value="34.9117329249" /></div>
+      <div><input name="USERS" type="text" value="moti@gmail.com::shiran@gmail.com::alondener@gmail.com" /></div>
       <div><input type="submit" value="OK" /></div>
     </form>
     </p>
