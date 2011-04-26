@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
-import com.aroundroidgroup.locationTags.LocationTagService;
+import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.locationTags.PeopleLocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -48,6 +48,7 @@ public class myService extends Service{
 
     private final Notifications notificatons = new Notifications();
 
+    private final LocationService locationService = new LocationService();
     @Override
     public void onStart(Intent intent, int startId) {
 
@@ -125,7 +126,7 @@ public class myService extends Service{
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
-                for (String str: LocationTagService.getLocationTags(task.getId()))
+                for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
                     notifyAboutLocation(task,location,str);
             }
         } finally {
