@@ -16,6 +16,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -111,7 +112,7 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
             locations.add(locationName.getText().toString());
         }
 
-        if(locationService.synceLocationsByType(task.getId(), locations))
+        if(locationService.syncLocationsByType(task.getId(), locations))
             task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
         return null;
@@ -158,9 +159,12 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
             @Override
             public void onTextChanged(CharSequence s, int start, int before,
                     int count) {
-                if(count > 0 && locationContainer.getChildAt(locationContainer.getChildCount()-1) ==
-                    locationItem)
-                    addLocation("", false); //$NON-NLS-1$
+                if(!(count > 0 && locationContainer.getChildAt(locationContainer.getChildCount()-1) ==
+                    locationItem))
+                    return;
+                ImageButton reminderAddButton;
+                reminderAddButton = (ImageButton)locationItem.findViewById(R.id.button2);
+                reminderAddButton.setVisibility(View.VISIBLE);
             }
         });
 
@@ -181,16 +185,34 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
         reminderRemoveButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 TextView lastView = getLastTextView();
-                if(lastView == textView && textView.getText().length() == 0)
+                if(locationContainer.getChildCount()<2){
+                    textView.setText("");
+                    locationItem.findViewById(R.id.button2).setVisibility(View.GONE);
                     return;
+                }
+                if(lastView == textView){
+                    View oneBeforeLastView = locationContainer.getChildAt(locationContainer.getChildCount()-2);
+                    oneBeforeLastView.findViewById(R.id.button2).setVisibility(View.VISIBLE);
+                }
 
-                if(locationContainer.getChildCount() > 1)
-                    locationContainer.removeView(locationItem);
-                else
-                    textView.setText(""); //$NON-NLS-1$
+                    if(locationContainer.getChildCount() > 1)
+                        locationContainer.removeView(locationItem);
+                    else
+                        textView.setText(""); //$NON-NLS-1$
             }
         });
 
+        ImageView reminderAddButton = (ImageView) locationItem.findViewById(R.id.button2);
+        reminderAddButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                TextView lastView = getLastTextView();
+                if(lastView == textView && textView.getText().length() == 0)
+                    return;
+                addLocation("", false);
+                locationItem.findViewById(R.id.button2).setVisibility(View.GONE);
+            }
+        });
+        reminderAddButton.setVisibility(View.GONE);
         return true;
     }
 

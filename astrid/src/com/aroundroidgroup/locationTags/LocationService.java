@@ -46,66 +46,18 @@ public class LocationService {
             cursor.close();
         }
     }
-/*
-    private String getLocationPropertyAsString(long taskId, StringProperty prop){
-        return "";
-        /*Criterion taskCriterion;
-        if (taskId==ALL)
-            taskCriterion = MetadataCriteria.withKey(LocationFields.METADATA_KEY);
-        else
-            taskCriterion =  MetadataCriteria.byTaskAndwithKey(taskId,LocationFields.METADATA_KEY);
 
-        TodorooCursor<Metadata> cursor = (new MetadataDao()).query(
-                Query.select(Metadata.PROPERTIES).where(
-                        taskCriterion));
-        Metadata metadata = new Metadata();
-        StringBuffer sb = new StringBuffer();
-        try {
-            for (cursor.moveToFirst();!cursor.isAfterLast();cursor.moveToNext());
-            metadata.readFromCursor(cursor);
-            if (metadata.containsValue(prop)){
-                sb.append(metadata.getValue(prop));
-            }
-        } finally {
-            cursor.close();
-        }
-        return sb.toString();
+    public boolean syncLocationsByType(long taskId, LinkedHashSet<String> locations){
+        return syncLocations(taskId, locations, LocationFields.locationsType);
     }
-    public  TodorooCursor<Metadata> getPlacesByType(long taskID){
-        return getLocationProperty(taskID,LocationFields.locationsType);
+    public boolean syncLocationsBySpecific(long taskId, LinkedHashSet<String> locations){
+        return syncLocations(taskId, locations, LocationFields.specificLocations);
+    }
+    public boolean syncLocationsByPeople(long taskId, LinkedHashSet<String> locations){
+        return syncLocations(taskId, locations, LocationFields.peopleLocations);
     }
 
-    public  TodorooCursor<Metadata> getPlacesByPeople(long taskID){
-        return getLocationProperty(taskID,LocationFields.peopleLocations);
-    }
-
-    public  TodorooCursor<Metadata> getPlacesBySpecific(long taskID){
-        return getLocationProperty(taskID,LocationFields.specificLocations);
-    }
-
-    public  TodorooCursor<Metadata> getLocationProperty(long taskId, StringProperty prop){
-        Criterion taskCriterion;
-        if (taskId==ALL)
-            taskCriterion = MetadataCriteria.withKey(LocationFields.METADATA_KEY);
-        else
-            taskCriterion =  MetadataCriteria.byTaskAndwithKey(taskId,LocationFields.METADATA_KEY);
-
-        return (new MetadataDao()).query(
-                Query.select(Metadata.PROPERTIES).where(
-                        taskCriterion));
-    }
-     */
-    public boolean synceLocationsByType(long taskId, LinkedHashSet<String> locations){
-        return synceLocations(taskId, locations, LocationFields.locationsType);
-    }
-    public boolean synceLocationsBySpecific(long taskId, LinkedHashSet<String> locations){
-        return synceLocations(taskId, locations, LocationFields.specificLocations);
-    }
-    public boolean synceLocationsByPeople(long taskId, LinkedHashSet<String> locations){
-        return synceLocations(taskId, locations, LocationFields.peopleLocations);
-    }
-
-    private boolean synceLocations(long taskId, LinkedHashSet<String> locations,StringProperty prop) {
+    private boolean syncLocations(long taskId, LinkedHashSet<String> locations,StringProperty prop) {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();

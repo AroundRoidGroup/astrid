@@ -1,6 +1,5 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.map.DPoint;
-import com.aroundroidgroup.map.Misc;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -66,7 +64,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         Map<String, String> places;
         GeoPoint geoP;
         String s = "";
-        for (String kind : locationTags) {
+        /**for (String kind : locationTags) {
             s += kind + ": ";
             places = Misc.getPlaces(kind, getParameterizedRadius(), myService.getLastUserLocation(), 5);
             s += places.size() + " result found.\n";
@@ -86,7 +84,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             }
             TextView results = (TextView)findViewById(R.id.searchResults);
             results.setText(s.substring(0, s.length() - 1));
-        }
+        }*/
     }
 
 
