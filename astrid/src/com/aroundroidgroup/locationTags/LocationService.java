@@ -31,7 +31,7 @@ public class LocationService {
         return getLocationPropertyAsArray(taskID,LocationFields.specificLocations);
     }
 
-    public String[] getLocationPropertyAsArray(long taskId, StringProperty prop){
+    private String[] getLocationPropertyAsArray(long taskId, StringProperty prop){
 
         TodorooCursor<Metadata> cursor = getLocations(taskId, prop);
 
@@ -50,9 +50,11 @@ public class LocationService {
     public boolean syncLocationsByType(long taskId, LinkedHashSet<String> locations){
         return syncLocations(taskId, locations, LocationFields.locationsType);
     }
+
     public boolean syncLocationsBySpecific(long taskId, LinkedHashSet<String> locations){
         return syncLocations(taskId, locations, LocationFields.specificLocations);
     }
+
     public boolean syncLocationsByPeople(long taskId, LinkedHashSet<String> locations){
         return syncLocations(taskId, locations, LocationFields.peopleLocations);
     }
@@ -122,8 +124,8 @@ public class LocationService {
 
     public boolean isLocationTask(long id) {
         return contaionsLocationsByType(id) ||
-            containsLocationsByPeople(id) ||
-            containsLocationsBySpecific(id);
+        containsLocationsByPeople(id) ||
+        containsLocationsBySpecific(id);
     }
 
     public boolean containsLocationsBySpecific(long id) {

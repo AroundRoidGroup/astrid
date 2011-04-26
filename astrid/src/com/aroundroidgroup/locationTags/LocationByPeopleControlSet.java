@@ -30,7 +30,7 @@ import com.todoroo.astrid.activity.TaskEditActivity.TaskEditControlSet;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
 
-public class LocationByTypeControlSet implements TaskEditControlSet{
+public class LocationByPeopleControlSet implements TaskEditControlSet{
 
     // --- instance variables
 
@@ -40,17 +40,18 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
     private final LinearLayout locationContainer;
     private final Activity activity;
 
-    public LocationByTypeControlSet(Activity activity, int locationContainer) {
-        allLocations = locationService.getAllLocationsByType();
+    public LocationByPeopleControlSet(Activity activity, int locationContainer) {
+        allLocations = locationService.getAllLocationsByPeople();
         this.activity = activity;
         this.locationContainer = (LinearLayout) activity.findViewById(locationContainer);
-        this.locationSpinner = (Spinner) activity.findViewById(R.id.locations_by_type_dropdown);
+        this.locationSpinner = (Spinner) activity.findViewById(R.id.locations_by_people_dropdown);
 
         if(allLocations.length == 0) {
             locationSpinner.setVisibility(View.GONE);
         } else {
             ArrayList<String> dropDownList = new ArrayList<String>(Arrays.asList(allLocations));
-            dropDownList.add(0,activity.getString(R.string.TEA_locations_by_type_dropdown));
+          //TODO: if becomes the final control set, change the string here, and in location_by_poeople_row.xml and in task_edit_activity of this to be like in the case of locations by type
+            dropDownList.add(0,"add a friend"); //$NON-NLS-1$
             ArrayAdapter<String> locationsAdapter = new ArrayAdapter<String>(activity,
                     android.R.layout.simple_spinner_item,
                     dropDownList);
@@ -81,7 +82,7 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
         locationContainer.removeAllViews();
 
         if(task.getId() != AbstractModel.NO_ID) {
-            TodorooCursor<Metadata> cursor = locationService.getLocationsByType(task.getId());
+            TodorooCursor<Metadata> cursor = locationService.getLocationsByPeople(task.getId());
             try {
                 for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                     String location = cursor.get(LocationFields.locationsType);
@@ -105,14 +106,14 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
 
         LinkedHashSet<String> locations = new LinkedHashSet<String>();
         for(int i = 0; i < locationContainer.getChildCount(); i++) {
-            TextView locationName = (TextView)locationContainer.getChildAt(i).findViewById(R.id.text11);
+            TextView locationName = (TextView)locationContainer.getChildAt(i).findViewById(R.id.text12);
             if(locationName.getText().length() == 0)
                 continue;
 
             locations.add(locationName.getText().toString());
         }
 
-        if(locationService.syncLocationsByType(task.getId(), locations))
+        if(locationService.syncLocationsByPeople(task.getId(), locations))
             task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
         return null;
@@ -126,7 +127,7 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
         TextView lastText = null;
         for(int i = 0; i < locationContainer.getChildCount(); i++) {
             View view = locationContainer.getChildAt(i);
-            lastText = (TextView) view.findViewById(R.id.text11);
+            lastText = (TextView) view.findViewById(R.id.text12);
             if(lastText.getText().equals(locationName))
                 return false;
         }
@@ -135,11 +136,12 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
         if(reuse && lastText != null && lastText.getText().length() == 0) {
             locationItem = (View) lastText.getParent();
         } else {
-            locationItem = inflater.inflate(R.layout.location_by_type_row, null);
+            locationItem = inflater.inflate(R.layout.location_by_people_row, null);
             locationContainer.addView(locationItem);
         }
 
-        final AutoCompleteTextView textView = (AutoCompleteTextView)locationItem.  findViewById(R.id.text11);
+        final AutoCompleteTextView textView = (AutoCompleteTextView)locationItem.
+            findViewById(R.id.text12);
         textView.setText(locationName);
         ArrayAdapter<String> locationsAdapter =
             new ArrayAdapter<String>(activity,
