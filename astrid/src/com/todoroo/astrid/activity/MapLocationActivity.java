@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
-import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
 import com.google.android.maps.GeoPoint;
@@ -102,7 +101,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         /* receiving task from the previous activity and extracting the tags from it */
         Bundle b = getIntent().getExtras();
         mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
-        locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
         TextView title = (TextView)findViewById(R.id.takeTitle);
         title.setText(mCurrentTask.getValue(Task.TITLE));
         /* determine the central point in the map to be current location of the device */

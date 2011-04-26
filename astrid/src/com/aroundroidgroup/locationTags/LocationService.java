@@ -168,6 +168,24 @@ public class LocationService {
         }
     }
 
+    public boolean isLocationTask(long id) {
+        return contaionsLocationsByType(id) ||
+            containsLocationsByPeople(id) ||
+            containsLocationsBySpecific(id);
+    }
+
+    public boolean containsLocationsBySpecific(long id) {
+        return getLocationsBySpecificAsArray(id).length>0;
+    }
+
+    public boolean containsLocationsByPeople(long id) {
+        return getLocationsByPeopleAsArray(id).length>0;
+    }
+
+    public boolean contaionsLocationsByType(long id) {
+        return getLocationsByTypeAsArray(id).length>0;
+    }
+
 
 
 }
