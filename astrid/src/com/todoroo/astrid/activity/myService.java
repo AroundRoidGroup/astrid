@@ -160,6 +160,7 @@ public class myService extends Service{
 
     public static boolean restartClient(){
         //TODO : work
+
         if (cft==null || !cft.isAlive()){
             return false;
         }
