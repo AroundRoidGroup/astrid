@@ -131,6 +131,8 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
                 return false;
         }
 
+
+
         final View locationItem;
         if(reuse && lastText != null && lastText.getText().length() == 0) {
             locationItem = (View) lastText.getParent();
@@ -138,7 +140,10 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
             locationItem = inflater.inflate(R.layout.location_by_type_row, null);
             locationContainer.addView(locationItem);
         }
-
+        if (locationContainer.getChildCount()>2){
+            View oneBeforeLastView = locationContainer.getChildAt(locationContainer.getChildCount()-2);
+            oneBeforeLastView.findViewById(R.id.button2).setVisibility(View.GONE);
+        }
         final AutoCompleteTextView textView = (AutoCompleteTextView)locationItem.  findViewById(R.id.text11);
         textView.setText(locationName);
         ArrayAdapter<String> locationsAdapter =
@@ -195,10 +200,10 @@ public class LocationByTypeControlSet implements TaskEditControlSet{
                     oneBeforeLastView.findViewById(R.id.button2).setVisibility(View.VISIBLE);
                 }
 
-                    if(locationContainer.getChildCount() > 1)
-                        locationContainer.removeView(locationItem);
-                    else
-                        textView.setText(""); //$NON-NLS-1$
+                if(locationContainer.getChildCount() > 1)
+                    locationContainer.removeView(locationItem);
+                else
+                    textView.setText(""); //$NON-NLS-1$
             }
         });
 

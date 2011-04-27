@@ -30,7 +30,7 @@ public class PeopleLocationService {
         TodorooCursor<Metadata> cursor = (new MetadataDao()).query(
                 Query.select(Metadata.PROPERTIES).where(
                         MetadataCriteria.byTaskAndwithKey(taskId,
-                                LocationFields.METADATA_KEY)));
+                                LocationFields.METADATA_KEY_BY_PEOPLE)));
         Metadata metadata = new Metadata();
         try {
             cursor.moveToFirst();

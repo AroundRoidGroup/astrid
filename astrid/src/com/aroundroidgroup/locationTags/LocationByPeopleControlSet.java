@@ -85,7 +85,7 @@ public class LocationByPeopleControlSet implements TaskEditControlSet{
             TodorooCursor<Metadata> cursor = locationService.getLocationsByPeople(task.getId());
             try {
                 for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                    String location = cursor.get(LocationFields.locationsType);
+                    String location = cursor.get(LocationFields.peopleLocations);
                     addLocation(location, true);
                 }
             } finally {

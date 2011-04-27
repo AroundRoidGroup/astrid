@@ -6,8 +6,17 @@ import com.todoroo.astrid.data.Metadata;
 
 public class LocationFields {
 
-    /** metadata key */
-    public static final String METADATA_KEY = "location";  //$NON-NLS-1$
+    /** metadata key for locations by type */
+    public static final String METADATA_KEY_BY_TYPE = "locationByType";  //$NON-NLS-1$
+
+    /** metadata key for locations by specific */
+    public static final String METADATA_KEY_BY_SPECIFIC = "locationBySpecific";  //$NON-NLS-1$
+
+    /** metadata key for locations by people */
+    public static final String METADATA_KEY_BY_PEOPLE = "locationByPeople";  //$NON-NLS-1$
+
+    /** metadata key for the radius parameters */
+    public static final String RADIUS_METADATA_KEY = "radius";  //$NON-NLS-1$
 
     /** locations by kind of a location. i.e. Bank, of Pharmacy */
     public static final StringProperty locationsType = new StringProperty(Metadata.TABLE,

@@ -20,20 +20,23 @@ public class LocationService {
 
 
     public String[] getLocationsByTypeAsArray(long taskID){
-        return getLocationPropertyAsArray(taskID,LocationFields.locationsType);
+        return getLocationPropertyAsArray(taskID,LocationFields.locationsType,
+                LocationFields.METADATA_KEY_BY_TYPE);
     }
 
     public String[] getLocationsByPeopleAsArray(long taskID){
-        return getLocationPropertyAsArray(taskID,LocationFields.peopleLocations);
+        return getLocationPropertyAsArray(taskID,LocationFields.peopleLocations,
+                LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
     public String[] getLocationsBySpecificAsArray(long taskID){
-        return getLocationPropertyAsArray(taskID,LocationFields.specificLocations);
+        return getLocationPropertyAsArray(taskID,LocationFields.specificLocations,
+                LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
-    private String[] getLocationPropertyAsArray(long taskId, StringProperty prop){
+    private String[] getLocationPropertyAsArray(long taskId, StringProperty prop, String KEY){
 
-        TodorooCursor<Metadata> cursor = getLocations(taskId, prop);
+        TodorooCursor<Metadata> cursor = getLocations(taskId, prop, KEY);
 
         try {
             String[] array = new String[cursor.getCount()];
@@ -48,66 +51,75 @@ public class LocationService {
     }
 
     public boolean syncLocationsByType(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.locationsType);
+        return syncLocations(taskId, locations, LocationFields.locationsType,
+                LocationFields.METADATA_KEY_BY_TYPE);
     }
 
     public boolean syncLocationsBySpecific(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.specificLocations);
+        return syncLocations(taskId, locations, LocationFields.specificLocations,
+                LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
     public boolean syncLocationsByPeople(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.peopleLocations);
+        return syncLocations(taskId, locations, LocationFields.peopleLocations,
+                LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
-    private boolean syncLocations(long taskId, LinkedHashSet<String> locations,StringProperty prop) {
+    private boolean syncLocations(long taskId, LinkedHashSet<String> locations,StringProperty prop, String KEY) {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
         for(String location : locations) {
             Metadata item = new Metadata();
-            item.setValue(Metadata.KEY, LocationFields.METADATA_KEY);
+            item.setValue(Metadata.KEY, KEY);
             item.setValue(prop, location);
             metadata.add(item);
         }
 
-        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(LocationFields.METADATA_KEY)) > 0;
+        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(KEY)) > 0;
     }
 
     public TodorooCursor<Metadata> getLocationsByType(long taskId){
-        return getLocations(taskId, LocationFields.locationsType);
+        return getLocations(taskId, LocationFields.locationsType,
+                LocationFields.METADATA_KEY_BY_TYPE);
     }
 
     public TodorooCursor<Metadata> getLocationsBySpecific(long taskId){
-        return getLocations(taskId, LocationFields.specificLocations);
+        return getLocations(taskId, LocationFields.specificLocations,
+                LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
     public TodorooCursor<Metadata> getLocationsByPeople(long taskId){
-        return getLocations(taskId, LocationFields.peopleLocations);
+        return getLocations(taskId, LocationFields.peopleLocations,
+                LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
-    private TodorooCursor<Metadata> getLocations(long taskId, StringProperty prop) {
+    private TodorooCursor<Metadata> getLocations(long taskId, StringProperty prop, String KEY) {
         Query query = Query.select(prop).where(Criterion.
-                and(MetadataCriteria.withKey(LocationFields.METADATA_KEY),
+                and(MetadataCriteria.withKey(KEY),
                         MetadataCriteria.byTask(taskId)));
         return new MetadataDao().query(query);//TODO: maybe dont need to create metadatadao every time
     }
 
     public String[] getAllLocationsByType(){
-        return getAllLocations(LocationFields.locationsType);
+        return getAllLocations(LocationFields.locationsType,
+                LocationFields.METADATA_KEY_BY_TYPE);
     }
 
     public String[] getAllLocationsBySpecific(){
-        return getAllLocations(LocationFields.specificLocations);
+        return getAllLocations(LocationFields.specificLocations,
+                LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
     public String[] getAllLocationsByPeople(){
-        return getAllLocations(LocationFields.peopleLocations);
+        return getAllLocations(LocationFields.peopleLocations,
+                LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
-    private String[] getAllLocations(StringProperty prop){
+    private String[] getAllLocations(StringProperty prop, String KEY){
         Query query = Query.select(prop.as(prop.name)).
         join(Join.inner(Task.TABLE, Metadata.TASK.eq(Task.ID))).
-        where(Criterion.and(Criterion.all, MetadataCriteria.withKey(LocationFields.METADATA_KEY)))
+        where(MetadataCriteria.withKey(KEY))
         .groupBy(prop);
         TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
         try {
