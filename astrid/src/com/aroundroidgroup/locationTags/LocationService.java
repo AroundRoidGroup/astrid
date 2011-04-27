@@ -17,7 +17,7 @@ import com.todoroo.astrid.service.MetadataService;
 
 public class LocationService {
 
-
+//TODO : check synchronized??
 
     public String[] getLocationsByTypeAsArray(long taskID){
         return getLocationPropertyAsArray(taskID,LocationFields.locationsType,
