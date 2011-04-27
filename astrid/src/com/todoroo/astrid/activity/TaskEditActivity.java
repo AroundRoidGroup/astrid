@@ -64,21 +64,18 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.aroundroidgroup.locationTags.LocationByPeopleControlSet;
+import com.aroundroidgroup.locationTags.LocationByTypeControlSet;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
-import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
-import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.alarms.AlarmControlSet;
 import com.todoroo.astrid.api.AstridApiConstants;
 import com.todoroo.astrid.dao.Database;
-import com.todoroo.astrid.dao.MetadataDao;
-import com.todoroo.astrid.data.Metadata;
-import com.todoroo.astrid.data.MetadataApiDao.MetadataCriteria;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.gcal.GCalControlSet;
 import com.todoroo.astrid.producteev.ProducteevControlSet;
@@ -251,7 +248,8 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        controls.add(new MytadataControlSet(Metadata.VALUE4, R.id.location));
+        controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
+        controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
@@ -718,48 +716,6 @@ public final class TaskEditActivity extends TabActivity {
         @Override
         public String writeToModel(Task task) {
             task.setValue(property, editText.getText().toString());
-            return null;
-        }
-    }
-
-    /**
-     * Control set for mapping a Metadata Property to an EditText
-     *
-     */
-    public class MytadataControlSet implements TaskEditControlSet {
-        private final EditText editText;
-        private final StringProperty property;
-        private final MetadataDao metadatadao;
-
-        public MytadataControlSet(StringProperty property, int editText) {
-            this.property = property;
-            this.editText = (EditText)findViewById(editText);
-            this.metadatadao = new MetadataDao();
-        }
-
-        @Override
-        public void readFromTask(Task task) {
-            TodorooCursor<Metadata> curser =
-                metadatadao.query(Query.select(property).
-                        where(MetadataCriteria.byTask(task.getId())));
-            if (curser.isAfterLast())
-                return;
-            curser.move(1);
-            editText.setText(curser.get(property));
-        }
-
-        @Override
-        public String writeToModel(Task task) {
-            TodorooCursor<Metadata> curser =
-                metadatadao.query(Query.select(property).
-                        where(MetadataCriteria.byTask(task.getId())));
-            Metadata metadata = new Metadata();
-            metadata.setValue(property, editText.getText().toString());
-            if (curser.isAfterLast()){
-                metadata.setValue(Metadata.TASK, task.getId());
-                metadatadao.createNew(metadata);
-            }else
-                metadatadao.update(Metadata.TASK.eq(task.getId()),metadata);
             return null;
         }
     }

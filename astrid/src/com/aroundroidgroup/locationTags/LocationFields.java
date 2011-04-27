@@ -28,4 +28,7 @@ public class LocationFields {
     /** radius in which we notify about a location, when in driving mode */
     public static final IntegerProperty carRadius = new IntegerProperty(Metadata.TABLE,
             Metadata.VALUE5.name);
+
+    /** delimiter for parsing the location strings */
+    public static final String delimiter = "::"; //$NON-NLS-1$
 }
