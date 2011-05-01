@@ -23,13 +23,6 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.timsu.astrid.R;
-import com.todoroo.andlib.data.TodorooCursor;
-import com.todoroo.andlib.sql.Criterion;
-import com.todoroo.andlib.sql.Query;
-import com.todoroo.astrid.core.SortHelper;
-import com.todoroo.astrid.data.Task;
-import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
-import com.todoroo.astrid.service.TaskService;
 @SuppressWarnings("unused")
 public class MapLocationActivity extends MapActivity {
     public static final String MAP_EXTRA_TASK = "of"; //$NON-NLS-1$
@@ -103,20 +96,20 @@ public class MapLocationActivity extends MapActivity {
 
             /* adding the locations of the specific-locations */
 
-            TaskService taskService = new TaskService();
-            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE, Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(), TaskCriteria.isVisible())).orderBy(SortHelper.defaultTaskOrder()).limit(100));
-            try {
-                Task task = new Task();
-                for (int i = 0 ; i < cursor.getCount() ; i++) {
-                    cursor.moveToNext();
-                    task.readFromCursor(cursor);
-
-                    locationService.syncLocationsBySpecific(task.getId(), new )
-                }
-            }
-            finally {
-                cursor.close();
-            }
+//            TaskService taskService = new TaskService();
+//            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE, Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(), TaskCriteria.isVisible())).orderBy(SortHelper.defaultTaskOrder()).limit(100));
+//            try {
+//                Task task = new Task();
+//                for (int i = 0 ; i < cursor.getCount() ; i++) {
+//                    cursor.moveToNext();
+//                    task.readFromCursor(cursor);
+//
+//                    locationService.syncLocationsBySpecific(task.getId(), new )
+//                }
+//            }
+//            finally {
+//                cursor.close();
+//            }
             tags = locationService.getAllLocationsBySpecific();
             if (tags != null) {
                 for (String tag : tags) {

@@ -1,6 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+	<TextView
+		android:id="@+id/takeTitle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textSize="10pt" />
+	<LinearLayout
+	android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    	<TextView
+    		android:id="@+id/specificTitle"
+    		android:text="@string/specificTitleText"
+    		android:textSize="10pt" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top"/>
+		<EditText
+			android:id="@+id/specificAddress"
+			android:text="@string/specificAddressText"
+			android:textSize="10pt" android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content"/>
+		<Button
+			android:id="@+id/specificButton"
+			android:text="@string/specificButtonText"
+			android:layout_width="wrap_content" android:layout_height="match_parent"/>
+    </LinearLayout>
+   
+	<com.aroundroidgroup.map.AdjustedMap
+		android:id="@+id/mapview" 
+		android:layout_width="fill_parent"
+		android:layout_height="match_parent" 
+		android:clickable="true"
+		android:apiKey="0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w" />
+
 </LinearLayout>

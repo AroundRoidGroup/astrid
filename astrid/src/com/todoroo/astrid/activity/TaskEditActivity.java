@@ -66,6 +66,7 @@ import android.widget.ToggleButton;
 
 import com.aroundroidgroup.locationTags.LocationByPeopleControlSet;
 import com.aroundroidgroup.locationTags.LocationByTypeControlSet;
+import com.aroundroidgroup.map.LocationBySpecificControlSet;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.service.Autowired;
@@ -248,6 +249,7 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
+        controls.add(new LocationBySpecificControlSet(TaskEditActivity.this));
         controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
         controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 

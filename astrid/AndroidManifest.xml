@@ -551,7 +551,8 @@
     <service android:name="com.todoroo.astrid.activity.myService"></service>
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.AccountList"></activity>
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.AppInfo"></activity>
-    
+    <activity android:name="com.todoroo.astrid.activity.SpecificMapLocation"></activity>
+
   </application>
 
 </manifest>
