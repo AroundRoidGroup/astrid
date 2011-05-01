@@ -6,5 +6,10 @@ Shiran Laptop:
 0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA
 Moti's Laptop:
 0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w
-The Boss's computer
+The Boss's computer:
 0opbHcqcBoLpGZ1xLAhmA6hIEbc3VtWiMG_5b6Q
+THE Key From KeyStore (Alias- testingkey):
+FingetPrint:
+23:CE:C7:B6:7E:17:A2:E5:15:A6:7E:3D:1B:ED:39:95
+Key:
+0k9f6DtAnocG50MLmfJvdUuIILNfVfkq_rLcNYA
