@@ -24,6 +24,7 @@ import org.xml.sax.SAXException;
 
 import android.location.Location;
 
+import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.activity.myService;
 
 public class PeopleRequest {
@@ -36,6 +37,7 @@ public class PeopleRequest {
         nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
         nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
         nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
+        nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(DateUtilities.now())));
         return nameValuePairs;
     }
 

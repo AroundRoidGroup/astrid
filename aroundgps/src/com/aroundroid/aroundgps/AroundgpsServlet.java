@@ -21,6 +21,7 @@ public class AroundgpsServlet extends HttpServlet {
 	private final String GPSLon = "GPSLON";
 	private final String USERS = "USERS";
 	private final String DEL = "::";
+	private final String TIMESTAMP = "TIMESTAMP";
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
@@ -55,9 +56,11 @@ public class AroundgpsServlet extends HttpServlet {
 
 		String users = req.getParameter(USERS);
 		String[] usersArr = users.split(DEL);
-
-
-		GPSProps gspP = new GPSProps(user,user.getEmail(), dLon, dLat);
+		
+		String timeStamp = req.getParameter(TIMESTAMP);
+		Long lTimeStamp = Long.parseLong(timeStamp);
+		
+		GPSProps gspP = new GPSProps(user,user.getEmail(), dLon, dLat,lTimeStamp);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
@@ -82,6 +85,7 @@ public class AroundgpsServlet extends HttpServlet {
 			out.println("<Mail>"+ gpsP.getMail() +"</Mail>");
 			out.println("<Latitude>"+ gpsP.getLat() +"</Latitude>");
 			out.println("<Longtitude>"+ gpsP.getLong() +"</Longtitude>");
+			out.println("<TimeStamp>"+ gpsP.getTimeStamp() +"</TimeStamp>");
 		    out.println("</Friend>");
 		}
 
@@ -94,6 +98,7 @@ public class AroundgpsServlet extends HttpServlet {
 			out.println("<Mail>"+ gpsP.getMail() +"</Mail>");
 			out.println("<Latitude>"+ gpsP.getLat() +"</Latitude>");
 			out.println("<Longtitude>"+ gpsP.getLong() +"</Longtitude>");
+			out.println("<TimeStamp>"+ gpsP.getTimeStamp() +"</TimeStamp>");
 			out.println("</You>");
 		}
 		
