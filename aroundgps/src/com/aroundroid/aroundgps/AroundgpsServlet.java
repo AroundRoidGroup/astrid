@@ -14,8 +14,14 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
+import java.util.Date;
+ 
 @SuppressWarnings("serial")
 public class AroundgpsServlet extends HttpServlet {
+	
+	private final Date requestDate = new Date();
+	
+	private final long gpsValidTime = 1000 * 60 * 60 * 24;
 
 	private final String GPSLat = "GPSLAT";
 	private final String GPSLon = "GPSLON";
@@ -30,11 +36,12 @@ public class AroundgpsServlet extends HttpServlet {
 
 	private String buildGetQuery(String[] usersArr){
 		StringBuffer query = new StringBuffer();
-		query.append("select from "+ GPSProps.class.getName()+" where");
+		query.append("select from "+ GPSProps.class.getName()+" where (");
 		for (String user : usersArr){
 			query.append(" mail =='" + user + "' ||");
 		}
-		query.append(" mail =='" + usersArr[0] + "'");
+		query.append(" mail =='" + usersArr[0] + "')");
+		query.append(" && timeStamp > "+(requestDate.getTime() - gpsValidTime));
 		return query.toString();
 	}
 
@@ -58,7 +65,7 @@ public class AroundgpsServlet extends HttpServlet {
 		String[] usersArr = users.split(DEL);
 		
 		String timeStamp = req.getParameter(TIMESTAMP);
-		Long lTimeStamp = Long.parseLong(timeStamp);
+		Long lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());
 		
 		GPSProps gspP = new GPSProps(user,user.getEmail(), dLon, dLat,lTimeStamp);
 
@@ -75,11 +82,7 @@ public class AroundgpsServlet extends HttpServlet {
 		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses  = (List<GPSProps>) pm.newQuery(query).execute();
 
-		/*
-		resp.setContentType("text/plain");
-		resp.getWriter().println("Number Of Users Found = " + gpses.size());
-		*/
-		
+				
 		for(GPSProps gpsP : gpses){
 			out.println("<Friend>");
 			out.println("<Mail>"+ gpsP.getMail() +"</Mail>");
