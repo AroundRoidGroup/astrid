@@ -19,12 +19,6 @@
 		android:id="@+id/mapview" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
-<<<<<<< HEAD
-		android:clickable="true"
-		android:apiKey="0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w" />
-=======
 		android:clickable="false"
 		android:apiKey="0k9f6DtAnocG50MLmfJvdUuIILNfVfkq_rLcNYA" />
->>>>>>> origin/HEAD
-
 </LinearLayout>
