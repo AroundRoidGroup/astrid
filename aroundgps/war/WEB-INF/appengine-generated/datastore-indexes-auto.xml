@@ -1,8 +1,8 @@
-<!-- Indices written at Sun, 1 May 2011 17:20:41 UTC -->
+<!-- Indices written at Sun, 1 May 2011 17:30:12 UTC -->
 
 <datastore-indexes>
 
-    <!-- Used 39 times in query history -->
+    <!-- Used 3 times in query history -->
     <datastore-index kind="GPSProps" ancestor="false" source="auto">
         <property name="mail" direction="asc"/>
         <property name="timeStamp" direction="asc"/>
