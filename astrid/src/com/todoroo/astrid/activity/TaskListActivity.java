@@ -326,7 +326,9 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
     }
 
     private void setUpUiComponents() {
-        ((ImageView)findViewById(R.id.back)).setOnClickListener(new OnClickListener() {
+        ((ImageView)findViewById(R.id.back)).
+        setOnClickListener(
+                new OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(TaskListActivity.this,
                         FilterListActivity.class);

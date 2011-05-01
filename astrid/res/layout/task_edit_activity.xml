@@ -94,6 +94,24 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
               
+      <!-- location by type-->
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TEA_locations_by_type_label"
+        style="@style/TextAppearance.GEN_EditLabel" />
+      <LinearLayout
+        android:id="@+id/locations_by_type_container"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+      <Spinner
+        android:id="@+id/locations_by_type_dropdown"
+        android:paddingBottom="5dip"
+        android:entries="@array/TEA_loading"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+              
       <!-- separator -->
       <View
         android:layout_width="fill_parent"
@@ -237,6 +255,26 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" />
+        
+        <!-- location by people-->
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="notify when near a friend"
+        style="@style/TextAppearance.GEN_EditLabel" />
+      <LinearLayout
+        android:id="@+id/locations_by_people_container"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+      <Spinner
+        android:id="@+id/locations_by_people_dropdown"
+        android:paddingBottom="5dip"
+        android:entries="@array/TEA_loading"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+              
+        
         
       <!-- buttons -->
       <LinearLayout
