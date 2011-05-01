@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
@@ -25,7 +28,8 @@ import com.todoroo.astrid.data.Task;
 
 public class SpecificMapLocation extends MapActivity implements OnZoomListener  {
 
-    public static final String MAP_EXTRA_TASK = "SpecificMapLocation"; //$NON-NLS-1$
+    public static final String SPECIFIC_POINTS = "SpecificMapLocation"; //$NON-NLS-1$
+    public static final String SPECIFIC_POINTS_SECOND = "SpecificMapLocation2"; //$NON-NLS-1$
 
     private final Task mCurrentTask = null;
     //private final Location deviceLocation = null;
@@ -57,7 +61,6 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
         }
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,13 +71,13 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
         mapController = mapView.getController();
 
         /* receiving task from the previous activity and extracting the tags from it */
-//        Bundle b = getIntent().getExtras();
-//        mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
+
         TextView title = (TextView)findViewById(R.id.takeTitle);
         title.setText("Specific Location Activity"); //$NON-NLS-1$
 
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
+
 
         /* determine the central point in the map to be current location of the device */
         if (myService.getLastUserLocation() != null){
@@ -82,11 +85,21 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
             /* Centralizing the map to the last */
             mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
 
+            mapView.getController().setZoom(13);
         }
+        Button b = (Button)findViewById(R.id.specificButton);
+        b.setOnClickListener(new View.OnClickListener() {
 
-        /* showing to the user how many location were found */
-//        EditText tv = (EditText)findViewById(R.id.specificAddress);
-//        tv.setText(itemizedoverlay.size() + " results found !"); //$NON-NLS-1$
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.putExtra(SPECIFIC_POINTS_SECOND, mapView.getAllPoints());
+//                for (String d : mapView.getAllPoints())
+//                    Toast.makeText(SpecificMapLocation.this, d.getX() + " " + d.getY(), Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+                setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
+                SpecificMapLocation.this.finish();
+            }
+        });
     }
 
     public class MapItemizedOverlay extends ItemizedOverlay<OverlayItem> {

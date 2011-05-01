@@ -96,6 +96,15 @@ public class MapLocationActivity extends MapActivity {
 
             /* adding the locations of the specific-locations */
 
+            String[] str = locationService.getAllLocationsBySpecific();
+            if (str != null) {
+                for (String s : str) {
+                    specificOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(s.substring(0, s.indexOf(','))),Double.parseDouble(s.substring(s.indexOf(',') + 1)) )), "bla bla", "lalalal"));
+                    mapOverlays.add(specificOverlay);
+                }
+            }
+
+
 //            TaskService taskService = new TaskService();
 //            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE, Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(), TaskCriteria.isVisible())).orderBy(SortHelper.defaultTaskOrder()).limit(100));
 //            try {

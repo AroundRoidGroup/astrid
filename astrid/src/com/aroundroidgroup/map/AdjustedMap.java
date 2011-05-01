@@ -32,33 +32,41 @@ public class AdjustedMap extends MapView {
     private MapItemizedOverlay specificOverlays;
     private List<Overlay> mapOverlays;
 
+    public String[] getAllPoints() {
+        String[] allPoints = new String[specificOverlays.size()];
+        for (int i = 0 ; i < specificOverlays.size() ; i++) {
+            DPoint d = (Misc.geoToDeg(specificOverlays.getItem(i).getPoint()));
+            allPoints[i] = d.getX() + "," + d.getY();
+        }
+        return allPoints;
+    }
+
     public AdjustedMap(Context context, String apiKey) {
         super(context, apiKey);
         this.context = context;
-        initOverlays();
+        init();
     }
 
     public AdjustedMap(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        initOverlays();
+        init();
     }
 
     public AdjustedMap(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.context = context;
-        initOverlays();
+        init();
     }
 
     public void associateMapWithTask(long taskID) {
         currentTastID = taskID;
     }
 
-    private void initOverlays() {
+    private void init() {
         mapOverlays = getOverlays();
         Drawable drawable = this.getResources().getDrawable(R.drawable.icon_pp);
         specificOverlays = new MapItemizedOverlay(drawable);
-
     }
 
     @Override
@@ -107,6 +115,7 @@ public class AdjustedMap extends MapView {
                         x.syncLocationsBySpecific(currentTastID, la);
                        specificOverlays.addOverlay(new OverlayItem(Misc.degToGeo(lastPointedLocation), address, "Specific Location"));
                        mapOverlays.add(specificOverlays);
+                       refresh();
                     }
                 });
                 /* setting the refuse button text and action to be executed if it has been chosen */
@@ -122,6 +131,10 @@ public class AdjustedMap extends MapView {
         }
         return super.dispatchTouchEvent(event);
     }
+
+public void refresh() {
+    this.invalidate();
+}
 
     public DPoint getPointedCoordinates() {
         return lastPointedLocation;
