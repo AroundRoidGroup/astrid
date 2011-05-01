@@ -1,18 +1,20 @@
 package com.todoroo.astrid.activity;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import org.json.JSONException;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ZoomButtonsController.OnZoomListener;
 
+import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.PlacesLocations;
+import com.aroundroidgroup.map.placeInfo;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -21,159 +23,132 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.timsu.astrid.R;
+import com.todoroo.andlib.data.TodorooCursor;
+import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Query;
+import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.data.Task;
-
-
-public class MapLocationActivity extends MapActivity implements OnZoomListener  {
-
-    public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
-
-    private Task mCurrentTask = null;
-    //private final Location deviceLocation = null;
+import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
+import com.todoroo.astrid.service.TaskService;
+@SuppressWarnings("unused")
+public class MapLocationActivity extends MapActivity {
+    public static final String MAP_EXTRA_TASK = "of"; //$NON-NLS-1$
+    private final String TAG = "mapFilterActivity"; //$NON-NLS-1$
+    private MapView map;
     private MapController mapController;
-    private MapView mapView;
-    private HelloItemizedOverlay itemizedoverlay;
+    private MapItemizedOverlay kindOverlay;
+    private MapItemizedOverlay specificOverlay;
+    private MapItemizedOverlay peopleOverlay;
     private List<Overlay> mapOverlays;
-    private String[] locationTags;
-    /** Called when the activity is first created. */
-    @Override
-    protected boolean isRouteDisplayed() {
-        return false;
-    }
+    private String[] tags;
+    private final LocationService locationService = new LocationService();
 
-    private double getParameterizedRadius() {
-        /* consider using speed */
-        double radius = 1000;
-        int zoomLevel = mapView.getZoomLevel();
-        return radius;
-    }
+    private static final int KIND = 1;
+    private static final int SPECIFIC = 2;
+    private static final int PEOPLE = 3;
 
-    public void onZoom(boolean zoomIn) {
-        /* just for checking */
-        mapController.setZoom(1);
-        removeFromMap();
-        addToMap();
-    }
-
-    private void removeFromMap() {
-        mapOverlays.clear();
-    }
-
-    private void addToMap() {
-        DPoint placeCoord = null;
-        Map<String, String> places;
+    private void addToMap(List<placeInfo> locations) {
         GeoPoint geoP;
-        String s = "";
-        /**for (String kind : locationTags) {
-            s += kind + ": ";
-            places = Misc.getPlaces(kind, getParameterizedRadius(), myService.getLastUserLocation(), 5);
-            s += places.size() + " result found.\n";
-            if (places != null) {
-                for (Map.Entry<String, String> p : places.entrySet()) {
-                    try {
-                        placeCoord = Misc.getCoords(p.getValue());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if (placeCoord != null) {
-                        geoP = degToGeo(placeCoord);
-                        itemizedoverlay.addOverlay(new OverlayItem(geoP, kind,  p.getKey()));
-                        mapOverlays.add(itemizedoverlay);
-                    }
+        for (placeInfo loc : locations) {
+            geoP = Misc.degToGeo(new DPoint(loc.getLat(), loc.getLng()));
+            kindOverlay.addOverlay(new OverlayItem(geoP, loc.getStreetAddress(), loc.getTitle()));
+            mapOverlays.add(kindOverlay);
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.map_filter_activity);
+
+        map = (MapView) findViewById(R.id.mapview);
+
+        mapController = map.getController();
+
+        if (myService.getLastUserLocation() != null){
+
+            map.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+            /* enable zoom option */
+            map.setBuiltInZoomControls(true);
+
+            mapOverlays = map.getOverlays();
+
+            Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
+            kindOverlay = new MapItemizedOverlay(drawable);
+
+            Drawable drawable2 = this.getResources().getDrawable(R.drawable.icon_pp);
+            specificOverlay = new MapItemizedOverlay(drawable2);
+
+            Drawable drawable3 = this.getResources().getDrawable(R.drawable.notif_pink_alarm);
+            peopleOverlay = new MapItemizedOverlay(drawable3);
+
+            mapController.setZoom(13);
+
+            /* adding the locations of the kind-location */
+
+            tags = locationService.getAllLocationsByType();
+            PlacesLocations pl = null;
+            for (String tag : tags) {
+                try {
+                    pl = new PlacesLocations(tag, myService.getLastUserLocation());
+                    addToMap(pl.getPlaces());
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
-            TextView results = (TextView)findViewById(R.id.searchResults);
-            results.setText(s.substring(0, s.length() - 1));
-        }*/
-    }
 
+            /* adding the locations of the specific-locations */
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_main);
+            TaskService taskService = new TaskService();
+            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE, Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(), TaskCriteria.isVisible())).orderBy(SortHelper.defaultTaskOrder()).limit(100));
+            try {
+                Task task = new Task();
+                for (int i = 0 ; i < cursor.getCount() ; i++) {
+                    cursor.moveToNext();
+                    task.readFromCursor(cursor);
 
-        //deviceLocation = myService.getLastUserLocation();
-        mapView = (MapView) findViewById(R.id.mapview);
-        mapController = mapView.getController();
-        /* receiving task from the previous activity and extracting the tags from it */
-        Bundle b = getIntent().getExtras();
-        mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
-        TextView title = (TextView)findViewById(R.id.takeTitle);
-        title.setText(mCurrentTask.getValue(Task.TITLE));
-        /* determine the central point in the map to be current location of the device */
-        if (myService.getLastUserLocation() != null){
-            mapView.getController().setCenter(locToGeo(myService.getLastUserLocation()));
-            /* enable zoom option */
-            mapView.setBuiltInZoomControls(true);
+                    locationService.syncLocationsBySpecific(task.getId(), new )
+                }
+            }
+            finally {
+                cursor.close();
+            }
+            tags = locationService.getAllLocationsBySpecific();
+            if (tags != null) {
+                for (String tag : tags) {
+                    double lat = Double.parseDouble(tag.substring(0, tag.indexOf(',')));
+                    double lng = Double.parseDouble(tag.substring(tag.indexOf(',') + 1));
+                    Toast.makeText(this, lat + " @@ , @@ " + lng, Toast.LENGTH_LONG).show();
+                    //                try {
+                    //                    specificOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(lat, lng)), Geocoding.reverseGeocoding(new DPoint(lat, lng)), "specific"));
+                    //                } catch (IOException e) {
+                    //                    // TODO Auto-generated catch block
+                    //                    e.printStackTrace();
+                    //                } catch (JSONException e) {
+                    //                    // TODO Auto-generated catch block
+                    //                    e.printStackTrace();
+                    //                }
+                    //                mapOverlays.add(specificOverlay);
+                }
+            }
 
-            mapOverlays = mapView.getOverlays();
-            Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
-            itemizedoverlay = new HelloItemizedOverlay(drawable);
-            //mapOverlays.add(itemizedoverlay);
-            addToMap();
-            mapController.setZoom(15);
-            mapView.setClickable(true);
         }
-        else{
-            Toast.makeText(this, "null location", Toast.LENGTH_LONG);
-        }
     }
 
-    private GeoPoint degToGeo(DPoint dp) {
-        return new GeoPoint((int)(dp.getX() * 1000000), (int)(dp.getY() * 1000000));
-    }
-
-    private GeoPoint locToGeo(Location l) {
-        return new GeoPoint((int)(l.getLatitude() * 1000000), (int)(l.getLongitude() * 1000000));
-    }
-
-    /*
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            makeUseOfNewLocation(location);
-        }
-
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-        public void onProviderEnabled(String provider) {    }
-
-        public void onProviderDisabled(String provider) {}
-    };
-    */
-
-    /*
-    private void gpsSetup() {
-        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
-        Location location = locationManager.getLastKnownLocation(provider);
-        makeUseOfNewLocation(location);
-        locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
-    }
-    */
-
-    /*
-    private void makeUseOfNewLocation(Location location) {
-        deviceLocation = location;
-    }
-    */
-
-    public class HelloItemizedOverlay extends ItemizedOverlay<OverlayItem> {
+    public class MapItemizedOverlay extends ItemizedOverlay<OverlayItem> {
         private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
         Context mContext;
 
-        public HelloItemizedOverlay(Drawable defaultMarker) {
+        public MapItemizedOverlay(Drawable defaultMarker) {
             super(boundCenterBottom(defaultMarker));
             // TODO Auto-generated constructor stub
         }
 
-        public HelloItemizedOverlay(Drawable defaultMarker, Context context) {
+        public MapItemizedOverlay(Drawable defaultMarker, Context context) {
             super(defaultMarker);
             mContext = context;
         }
@@ -201,10 +176,12 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         }
     }
 
-
     @Override
-    public void onVisibilityChanged(boolean arg0) {
+    protected boolean isRouteDisplayed() {
         // TODO Auto-generated method stub
-
+        return false;
     }
+
 }
+
+
