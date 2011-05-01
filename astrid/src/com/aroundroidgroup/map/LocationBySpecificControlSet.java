@@ -31,7 +31,10 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
             public void onClick(View v) {
 //                Toast.makeText(LocationBySpecificControlSet.this.activity, "ovedddddddd", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(ContextManager.getContext(), SpecificMapLocation.class);
-                intent.putExtra(SpecificMapLocation.SPECIFIC_POINTS, specificPoints.toArray());
+                String[] sa = new String[specificPoints.size()];
+                for (int i = 0 ; i < specificPoints.size() ; i++)
+                    sa[i] = new String(specificPoints.get(i).getX() + "," + specificPoints.get(i).getY());
+                intent.putExtra(SpecificMapLocation.SPECIFIC_POINTS, sa);
                 LocationBySpecificControlSet.this.activity.startActivityForResult(intent, 1);
             }
         });

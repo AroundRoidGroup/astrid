@@ -70,7 +70,21 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
 
         mapController = mapView.getController();
 
+        Drawable drawable = this.getResources().getDrawable(R.drawable.icon_pp);
+        itemizedoverlay = new MapItemizedOverlay(drawable);
+
+        mapOverlays = mapView.getOverlays();
+
         /* receiving task from the previous activity and extracting the tags from it */
+
+        Bundle bb = getIntent().getExtras();
+        String[] existedSpecificLocations = bb.getStringArray(SPECIFIC_POINTS);
+        for (int i = 0 ; i < existedSpecificLocations.length ; i++) {
+            DPoint d = new DPoint(Double.parseDouble(existedSpecificLocations[i].substring(0, existedSpecificLocations[i].indexOf(','))), Double.parseDouble(existedSpecificLocations[i].substring(existedSpecificLocations[i].indexOf(',') + 1)) );
+            itemizedoverlay.addOverlay(new OverlayItem(Misc.degToGeo(d), "bla", "ofa"));
+            mapOverlays.add(itemizedoverlay);
+        }
+
 
         TextView title = (TextView)findViewById(R.id.takeTitle);
         title.setText("Specific Location Activity"); //$NON-NLS-1$
@@ -88,6 +102,7 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
             mapView.getController().setZoom(13);
         }
         Button b = (Button)findViewById(R.id.specificButton);
+
         b.setOnClickListener(new View.OnClickListener() {
 
             @Override
