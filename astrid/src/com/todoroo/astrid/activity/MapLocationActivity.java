@@ -1,6 +1,5 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
-import com.aroundroidgroup.locationTags.LocationTagService;
 import com.aroundroidgroup.map.DPoint;
-import com.aroundroidgroup.map.Misc;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -67,7 +64,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         Map<String, String> places;
         GeoPoint geoP;
         String s = "";
-        for (String kind : locationTags) {
+        /**for (String kind : locationTags) {
             s += kind + ": ";
             places = Misc.getPlaces(kind, getParameterizedRadius(), myService.getLastUserLocation(), 5);
             s += places.size() + " result found.\n";
@@ -87,7 +84,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             }
             TextView results = (TextView)findViewById(R.id.searchResults);
             results.setText(s.substring(0, s.length() - 1));
-        }
+        }*/
     }
 
 
@@ -102,7 +99,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         /* receiving task from the previous activity and extracting the tags from it */
         Bundle b = getIntent().getExtras();
         mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
-        locationTags = LocationTagService.getLocationTags(mCurrentTask.getId());
         TextView title = (TextView)findViewById(R.id.takeTitle);
         title.setText(mCurrentTask.getValue(Task.TITLE));
         /* determine the central point in the map to be current location of the device */

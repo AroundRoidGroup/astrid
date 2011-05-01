@@ -43,7 +43,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.aroundroidgroup.locationTags.LocationTagService;
+import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -339,7 +339,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         // set mapbutton invisible when there is no @location tag
         final Button mapButton = viewHolder.mapbutton; {
-            if (!LocationTagService.isLocationTask(task.getId())){
+            if (!(new LocationService()).isLocationTask(task.getId())){
                 mapButton.setVisibility(View.INVISIBLE);
             }
             else{

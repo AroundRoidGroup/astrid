@@ -21,10 +21,10 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
-import com.aroundroidgroup.locationTags.LocationTagService;
-import com.aroundroidgroup.locationTags.PeopleLocationService;
+import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
@@ -37,6 +37,7 @@ import com.todoroo.astrid.reminders.Notifications;
 import com.todoroo.astrid.reminders.ReminderService;
 import com.todoroo.astrid.service.TaskService;
 
+
 public class myService extends Service{
     private static Location userLastLocation;
 
@@ -48,6 +49,7 @@ public class myService extends Service{
 
     private final Notifications notificatons = new Notifications();
 
+    private final LocationService locationService = new LocationService();
     @Override
     public void onStart(Intent intent, int startId) {
 
@@ -125,7 +127,7 @@ public class myService extends Service{
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
-                for (String str: LocationTagService.getLocationTags(task.getId()))
+                for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
                     notifyAboutLocation(task,location,str);
             }
         } finally {
@@ -171,6 +173,7 @@ public class myService extends Service{
 
     public static boolean restartClient(){
         //TODO : work
+
         if (cft==null || !cft.isAlive()){
             return false;
         }
@@ -195,7 +198,7 @@ public class myService extends Service{
 
         private final long sleepTime = 1000* 0;
 
-
+        private final LocationService threadLocationService = new LocationService();
 
 
         @SuppressWarnings("null")
@@ -224,7 +227,8 @@ public class myService extends Service{
                         task.readFromCursor(cursor);
                         List<FriendProps> lfp = null;
                         try {
-                            String peopleString = PeopleLocationService.getPeopleToCheckAsString(task.getId());
+                            String peopleString = AroundRoidAppConstants.join(threadLocationService.getLocationsByPeopleAsArray(task.getId())
+                                    ,AroundRoidAppConstants.usersDelimiter);
                             lfp = PeopleRequest.requestPeople(userLastLocation,peopleString);
                         } catch (ClientProtocolException e) {
                             // TODO Auto-generated catch block
