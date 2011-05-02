@@ -61,7 +61,7 @@ public class myService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "The Service was popoed2 ...", Toast.LENGTH_LONG).show();
-        //gpsSetup();
+        gpsSetup();
         return START_STICKY;
     }
     @Override
@@ -137,25 +137,14 @@ public class myService extends Service{
     }
 
 
-    //TODO delte
-    private static long time = DateUtilities.now();
-    private static boolean timeSwitch = false;
 
     private static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
         //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
         float[] arr = new float[3];
         //TODO : check array
 
-        //TODO :change to real
-        if (DateUtilities.now()-time > 1000 * 20){
-            time = DateUtilities.now();
-            timeSwitch = !timeSwitch;
-        }
-        if (timeSwitch)
-            Location.distanceBetween(32.0, 34.0,Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
-        else
-            Location.distanceBetween(0.0, 0.0,Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
-        //Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
+
+        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
         float dist = arr[0];
 
         //distense - 100 kilometers
