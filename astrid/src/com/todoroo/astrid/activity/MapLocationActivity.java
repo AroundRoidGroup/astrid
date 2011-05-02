@@ -108,10 +108,16 @@ public void onCreate(Bundle savedInstanceState) {
     if (people.length > 0) {
         try {
             String cat = AroundRoidAppConstants.join(people, "::");
+            myService.httpLock.lock();
+            try{
             List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
             for (FriendProps f : fp) {
+                Toast.makeText(this, f.getLat() + " " + f.getLon(), Toast.LENGTH_LONG).show();
                 peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));
                 mapOverlays.add(peopleOverlay);
+            }
+            } finally {
+                myService.httpLock.unlock();
             }
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
@@ -126,6 +132,7 @@ public void onCreate(Bundle savedInstanceState) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        mapView.setClickable(true);
     }
 
     /* determine the central point in the map to be current location of the device */
@@ -147,6 +154,8 @@ public void onCreate(Bundle savedInstanceState) {
                 mapOverlays.add(specificOverlay);
                 specificTitleToPresent = true;
             }
+            if (specifics.length > 0)
+                mapView.setClickable(true);
         }
 
 

@@ -2,6 +2,8 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -43,6 +45,8 @@ public class myService extends Service{
 
     private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
+
+    public static Lock httpLock = new ReentrantLock();
 
 
     public final String TAG = "myService";
@@ -245,7 +249,12 @@ public class myService extends Service{
                         try {
                             String peopleString = AroundRoidAppConstants.join(threadLocationService.getLocationsByPeopleAsArray(task.getId())
                                     ,AroundRoidAppConstants.usersDelimiter);
+                            try{
+                            httpLock.lock();
                             lfp = PeopleRequest.requestPeople(userLastLocation,peopleString);
+                            } finally {
+                                httpLock.unlock();
+                            }
                         } catch (ClientProtocolException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
