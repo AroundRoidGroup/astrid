@@ -20,10 +20,7 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
 		android:clickable="false"
-<<<<<<< HEAD
 		android:apiKey="0k9f6DtAnocGE5wRrX9PDhJx6-hKYp8YkXamzlA" />
-=======
-		android:apiKey="0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w" />
->>>>>>> origin/HEAD
+
 
 </LinearLayout>
