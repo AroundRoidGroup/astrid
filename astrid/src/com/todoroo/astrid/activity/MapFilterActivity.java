@@ -88,7 +88,7 @@ public class MapFilterActivity extends MapActivity {
             for (String tag : tags) {
                 try {
                     // TODO change back to GPS coordinates
-                    pl = new PlacesLocations(tag, new DPoint(40.725405, -73.998756));
+                    pl = new PlacesLocations(tag, myService.getLastUserLocation());
                     addToMap(pl.getPlaces());
                 } catch (IOException e) {
                     // TODO Auto-generated catch block

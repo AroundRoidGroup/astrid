@@ -136,10 +136,10 @@ public void onCreate(Bundle savedInstanceState) {
     }
 
     /* determine the central point in the map to be current location of the device */
-//    if (myService.getLastUserLocation() != null){
+    if (myService.getLastUserLocation() != null){
 
         /* Centralizing the map to the last */
-        mapView.getController().setCenter(Misc.degToGeo(new DPoint(40.725405, -73.998756)));
+        mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
 
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
@@ -168,7 +168,7 @@ public void onCreate(Bundle savedInstanceState) {
                 /* running on all the tags (bank, post-office, ATM, etc... */
                 for (int i = 0 ; i < locationTags.length ; i++) {
                     /* initializing the PlacesLocations object with the relevant tag and current location */
-                    places = new PlacesLocations(locationTags[i], new DPoint(40.725405, -73.998756));
+                    places = new PlacesLocations(locationTags[i], myService.getLastUserLocation());
                     /* calling the function, which is responsible adding location to the map, with the */
                     /* all the places obtained from Google Local Search */
                     addToMap(places.getPlaces());
@@ -188,7 +188,7 @@ public void onCreate(Bundle savedInstanceState) {
             /* order to view their names and etc... */
             mapView.setClickable(true);
         }
-//    }
+    }
     /* showing to the user how many location were found */
     TextView tv = (TextView)findViewById(R.id.searchResults);
     if (kindTitleToPresent)
