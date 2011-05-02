@@ -88,7 +88,7 @@ public class AroundgpsServlet extends HttpServlet {
 			out.println("<Mail>"+ gpsP.getMail() +"</Mail>");
 			out.println("<Latitude>"+ gpsP.getLat() +"</Latitude>");
 			out.println("<Longtitude>"+ gpsP.getLong() +"</Longtitude>");
-			out.println("<TimeStamp>"+ gpsP.getTimeStamp() +"</TimeStamp>");
+			out.println("<Timestamp>"+ gpsP.getTimeStamp() +"</Timestamp>");
 		    out.println("</Friend>");
 		}
 
@@ -101,7 +101,7 @@ public class AroundgpsServlet extends HttpServlet {
 			out.println("<Mail>"+ gpsP.getMail() +"</Mail>");
 			out.println("<Latitude>"+ gpsP.getLat() +"</Latitude>");
 			out.println("<Longtitude>"+ gpsP.getLong() +"</Longtitude>");
-			out.println("<TimeStamp>"+ gpsP.getTimeStamp() +"</TimeStamp>");
+			out.println("<Timestamp>"+ gpsP.getTimeStamp() +"</Timestamp>");
 			out.println("</You>");
 		}
 		
