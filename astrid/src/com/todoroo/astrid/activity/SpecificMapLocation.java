@@ -94,13 +94,17 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
 
 
         /* determine the central point in the map to be current location of the device */
-        if (myService.getLastUserLocation() != null){
+        //if (myService.getLastUserLocation() != null){
 
             /* Centralizing the map to the last */
-            mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+            // TODO change back to GPS location
 
-            mapView.getController().setZoom(13);
-        }
+            mapView.getController().setCenter(Misc.degToGeo(new DPoint(40.725405, -73.998756)));
+            //mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+
+
+        //}
+        mapView.getController().setZoom(13);
         Button b = (Button)findViewById(R.id.specificButton);
 
         b.setOnClickListener(new View.OnClickListener() {

@@ -13,8 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.location.Location;
-
 public class PlacesLocations {
 
 	JSONObject json;
@@ -24,10 +22,10 @@ public class PlacesLocations {
 	double lat;
 	double lng;
 
-	public PlacesLocations(String query, Location location) throws IOException, JSONException {
+	public PlacesLocations(String query, DPoint location) throws IOException, JSONException {
 		this.query = query;
-		this.lat = location.getLatitude();
-		this.lng = location.getLongitude();
+		this.lat = location.getX();
+		this.lng = location.getY();
 		url = urlBuilder(query, lat, lng, 0);
 		json = urlToJSONObject(url);
 	}
