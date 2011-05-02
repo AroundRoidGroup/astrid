@@ -1,8 +1,14 @@
 package com.todoroo.astrid.activity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.http.client.ClientProtocolException;
+import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -12,7 +18,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
+import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
+import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
+import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.PlacesLocations;
+import com.aroundroidgroup.map.placeInfo;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -23,7 +36,6 @@ import com.google.android.maps.OverlayItem;
 import com.timsu.astrid.R;
 import com.todoroo.astrid.data.Task;
 
-
 public class MapLocationActivity extends MapActivity implements OnZoomListener  {
 
     public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
@@ -32,179 +44,200 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     //private final Location deviceLocation = null;
     private MapController mapController;
     private MapView mapView;
-    private HelloItemizedOverlay itemizedoverlay;
+    private MapItemizedOverlay itemizedoverlay;
+    private MapItemizedOverlay specificOverlay;
+    private MapItemizedOverlay peopleOverlay;
     private List<Overlay> mapOverlays;
     private String[] locationTags;
+    private String[] places;
+    private String[] people;
+    private final LocationService locationService = new LocationService();
+    private final int locationCount = 0;
     /** Called when the activity is first created. */
     @Override
     protected boolean isRouteDisplayed() {
         return false;
     }
 
-    private double getParameterizedRadius() {
-        /* consider using speed */
-        double radius = 1000;
-        int zoomLevel = mapView.getZoomLevel();
-        return radius;
-    }
-
     public void onZoom(boolean zoomIn) {
         /* just for checking */
         mapController.setZoom(1);
-        removeFromMap();
-        addToMap();
+        Toast.makeText(this, "did zoom", Toast.LENGTH_LONG).show();
     }
 
-    private void removeFromMap() {
-        mapOverlays.clear();
-    }
-
-    private void addToMap() {
-        DPoint placeCoord = null;
-        Map<String, String> places;
+    private void addToMap(List<placeInfo> locations) {
         GeoPoint geoP;
-        String s = "";
-        /**for (String kind : locationTags) {
-            s += kind + ": ";
-            places = Misc.getPlaces(kind, getParameterizedRadius(), myService.getLastUserLocation(), 5);
-            s += places.size() + " result found.\n";
-            if (places != null) {
-                for (Map.Entry<String, String> p : places.entrySet()) {
-                    try {
-                        placeCoord = Misc.getCoords(p.getValue());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if (placeCoord != null) {
-                        geoP = degToGeo(placeCoord);
-                        itemizedoverlay.addOverlay(new OverlayItem(geoP, kind,  p.getKey()));
-                        mapOverlays.add(itemizedoverlay);
-                    }
-                }
-            }
-            TextView results = (TextView)findViewById(R.id.searchResults);
-            results.setText(s.substring(0, s.length() - 1));
-        }*/
+        for (placeInfo loc : locations) {
+            geoP = Misc.degToGeo(new DPoint(loc.getLat(), loc.getLng()));
+            itemizedoverlay.addOverlay(new OverlayItem(geoP, loc.getStreetAddress(), loc.getTitle()));
+            mapOverlays.add(itemizedoverlay);
+        }
     }
 
+@Override
+public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.map_main);
+    boolean specificTitleToPresent = false;
+    boolean kindTitleToPresent = false;
+    //deviceLocation = myService.getLastUserLocation();
+    mapView = (MapView) findViewById(R.id.mapview);
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_main);
+    mapController = mapView.getController();
+    /* receiving task from the previous activity and extracting the tags from it */
+    Bundle b = getIntent().getExtras();
+    mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
+    TextView title = (TextView)findViewById(R.id.takeTitle);
+    title.setText(mCurrentTask.getValue(Task.TITLE));
 
-        //deviceLocation = myService.getLastUserLocation();
-        mapView = (MapView) findViewById(R.id.mapview);
-        mapController = mapView.getController();
-        /* receiving task from the previous activity and extracting the tags from it */
-        Bundle b = getIntent().getExtras();
-        mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
-        TextView title = (TextView)findViewById(R.id.takeTitle);
-        title.setText(mCurrentTask.getValue(Task.TITLE));
-        /* determine the central point in the map to be current location of the device */
-        if (myService.getLastUserLocation() != null){
-            mapView.getController().setCenter(locToGeo(myService.getLastUserLocation()));
-            /* enable zoom option */
-            mapView.setBuiltInZoomControls(true);
+    /* setting up the overlay system which will allow us to add drawable object that will mark */
+    /* LocationsByType and/or SpecificLocation and/or People */
+    mapOverlays = mapView.getOverlays();
+    Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
+    itemizedoverlay = new MapItemizedOverlay(drawable);
 
-            mapOverlays = mapView.getOverlays();
-            Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
-            itemizedoverlay = new HelloItemizedOverlay(drawable);
-            //mapOverlays.add(itemizedoverlay);
-            addToMap();
-            mapController.setZoom(15);
+    Drawable drawable2 = this.getResources().getDrawable(R.drawable.icon_pp);
+    specificOverlay = new MapItemizedOverlay(drawable2);
+
+    Drawable drawable3 = this.getResources().getDrawable(R.drawable.icon_producteev);
+    peopleOverlay = new MapItemizedOverlay(drawable3);
+
+
+    /* adding people that are related to the task */
+    people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
+    if (people.length > 0) {
+        try {
+            String cat = AroundRoidAppConstants.join(people, "::");
+            myService.httpLock.lock();
+            try{
+            List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
+            for (FriendProps f : fp) {
+                Toast.makeText(this, f.getLat() + " " + f.getLon(), Toast.LENGTH_LONG).show();
+                peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));
+                mapOverlays.add(peopleOverlay);
+            }
+            } finally {
+                myService.httpLock.unlock();
+            }
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        mapView.setClickable(true);
+    }
+
+    /* determine the central point in the map to be current location of the device */
+    if (myService.getLastUserLocation() != null){
+
+        /* Centralizing the map to the last */
+        mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+
+        /* enable zoom option */
+        mapView.setBuiltInZoomControls(true);
+
+
+
+        String[] specifics = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
+        if (specifics != null) {
+            for (int i = 0 ; i < specifics.length ; i++) {
+                DPoint d = new DPoint(Double.parseDouble(specifics[i].substring(0, specifics[i].indexOf(','))), Double.parseDouble(specifics[i].substring(specifics[i].indexOf(',') + 1)));
+                specificOverlay.addOverlay(new OverlayItem(Misc.degToGeo(d), "specific location", "specific location"));
+                mapOverlays.add(specificOverlay);
+                specificTitleToPresent = true;
+            }
+            if (specifics.length > 0)
+                mapView.setClickable(true);
+        }
+
+
+        /* if the task is location-based, the following code will add the locations to the map */
+        locationTags = locationService.getLocationsByTypeAsArray(mCurrentTask.getId());
+        if (locationTags.length > 0) {
+            kindTitleToPresent = true;
+            try {
+                PlacesLocations places;
+                /* running on all the tags (bank, post-office, ATM, etc... */
+                for (int i = 0 ; i < locationTags.length ; i++) {
+                    /* initializing the PlacesLocations object with the relevant tag and current location */
+                    places = new PlacesLocations(locationTags[i], myService.getLastUserLocation());
+                    /* calling the function, which is responsible adding location to the map, with the */
+                    /* all the places obtained from Google Local Search */
+                    addToMap(places.getPlaces());
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            /* zooming-in for a better view on the results */
+            mapController.setZoom(12);
+
+            /* allowing the user to act with the map, including tapping on the locations that were found in */
+            /* order to view their names and etc... */
             mapView.setClickable(true);
         }
-        else{
-            Toast.makeText(this, "null location", Toast.LENGTH_LONG);
-        }
+    }
+    /* showing to the user how many location were found */
+    TextView tv = (TextView)findViewById(R.id.searchResults);
+    if (kindTitleToPresent)
+        tv.setText(itemizedoverlay.size() + " results found !");
+    if (specificTitleToPresent)
+        tv.setText(tv.getText() + " " + specificOverlay.size() + " specifics found !");
+}
+
+public class MapItemizedOverlay extends ItemizedOverlay<OverlayItem> {
+    private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+    Context mContext;
+
+    public MapItemizedOverlay(Drawable defaultMarker) {
+        super(boundCenterBottom(defaultMarker));
+        // TODO Auto-generated constructor stub
     }
 
-    private GeoPoint degToGeo(DPoint dp) {
-        return new GeoPoint((int)(dp.getX() * 1000000), (int)(dp.getY() * 1000000));
+    public MapItemizedOverlay(Drawable defaultMarker, Context context) {
+        super(defaultMarker);
+        mContext = context;
     }
-
-    private GeoPoint locToGeo(Location l) {
-        return new GeoPoint((int)(l.getLatitude() * 1000000), (int)(l.getLongitude() * 1000000));
-    }
-
-    /*
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            makeUseOfNewLocation(location);
-        }
-
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-        public void onProviderEnabled(String provider) {    }
-
-        public void onProviderDisabled(String provider) {}
-    };
-    */
-
-    /*
-    private void gpsSetup() {
-        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
-        Location location = locationManager.getLastKnownLocation(provider);
-        makeUseOfNewLocation(location);
-        locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
-    }
-    */
-
-    /*
-    private void makeUseOfNewLocation(Location location) {
-        deviceLocation = location;
-    }
-    */
-
-    public class HelloItemizedOverlay extends ItemizedOverlay<OverlayItem> {
-        private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-        Context mContext;
-
-        public HelloItemizedOverlay(Drawable defaultMarker) {
-            super(boundCenterBottom(defaultMarker));
-            // TODO Auto-generated constructor stub
-        }
-
-        public HelloItemizedOverlay(Drawable defaultMarker, Context context) {
-            super(defaultMarker);
-            mContext = context;
-        }
-
-        @Override
-        protected boolean onTap(int index) {
-            OverlayItem item = mOverlays.get(index);
-            Toast.makeText(MapLocationActivity.this, item.getSnippet(), Toast.LENGTH_LONG).show();
-            return true;
-        }
-
-        @Override
-        protected OverlayItem createItem(int i) {
-            return mOverlays.get(i);
-        }
-
-        @Override
-        public int size() {
-            return mOverlays.size();
-        }
-
-        public void addOverlay(OverlayItem overlay) {
-            mOverlays.add(overlay);
-            populate();
-        }
-    }
-
 
     @Override
-    public void onVisibilityChanged(boolean arg0) {
-        // TODO Auto-generated method stub
-
+    protected boolean onTap(int index) {
+        OverlayItem item = mOverlays.get(index);
+        Toast.makeText(MapLocationActivity.this, item.getSnippet(), Toast.LENGTH_LONG).show();
+        return true;
     }
+
+    @Override
+    protected OverlayItem createItem(int i) {
+        return mOverlays.get(i);
+    }
+
+    @Override
+    public int size() {
+        return mOverlays.size();
+    }
+
+    public void addOverlay(OverlayItem overlay) {
+        mOverlays.add(overlay);
+        populate();
+    }
+}
+
+
+@Override
+public void onVisibilityChanged(boolean arg0) {
+    // TODO Auto-generated method stub
+
+}
 }

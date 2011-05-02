@@ -17,6 +17,12 @@
     
   <!-- =================================== Location By Type Edit Controls == -->
 
+
+  <!-- Location by specific label -->
+   	<string name="text_specific_button">Add Specific Location</string>
+
+
+
   <!-- Location by type label -->
   <string name="TEA_locations_by_type_label">By locations:</string>
   

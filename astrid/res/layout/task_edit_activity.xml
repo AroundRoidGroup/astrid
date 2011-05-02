@@ -93,7 +93,8 @@
         android:entries="@array/TEA_loading"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
-              
+           
+
       <!-- location by type-->
       <TextView
         android:layout_width="wrap_content"
@@ -111,6 +112,33 @@
         android:entries="@array/TEA_loading"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
+         
+             
+     <!-- location by specific-->
+    <LinearLayout
+        android:id="@+id/location_by_specific"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        
+        <Button 
+        	android:id="@+id/location_by_specific_button"
+        	android:layout_width="fill_parent" 
+      		android:layout_height="wrap_content"
+   		    android:layout_weight="1"
+        	
+        	android:text="@string/text_specific_button"
+        	/>
+        
+    </LinearLayout>  
+     
+         
+         
+         
+         
+         
+         
               
       <!-- separator -->
       <View
@@ -118,7 +146,7 @@
         android:layout_height="1dip"
         android:padding="5dip"
         android:background="@android:drawable/divider_horizontal_dark" />
-              
+    
       <!-- notes -->
       <TextView android:id="@+id/notes_label"
         android:paddingTop="5dip" 
@@ -130,6 +158,7 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
+        
 	      <!-- Voice Add Note Button -->
 	      <ImageButton android:id="@+id/voiceAddNoteButton"
 	          android:layout_width="wrap_content"

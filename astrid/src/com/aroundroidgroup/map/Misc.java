@@ -20,6 +20,8 @@ import org.xml.sax.InputSource;
 
 import android.location.Location;
 
+import com.google.android.maps.GeoPoint;
+
 public class Misc {
 
     //static Location deviceLocation = null;
@@ -127,40 +129,17 @@ public class Misc {
 		return points;
 	}
 
-	/*
-	private static final LocationListener locationListener = new LocationListener() {
-	    public void onLocationChanged(Location location) {
-	        deviceLocation = location;
-	    }
-
-
-	    public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-	    public void onProviderEnabled(String provider) {    }
-
-	    public void onProviderDisabled(String provider) {}
-	};
-	*/
-
-	/*
-	public static void gpsSetup(Context context) {
-	    LocationManager locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
-	    Criteria criteria = new Criteria();
-	    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-	    criteria.setAltitudeRequired(false);
-	    criteria.setBearingRequired(false);
-	    criteria.setCostAllowed(true);
-	    criteria.setPowerRequirement(Criteria.POWER_LOW);
-	    String provider = locationManager.getBestProvider(criteria, true);
-	    Location location = locationManager.getLastKnownLocation(provider);
-	    locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
+	public static GeoPoint degToGeo(DPoint dp) {
+	    return new GeoPoint((int)(dp.getX() * 1000000), (int)(dp.getY() * 1000000));
 	}
-	*/
 
-	/*
-	public static Location getDeviceLocation() {
-	    return deviceLocation;
+	public static GeoPoint locToGeo(Location l) {
+	    return new GeoPoint((int)(l.getLatitude() * 1000000), (int)(l.getLongitude() * 1000000));
 	}
-	*/
+
+	public static DPoint geoToDeg(GeoPoint gp) {
+	    return new DPoint((double)gp.getLatitudeE6() / 1000000, (double)gp.getLongitudeE6() / 1000000);
+
+	}
 
 }
