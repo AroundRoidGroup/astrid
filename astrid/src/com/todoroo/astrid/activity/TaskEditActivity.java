@@ -647,7 +647,6 @@ public final class TaskEditActivity extends TabActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (resultCode == SPECIFIC_LOCATION_MAP_RESULT_CODE) {
-            Toast.makeText(this, "lala", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             Bundle b = data.getExtras();
             DPoint[] allSpecific = null;
             if (b != null) {
@@ -656,10 +655,7 @@ public final class TaskEditActivity extends TabActivity {
                for (int i = 0 ; i < sa.length ; i++)
                    allSpecific[i] = new DPoint(Double.parseDouble(sa[i].substring(0, sa[i].indexOf(','))), Double.parseDouble(sa[i].substring(sa[i].indexOf(',') + 1)));
             }
-
-                Toast.makeText(this, "you added " + allSpecific.length + " specific points!!", Toast.LENGTH_LONG).show();
-
-                specificCS.updateSpecificPoints(allSpecific);
+            specificCS.updateSpecificPoints(allSpecific);
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }

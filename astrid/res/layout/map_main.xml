@@ -15,7 +15,7 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:textSize="8pt"/>
-	<com.aroundroidgroup.map.AdjustedMap
+	<com.google.android.maps.MapView
 		android:id="@+id/mapview" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 

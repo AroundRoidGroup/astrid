@@ -4,17 +4,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
+import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
+import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
-import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.PlacesLocations;
@@ -23,6 +30,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.timsu.astrid.R;
@@ -35,9 +43,10 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private Task mCurrentTask = null;
     //private final Location deviceLocation = null;
     private MapController mapController;
-    private AdjustedMap mapView;
+    private MapView mapView;
     private MapItemizedOverlay itemizedoverlay;
     private MapItemizedOverlay specificOverlay;
+    private MapItemizedOverlay peopleOverlay;
     private List<Overlay> mapOverlays;
     private String[] locationTags;
     private String[] places;
@@ -72,7 +81,7 @@ public void onCreate(Bundle savedInstanceState) {
     boolean specificTitleToPresent = false;
     boolean kindTitleToPresent = false;
     //deviceLocation = myService.getLastUserLocation();
-    mapView = (AdjustedMap) findViewById(R.id.mapview);
+    mapView = (MapView) findViewById(R.id.mapview);
 
     mapController = mapView.getController();
     /* receiving task from the previous activity and extracting the tags from it */
@@ -81,15 +90,43 @@ public void onCreate(Bundle savedInstanceState) {
     TextView title = (TextView)findViewById(R.id.takeTitle);
     title.setText(mCurrentTask.getValue(Task.TITLE));
 
+    /* setting up the overlay system which will allow us to add drawable object that will mark */
+    /* LocationsByType and/or SpecificLocation and/or People */
+    mapOverlays = mapView.getOverlays();
+    Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
+    itemizedoverlay = new MapItemizedOverlay(drawable);
+
+    Drawable drawable2 = this.getResources().getDrawable(R.drawable.icon_pp);
+    specificOverlay = new MapItemizedOverlay(drawable2);
+
+    Drawable drawable3 = this.getResources().getDrawable(R.drawable.icon_producteev);
+    peopleOverlay = new MapItemizedOverlay(drawable3);
+
+
     /* adding people that are related to the task */
-//    people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
-//    if (people.length > 0) {
-//        String cat = "";
-//        for (int i = 0 ; i < people.length ; i++)
-//            cat += people[i] + "::";
-//        cat = cat.substring(0, cat.length() - 2);
-//        Toast.makeText(this, cat, Toast.LENGTH_LONG).show();
-//    }
+    people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
+    if (people.length > 0) {
+        try {
+            String cat = AroundRoidAppConstants.join(people, "::");
+            List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
+            for (FriendProps f : fp) {
+                peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));
+                mapOverlays.add(peopleOverlay);
+            }
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     /* determine the central point in the map to be current location of the device */
 //    if (myService.getLastUserLocation() != null){
@@ -100,14 +137,7 @@ public void onCreate(Bundle savedInstanceState) {
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
 
-        /* setting up the overlay system which will allow us to add drawable object that will mark */
-        /* LocationsByType and/or SpecificLocation and/or People */
-        mapOverlays = mapView.getOverlays();
-        Drawable drawable = this.getResources().getDrawable(R.drawable.icon_32);
-        itemizedoverlay = new MapItemizedOverlay(drawable);
 
-        Drawable drawable2 = this.getResources().getDrawable(R.drawable.icon_pp);
-        specificOverlay = new MapItemizedOverlay(drawable2);
 
         String[] specifics = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
         if (specifics != null) {
