@@ -12,6 +12,7 @@
    	<string name="titleHdr">Task Title:</string>
    	<string name="connectPeople">Connect To People Base Reminder!</string>
    	<string name="specificTitleText">Address:</string>
-   	<string name="specificAddressText">Location Address...</string>
-   	<string name="specificButtonText">Find</string>
+   	<string name="specificAddressText">By Address...</string>
+   	<string name="specificButtonText">Quit</string>
+   	<string name="specificAddressButtonText">Add</string>
 </resources>

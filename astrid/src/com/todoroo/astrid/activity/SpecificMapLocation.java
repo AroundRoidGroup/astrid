@@ -1,7 +1,10 @@
 package com.todoroo.astrid.activity;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.json.JSONException;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,12 +12,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Geocoding;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.placeInfo;
 import com.google.android.maps.GeoPoint;
@@ -104,6 +110,9 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
 
 
         //}
+
+        final EditText address = (EditText)findViewById(R.id.specificAddress);
+
         mapView.getController().setZoom(13);
         Button b = (Button)findViewById(R.id.specificButton);
 
@@ -112,11 +121,46 @@ public class SpecificMapLocation extends MapActivity implements OnZoomListener  
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                intent.putExtra(SPECIFIC_POINTS_SECOND, mapView.getAllPoints());
+                String[] classOvelrays = new String[itemizedoverlay.size()];
+                for (int i = 0 ; i < itemizedoverlay.size() ; i++) {
+                    DPoint dd = Misc.geoToDeg(itemizedoverlay.getItem(i).getPoint());
+                    classOvelrays[i] = new String(dd.getX() + "," + dd.getY());
+                }
+                String[] allPointsFromMap = mapView.getAllPoints();
+                String[] alllll = new String[classOvelrays.length + allPointsFromMap.length];
+                for (int i = 0 ; i < classOvelrays.length ; i++)
+                    alllll[i] = classOvelrays[i];
+                for (int i = classOvelrays.length ; i < classOvelrays.length + allPointsFromMap.length ; i++)
+                    alllll[i] = allPointsFromMap[i - classOvelrays.length];
+                intent.putExtra(SPECIFIC_POINTS_SECOND, alllll);
 //                for (String d : mapView.getAllPoints())
 //                    Toast.makeText(SpecificMapLocation.this, d.getX() + " " + d.getY(), Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
                 SpecificMapLocation.this.finish();
+            }
+        });
+
+        Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
+        addressButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                DPoint d = null;
+                try {
+                    d = Geocoding.geocoding(address.getText().toString());
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                if (d != null) {
+                    itemizedoverlay.addOverlay(new OverlayItem(Misc.degToGeo(d), "bla", "ofa"));
+                    mapOverlays.add(itemizedoverlay);
+                    mapView.invalidate();
+                }
+                else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show();
             }
         });
     }
