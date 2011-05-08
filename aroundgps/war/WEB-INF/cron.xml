@@ -2,7 +2,7 @@
 <cronentries>
   <cron>
     <url>/cron/userManager</url>
-    <description>Clearing very old users, send mails to users 1 week before they are cleaned</description>
-    <schedule>every 5 minutes</schedule>
+    <description>Clearing very old users, send mails to users 1 week before they are cleared</description>
+    <schedule>every 12 hours</schedule>
   </cron>
 </cronentries>

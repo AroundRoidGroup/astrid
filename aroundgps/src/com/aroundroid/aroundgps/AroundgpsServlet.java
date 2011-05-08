@@ -20,7 +20,7 @@ import java.util.Date;
 @SuppressWarnings("serial")
 public class AroundgpsServlet extends HttpServlet {
 
-	private final Date requestDate = new Date();
+	private Date requestDate;
 
 	private final long gpsValidTime = 1000 * 60 * 60 * 24;
 
@@ -49,6 +49,8 @@ public class AroundgpsServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
+		requestDate = new Date();
+		//TODO deal with error, make timestamp optional
 
 
 		UserService userService = UserServiceFactory.getUserService();
