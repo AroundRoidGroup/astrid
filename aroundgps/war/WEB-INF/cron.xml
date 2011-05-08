@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/cron/userManager</url>
+    <description>Clearing very old users, send mails to users 1 week before they are cleaned</description>
+    <schedule>every 5 minutes</schedule>
+  </cron>
+</cronentries>
