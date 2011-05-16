@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.todoroo.andlib.utility.DateUtilities;
@@ -24,6 +25,8 @@ public class GPSService extends Service{
 
     private Location userLastLocation = null;
     private final Object userLocationLock = new Object();
+
+    private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
@@ -57,6 +60,7 @@ public class GPSService extends Service{
     public void onCreate() {
         // The service is being created
         refreshData = new DataRefresher();
+        aDba.open();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -138,7 +142,6 @@ public class GPSService extends Service{
 
                 //make userLastLocation null if it is irrelevant because of time
                 Location prevLocation = getUserLastLocation();
-                //TODO check if time is supported
                 if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
                     setUserLastLocation(null);
                 }
