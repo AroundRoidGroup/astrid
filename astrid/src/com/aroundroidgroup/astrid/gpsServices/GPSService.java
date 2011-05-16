@@ -17,7 +17,7 @@ import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.todoroo.andlib.utility.DateUtilities;
 
-public class GPSServices extends Service{
+public class GPSService extends Service{
 
     private DataRefresher refreshData = null;
 
