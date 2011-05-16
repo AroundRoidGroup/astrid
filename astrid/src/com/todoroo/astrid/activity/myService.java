@@ -24,8 +24,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -141,21 +141,7 @@ public class myService extends Service{
     }
 
 
-    private static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
-        //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
-        float[] arr = new float[3];
-        //TODO : check array
 
-        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
-        float dist = arr[0];
-
-        //distance - 100 kilometers
-        if (dist>100*1000)
-            Notifications.cancelLocationNotification(task.getId());
-        else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
-
-    }
 
 
 //    private static boolean isFar(Location myLocation, FriendProps fp) {
@@ -199,6 +185,20 @@ public class myService extends Service{
         return myService.http_client;
     }
 
+    public static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
+        float[] arr = new float[3];
+        //TODO : check array
+
+        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
+        float dist = arr[0];
+
+        //distance - 100 kilometers
+        //TODO change to Task.getRadius
+        if (dist>100*1000)
+            Notifications.cancelLocationNotification(task.getId());
+        else
+            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+    }
 
     protected static class CheckFriendThread extends Thread{
 

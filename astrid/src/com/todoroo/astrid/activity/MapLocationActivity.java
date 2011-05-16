@@ -19,8 +19,8 @@ import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
