@@ -91,68 +91,6 @@ public class PeopleRequest {
         return lfp;
     }
 
-    public static class FriendProps{
 
-        public final static String root = "Friend"; //$NON-NLS-1$
-
-        public final static String[] props = new String[]{"Latitude","Longtitude","Mail"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-
-        private String lat,lon;
-
-        private String mail;
-
-        public String getLat() {
-            return lat;
-        }
-
-        public void setLat(String lat) {
-            this.lat = lat;
-        }
-
-        public String getLon() {
-            return lon;
-        }
-
-        public void setLon(String lon) {
-            this.lon = lon;
-        }
-
-        public String getMail() {
-            return mail;
-        }
-
-        public void setMail(String mail) {
-            this.mail = mail;
-        }
-
-        public FriendProps() {
-            // TODO Auto-generated constructor stub
-        }
-
-        @Override
-        public String toString(){
-            return getMail() + "::" + getLat() + "::" + getLon(); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        public void loadArr (String[] arr){
-            if (arr.length!=props.length){
-                return;
-            }
-            setLat(arr[0]);
-            setLon(arr[1]);
-            setMail(arr[2]);
-        }
-
-        public static List<FriendProps> fromArrList(List<String[]> arrLst){
-            List<FriendProps> fpl = new ArrayList<FriendProps>(arrLst.size());
-            for(String[] arr : arrLst){
-                FriendProps fp = new FriendProps();
-                fp.loadArr(arr);
-                fpl.add(fp);
-            }
-            return fpl;
-        }
-
-    }
 
 }

@@ -132,6 +132,17 @@ public class AroundroidDbAdapter {
     }
 
     /**
+     * Return a Cursor over the list of all people in the database where the mail
+     * @param mail mail
+     * @return Cursor over all people
+     */
+    public Cursor fetchAllMail(String mail) {
+
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,
+                KEY_CONNECTED,KEY_LAT,KEY_LON,KEY_TIME},"mail == "+mail, null, null, null, null);
+    }
+
+    /**
      * Return a Cursor positioned at the people that matches the given rowId
      *
      * @param rowId id of note to retrieve
@@ -153,19 +164,17 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Update the people using the details provided. The people to be updated is
-     * specified using the rowId, and it is altered to use the title and body
-     * values passed in
+     * Update the people using the details provided.
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(long rowId, String lat , String lon , String time) {
+    public boolean updatePeople(String lat , String lon , String time) {
         ContentValues args = new ContentValues();
         args.put(KEY_LAT, lat);
         args.put(KEY_LON, lon);
         args.put(KEY_TIME,time);
 
-        return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
+        return mDb.update(DATABASE_TABLE, args,null, null) > 0;
     }
 
     public void dropPeople(){

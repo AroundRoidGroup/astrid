@@ -6,8 +6,6 @@ import android.accounts.Account;
 import android.content.Context;
 import android.location.Location;
 
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
-
 public class PeopleRequestService {
 
     private final AroundRoidConnectionManager arcm;
@@ -43,7 +41,7 @@ public class PeopleRequestService {
 
     }
 
-    public List<FriendProps> getPeopleLocations(String[] peopleArr, Location l) {
+    public List<FriendProps> getPeopleLocations(String[] peopleArr, Location userLocation) {
         // TODO Auto-generated method stub
         // TODO check if location l is null
         return null;
