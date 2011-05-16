@@ -149,7 +149,7 @@ public class myService extends Service{
         Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
         float dist = arr[0];
 
-        //distense - 100 kilometers
+        //distance - 100 kilometers
         if (dist>100*1000)
             Notifications.cancelLocationNotification(task.getId());
         else

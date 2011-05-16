@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 
 public class AccountList extends ListActivity {
@@ -27,8 +28,12 @@ public class AccountList extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		Account account = (Account)getListView().getItemAtPosition(position);
-		Intent intent = new Intent(this, AppInfo.class);
+		GPSService.account = account;
+		GPSService.connectCount = 1;
+		finish();
+		/*Intent intent = new Intent(this, AppInfo.class);
 		intent.putExtra("account", account);
 		startActivity(intent);
+		*/
 	}
 }

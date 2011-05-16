@@ -2,9 +2,14 @@ package com.aroundroidgroup.astrid.gpsServices;
 
 import java.util.List;
 
+import android.accounts.Account;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
@@ -15,17 +20,17 @@ public class GPSService extends Service{
 
     private DataRefresher refreshData = null;
 
+    private final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+
     private Location userLastLocation = null;
     private final Object userLocationLock = new Object();
 
-    private PeopleRequestService prs = null;
+    private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
-    public PeopleRequestService getPrs() {
-        if (prs==null){
-            prs = PeopleRequestService.getPeopleRequestService();
-        }
-        return prs;
-    }
+    //TODO find a better method for doing this
+    public static Account account = null;
+    public static int connectCount = 0;
+
 
 
     public Location getUserLastLocation(){
@@ -43,6 +48,10 @@ public class GPSService extends Service{
     }
 
     int mStartMode;       // indicates how to behave if the service is killed
+
+    public void startPeopleRequests(Account acc){
+        PeopleRequestService.getPeopleRequestService().connectToService(acc, this);
+    }
 
     @Override
     public void onCreate() {
@@ -80,6 +89,19 @@ public class GPSService extends Service{
         notifyAll();
     }
 
+    private final LocationListener locationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            // Called when a new location is found by the network location provider.
+            //makeUseOfNewLocation(location);
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) { }
+
+        public void onProviderEnabled(String provider) { }
+
+        public void onProviderDisabled(String provider) { }
+    };
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
@@ -107,10 +129,17 @@ public class GPSService extends Service{
                 } catch (InterruptedException e) {
                     break;
                 }
+                if (!prs.isConnected() && connectCount>0){
+                    connectCount--;
+                    startPeopleRequests(account);
+                }
+
+                //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
+
                 //make userLastLocation null if it is irrelevant because of time
                 Location prevLocation = getUserLastLocation();
                 //TODO check if time is supported
-                if (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime){
+                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
                     setUserLastLocation(null);
                 }
 
@@ -127,7 +156,9 @@ public class GPSService extends Service{
 
 
                 //register to radius if needed - will take care of business notifications, and userLastLocation!
-                //HEY !! - specific should by handled by addProximityAlert!
+                //HEY !! - specific should by handled by addProximityAlert!?
+
+                //locationManager.requestLocationUpdates(provider, minTime, minDistance, listener)
 
 
                 //check for friends, regardless of location changed (maybe friend where moved!
@@ -136,7 +167,7 @@ public class GPSService extends Service{
                 Location currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected() && peopleArr.length>0){
-                    List<FriendProps> lfp = prs.updateAboutPeople(peopleArr,currentLocation);
+                    List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
                     pa.updatePeople(lfp);
                     //TODO check if notifications are needed and notify the relevant tasks
                 }
