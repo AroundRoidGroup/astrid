@@ -124,8 +124,6 @@ public class GPSService extends Service{
         public void run() {
             //TODO consider making userLastLocation a database entry
 
-            //adapter to the people database
-            PeopleAdapter pa = new PeopleAdapter();
             //initiate GPS
             while (!toExit){
                 try {
@@ -145,9 +143,6 @@ public class GPSService extends Service{
                 if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
                     setUserLastLocation(null);
                 }
-
-
-                //TODO : check if this values can stay the same if no change to the database was made
 
                 //calculate minimal radius for businesses
                 int minBusiness = 0;
@@ -171,7 +166,10 @@ public class GPSService extends Service{
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected() && peopleArr.length>0){
                     List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
-                    pa.updatePeople(lfp);
+                    for (FriendProps fp : lfp){
+                        aDba.updatePeople(xxx,fp.getLat(),fp.getLon(),timeMisterFreeman);
+                    }
+
                     //TODO check if notifications are needed and notify the relevant tasks
                 }
 
