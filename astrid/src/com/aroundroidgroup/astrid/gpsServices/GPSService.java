@@ -69,6 +69,7 @@ public class GPSService extends Service{
         // The service is being created
         refreshData = new DataRefresher();
         aDba.open();
+        aDba.dropPeople();
         gpsSetup();
     }
     @Override
