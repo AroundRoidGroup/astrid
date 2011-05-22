@@ -25,6 +25,9 @@ import android.widget.Toast;
 public class AroundRoidConnectionManager {
     //TODO : cancel the AppInfo Activity and connect to PeopleRequest in the background
 
+    //TODO fix isconnecting problem when user clicks back / ignore prompted request
+
+
     private Account chosenAccount;
 
     private Context cont;
@@ -111,6 +114,7 @@ public class AroundRoidConnectionManager {
         }
 
     }
+
 
     protected void onGetAuthToken(Bundle bundle) {
         this.lastToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);

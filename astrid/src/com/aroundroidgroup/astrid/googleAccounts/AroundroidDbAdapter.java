@@ -101,8 +101,9 @@ public class AroundroidDbAdapter {
      *
      * @return rowId or -1 if failed
      */
-    public long createPeople(String mail, String connected) {
+    public long createPeople(int key , String mail, String connected) {
         ContentValues initialValues = new ContentValues();
+        initialValues.put(KEY_ROWID, key);
         initialValues.put(KEY_MAIL, mail);
         initialValues.put(KEY_CONNECTED, connected);
 
