@@ -1,22 +1,18 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import android.accounts.Account;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.ContactsContract;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -32,6 +28,9 @@ public class GPSService extends Service{
 
     private final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
+    private final ContactsHelper contactsHelper= new ContactsHelper(getContentResolver());
+
+    private final boolean recommendedFriendsMade = false;
 
     private final LocationService threadLocationService = new LocationService();
 
@@ -143,8 +142,10 @@ public class GPSService extends Service{
                 }
                 if (!prs.isConnected()){
                     if (connectCount>0){
-                    connectCount--;
-                    startPeopleRequests(account);
+                        //TODO stop doesn't really works
+                        prs.stop();
+                        connectCount--;
+                        startPeopleRequests(account);
                     }
                     else if (prs.isOn()){
                         //toast the user that the connection is lost!
@@ -160,6 +161,7 @@ public class GPSService extends Service{
                     setUserLastLocation(null);
                 }
 
+                ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
                 //TODO for now the gps setup in OnCreate must be moved here
                 //calculate minimal radius for businesses
                 int minBusiness = 0;
@@ -171,45 +173,23 @@ public class GPSService extends Service{
                 //register to radius if needed - will take care of business notifications, and userLastLocation!
                 //HEY !! - specific should by handled by addProximityAlert!?
                 //locationManager.requestLocationUpdates(provider, minTime, minDistance, listener)
+                ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
 
-
-                //TODO update all people somehow, in a better way
-
-                //check for friends, regardless of location changed (maybe a friend has moved)!
-                ArrayList<String> al = new ArrayList<String>();
-                Cursor c  = aDba.fetchAllPeople();
-                for (;!c.isAfterLast();c.moveToNext()){
-                    //TODO check how to know column index
-                    al.add(c.getString(1));
-                }
-                String peopleArr[] = al.toArray(new String[al.size()]);
                 Location currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
-                if (currentLocation!=null &&  prs.isConnected() && peopleArr.length>0){
-                    List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
-                    Collections.sort(lfp, FriendProps.getMailComparator());
-                    for (FriendProps fp : lfp){
-                        aDba.updatePeople(fp.getLat(),fp.getLon(),fp.getTime());
+                if (currentLocation!=null &&  prs.isConnected()){
+                    String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+                    if ( peopleArr.length>0){
+                        List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
+                        Collections.sort(lfp, FriendProps.getMailComparator());
+                        for (FriendProps fp : lfp){
+                            aDba.updatePeople(fp.getLat(),fp.getLon(),fp.getTime());
+                        }
+                        Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
                     }
-                    Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
-
                 }
 
-                ContentResolver cr = getContentResolver();
 
-                Cursor emailCur = cr.query(
-                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                        null,null,
-                        new String[]{id}, null);
-                    while (emailCur.moveToNext()) {
-                        // This would allow you get several email addresses
-                            // if the email addresses were stored in an array
-                        String email = emailCur.getString(
-                                      emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                        String emailType = emailCur.getString(
-                                      emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-                    }
-                    emailCur.close();
 
             }
             okDestroy();

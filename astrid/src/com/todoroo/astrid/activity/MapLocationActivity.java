@@ -110,7 +110,7 @@ public void onCreate(Bundle savedInstanceState) {
             String cat = AroundRoidAppConstants.join(people, "::");
             myService.httpLock.lock();
             try{
-            List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
+            List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat,null);
             for (FriendProps f : fp) {
                 Toast.makeText(this, f.getLat() + " " + f.getLon(), Toast.LENGTH_LONG).show();
                 peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));

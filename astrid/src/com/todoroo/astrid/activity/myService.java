@@ -237,7 +237,7 @@ public class myService extends Service{
                                     ,AroundRoidAppConstants.usersDelimiter);
                             try{
                             httpLock.lock();
-                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString);
+                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
                             } finally {
                                 httpLock.unlock();
                             }

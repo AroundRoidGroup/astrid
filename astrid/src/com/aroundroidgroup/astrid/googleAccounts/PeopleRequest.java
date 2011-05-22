@@ -24,34 +24,41 @@ import org.xml.sax.SAXException;
 
 import android.location.Location;
 
-import com.todoroo.andlib.utility.DateUtilities;
-import com.todoroo.astrid.activity.myService;
-
 public class PeopleRequest {
 
     private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-        nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
-        nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
-        //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
-        //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
-        //TODO : go bacj to userLastLocation
+        if (userLocation!=null){
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
+            //TODO : go bacj to userLastLocation
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(userLocation.getTime())));
+        }
+        else{
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0)));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
+            //TODO : go bacj to userLastLocation
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0.0)));
+        }
         nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
-        nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(DateUtilities.now())));
         return nameValuePairs;
     }
 
-    private static InputStream requestToStream(HttpUriRequest hr) throws ClientProtocolException, IOException{
-        HttpResponse result = myService.getHttpClient().execute(hr);
+    private static InputStream requestToStream(HttpUriRequest hr, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+        HttpResponse result = arcm.executeOnHttp(hr);
         InputStream is = result.getEntity().getContent();
         return is;
     }
 
-    public static List<FriendProps> requestPeople(Location userLocation,String people) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(Location userLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation,people)));
-        InputStream is  = requestToStream(http_post);
+        InputStream is  = requestToStream(http_post,arcm);
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();

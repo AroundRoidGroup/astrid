@@ -1,6 +1,12 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
+import java.io.IOException;
 import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.http.client.ClientProtocolException;
+import org.xml.sax.SAXException;
 
 import android.accounts.Account;
 import android.content.Context;
@@ -42,8 +48,27 @@ public class PeopleRequestService {
     }
 
     public List<FriendProps> getPeopleLocations(String[] peopleArr, Location userLocation) {
-        // TODO Auto-generated method stub
         // TODO check if location l is null
+        // TODO not good implementation, cancel PeopleRequest class!
+        String peopleString = AroundRoidAppConstants.join(peopleArr
+                ,AroundRoidAppConstants.usersDelimiter);
+        try {
+            List<FriendProps> lfp = PeopleRequest.requestPeople(userLocation,peopleString, arcm);
+            return lfp;
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.stop();
         return null;
     }
 
@@ -63,6 +88,9 @@ public class PeopleRequestService {
 
     public void stop(){
         setOn(false);
+        if (arcm.isConnected()){
+            arcm.reconnect();
+        }
     }
 
 }
