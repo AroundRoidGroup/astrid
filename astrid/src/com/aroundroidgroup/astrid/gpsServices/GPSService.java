@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.accounts.Account;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -15,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -139,10 +141,16 @@ public class GPSService extends Service{
                 } catch (InterruptedException e) {
                     break;
                 }
-                if (!prs.isConnected() && connectCount>0){
+                if (!prs.isConnected()){
+                    if (connectCount>0){
                     connectCount--;
                     startPeopleRequests(account);
+                    }
+                    else if (prs.isOn()){
+                        //toast the user that the connection is lost!
+                    }
                 }
+
 
                 //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
 
@@ -186,6 +194,23 @@ public class GPSService extends Service{
                     Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
 
                 }
+
+                ContentResolver cr = getContentResolver();
+
+                Cursor emailCur = cr.query(
+                        ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        null,null,
+                        new String[]{id}, null);
+                    while (emailCur.moveToNext()) {
+                        // This would allow you get several email addresses
+                            // if the email addresses were stored in an array
+                        String email = emailCur.getString(
+                                      emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                        String emailType = emailCur.getString(
+                                      emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+                    }
+                    emailCur.close();
+
             }
             okDestroy();
         }
@@ -198,6 +223,7 @@ public class GPSService extends Service{
 
     protected void makeUseOfNewLocation(Location location) {
         setUserLastLocation(location);
+        //TODO deal with business
 
     }
 

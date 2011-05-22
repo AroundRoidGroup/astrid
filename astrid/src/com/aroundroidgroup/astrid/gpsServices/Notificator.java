@@ -33,6 +33,7 @@ public class Notificator {
     }
 
 
+    //assuming lfp is sorted by mail
     public static void notifyAllPeople(Location currentLocation,
             List<FriendProps> lfp, LocationService ls) {
         //notify the tasks
