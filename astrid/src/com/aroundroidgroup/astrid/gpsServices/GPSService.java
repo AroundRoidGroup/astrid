@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -26,11 +27,9 @@ public class GPSService extends Service{
 
     private DataRefresher refreshData = null;
 
-    private final LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    //private final ContactsHelper contactsHelper= new ContactsHelper(getContentResolver());
 
-    private final ContactsHelper contactsHelper= new ContactsHelper(getContentResolver());
-
-    private final boolean recommendedFriendsMade = false;
+    public final String TAG = "GPSService";
 
     private final LocationService threadLocationService = new LocationService();
 
@@ -66,7 +65,17 @@ public class GPSService extends Service{
     }
 
     @Override
+    public void onStart(Intent intent, int startId) {
+
+        // TODO Auto-generated method stub
+        super.onStart(intent, startId);
+        Toast.makeText(this, "OnStart!?!", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
     public void onCreate() {
+        Toast.makeText(this, "OpenedService", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
         aDba.open();
@@ -79,7 +88,7 @@ public class GPSService extends Service{
         if (!refreshData.isAlive()){
             refreshData.start();
         }
-        return mStartMode;
+        return START_STICKY;
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -105,6 +114,7 @@ public class GPSService extends Service{
     }
 
     private void gpsSetup(){
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         criteria.setAltitudeRequired(false);
@@ -120,7 +130,7 @@ public class GPSService extends Service{
 
 
         private final int defaultSleepTime = 1000;
-        private final int defaultLocationInvalidateTime = 1000 * 20;
+        private final int defaultLocationInvalidateTime = 1000 * 60;
 
         private final int sleepTime = defaultSleepTime;
         private final int locationInvalidateTime = defaultLocationInvalidateTime;
@@ -157,8 +167,10 @@ public class GPSService extends Service{
 
                 //make userLastLocation null if it is irrelevant because of time
                 Location prevLocation = getUserLastLocation();
+
+                //TODO find out the date problem
                 if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
-                    setUserLastLocation(null);
+                    //setUserLastLocation(null);
                 }
 
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
@@ -179,12 +191,14 @@ public class GPSService extends Service{
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+                    //TODO add people here
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
                         Collections.sort(lfp, FriendProps.getMailComparator());
                         for (FriendProps fp : lfp){
                             aDba.updatePeople(fp.getLat(),fp.getLon(),fp.getTime());
                         }
+                        //TODO doesnt notify!
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
                     }
                 }

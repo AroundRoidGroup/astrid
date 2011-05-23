@@ -52,6 +52,7 @@ public class AroundgpsServlet extends HttpServlet {
 		requestDate = new Date();
 		//TODO deal with error, make timestamp optional
 
+		//TODO find out why old records not deleted
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();

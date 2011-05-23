@@ -49,13 +49,17 @@ public class ContactsHelper {
                         null,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
                         new String[]{id}, null);
-                while (emailCur.moveToNext()) {
+                boolean googleMail = false;
+                while (emailCur.moveToNext() && ! googleMail) {
                     // This would allow you get several email addresses
                     // if the email addresses were stored in an array
                     String email = emailCur.getString(
                             emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
                     String emailType = emailCur.getString(
                             emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+                    if (email.endsWith("@gmail.com")){
+                        googleMail = true;
+                    }
                 }
                 emailCur.close();
             }
