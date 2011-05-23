@@ -152,6 +152,60 @@ public class LocationService {
         return getLocationsByTypeAsArray(id).length>0;
     }
 
+    public int getCarRadius(long taskId) {
+        Query query = Query.select(LocationFields.carRadius).where(Criterion.
+                and(MetadataCriteria.withKey(LocationFields.CAR_RADIUS_METADATA_KEY),
+                        MetadataCriteria.byTask(taskId)));
+        TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
+        try {
+            if (cursor.getCount()==0)
+                return -1;
+            cursor.moveToNext();
+            String str = cursor.get(LocationFields.carRadius);
+            return str==null?-1:Integer.parseInt(str);
+        } finally {
+            cursor.close();
+        }
+    }
 
+    public int getFootRadius(long taskId) {
+        Query query = Query.select(LocationFields.footRadius).where(Criterion.
+                and(MetadataCriteria.withKey(LocationFields.FOOT_RADIUS_METADATA_KEY),
+                        MetadataCriteria.byTask(taskId)));
+        TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
+        try {
+            if (cursor.getCount()==0)
+                return -1;
+            cursor.moveToNext();
+            String str = cursor.get(LocationFields.footRadius);
+            return str==null?-1:Integer.parseInt(str);
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public boolean syncCarRadius(long taskId, int radius) {
+        MetadataService service = PluginServices.getMetadataService();
+
+        ArrayList<Metadata> metadata = new ArrayList<Metadata>();
+            Metadata item = new Metadata();
+            item.setValue(Metadata.KEY, LocationFields.CAR_RADIUS_METADATA_KEY);
+            item.setValue(LocationFields.carRadius, radius+"");
+            metadata.add(item);
+        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(LocationFields.CAR_RADIUS_METADATA_KEY)) > 0;
+    }
+
+    public boolean syncFootRadius(long taskId, int radius) {
+        MetadataService service = PluginServices.getMetadataService();
+
+        ArrayList<Metadata> metadata = new ArrayList<Metadata>();
+            Metadata item = new Metadata();
+            item.setValue(Metadata.KEY, LocationFields.FOOT_RADIUS_METADATA_KEY);
+            item.setValue(LocationFields.footRadius, radius+"");
+            metadata.add(item);
+
+
+        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(LocationFields.FOOT_RADIUS_METADATA_KEY)) > 0;
+    }
 
 }
