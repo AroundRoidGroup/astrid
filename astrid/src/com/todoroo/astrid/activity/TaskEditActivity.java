@@ -80,6 +80,7 @@ import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.gcal.GCalControlSet;
 import com.todoroo.astrid.producteev.ProducteevControlSet;
 import com.todoroo.astrid.producteev.ProducteevUtilities;
+import com.todoroo.astrid.radius.RadiusControlSet;
 import com.todoroo.astrid.reminders.Notifications;
 import com.todoroo.astrid.repeats.RepeatControlSet;
 import com.todoroo.astrid.service.AddOnService;
@@ -276,6 +277,10 @@ public final class TaskEditActivity extends TabActivity {
                         LinearLayout extrasAddons = (LinearLayout) findViewById(R.id.tab_extra_addons);
                         controls.add(new RepeatControlSet(TaskEditActivity.this, extrasAddons));
                         controls.add(new GCalControlSet(TaskEditActivity.this, extrasAddons));
+                       controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
+
+
+
 
                         LinearLayout addonsAddons = (LinearLayout) findViewById(R.id.tab_addons_addons);
 

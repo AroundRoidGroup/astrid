@@ -26,6 +26,8 @@ public class AstridPreferences {
         Preferences.setIfUnset(prefs, editor, r, R.string.p_default_hideUntil_key, 0);
         Preferences.setIfUnset(prefs, editor, r, R.string.p_default_reminders_key, 6);
         Preferences.setIfUnset(prefs, editor, r, R.string.p_rmd_default_random_hours, 0);
+        Preferences.setIfUnset(prefs, editor, r, R.string.p_rmd_default_car_radius_key, 2000);
+        Preferences.setIfUnset(prefs, editor, r, R.string.p_rmd_default_foot_radius_key,200);
         Preferences.setIfUnset(prefs, editor, r, R.string.p_fontSize, 20);
         Preferences.setIfUnset(prefs, editor, r, R.string.p_showNotes, false);
 

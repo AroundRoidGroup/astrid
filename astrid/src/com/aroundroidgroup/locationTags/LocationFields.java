@@ -1,6 +1,5 @@
 package com.aroundroidgroup.locationTags;
 
-import com.todoroo.andlib.data.Property.IntegerProperty;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.astrid.data.Metadata;
 
@@ -15,8 +14,11 @@ public class LocationFields {
     /** metadata key for locations by people */
     public static final String METADATA_KEY_BY_PEOPLE = "locationByPeople";  //$NON-NLS-1$
 
-    /** metadata key for the radius parameters */
-    public static final String RADIUS_METADATA_KEY = "radius";  //$NON-NLS-1$
+    /** metadata key for the car radius parameter */
+    public static final String CAR_RADIUS_METADATA_KEY = "carRadius";  //$NON-NLS-1$
+
+    /** metadata key for the foot radius parameter */
+    public static final String FOOT_RADIUS_METADATA_KEY = "footRadius";  //$NON-NLS-1$
 
     /** locations by kind of a location. i.e. Bank, of Pharmacy */
     public static final StringProperty locationsType = new StringProperty(Metadata.TABLE,
@@ -31,12 +33,12 @@ public class LocationFields {
             Metadata.VALUE3.name);
 
     /** radius in which we notify about a location, when in walking mode */
-    public static final IntegerProperty footRadius = new IntegerProperty(Metadata.TABLE,
-            Metadata.VALUE4.name);
+    public static final StringProperty footRadius = new StringProperty(Metadata.TABLE,
+            Metadata.VALUE1.name);
 
     /** radius in which we notify about a location, when in driving mode */
-    public static final IntegerProperty carRadius = new IntegerProperty(Metadata.TABLE,
-            Metadata.VALUE5.name);
+    public static final StringProperty carRadius = new StringProperty(Metadata.TABLE,
+            Metadata.VALUE2.name);
 
     /** delimiter for parsing the location strings */
     public static final String delimiter = "::"; //$NON-NLS-1$

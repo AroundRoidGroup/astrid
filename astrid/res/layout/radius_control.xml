@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+  
+  <TextView
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="@string/location_advanced_title" 
+       style="@style/TextAppearance.GEN_EditLabel" />
+  <CheckBox android:id="@+id/radiusEnabled" 
+  android:layout_width="fill_parent" 
+  android:layout_height="wrap_content" 
+  android:text="@string/radius_advanced_title"/>
+    
+   <LinearLayout android:id="@+id/radiusContainer"
+      android:orientation="vertical"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+    <TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/foot_radius"
+	/>
+	<SeekBar
+   		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+   		android:layout_margin="10px"
+   		android:id="@+id/footRaduis"
+   		android:max="800"
+   />
+   <TextView 
+   android:layout_width="fill_parent"
+   android:layout_height="wrap_content"
+   android:id="@+id/footRadiusValue"
+   />
+   <TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/car_radius"
+	/>
+	<SeekBar
+   		android:layout_width="fill_parent"
+  		android:layout_height="wrap_content"
+   		android:layout_margin="10px"
+   		android:id="@+id/carRaduis"
+   		android:max="8000"
+   />
+      <TextView 
+   android:layout_width="fill_parent"
+   android:layout_height="wrap_content"
+   android:id="@+id/carRadiusValue"
+   />
+
+</LinearLayout>
+</merge>
