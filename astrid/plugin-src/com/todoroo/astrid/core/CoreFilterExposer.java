@@ -44,6 +44,9 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         SearchFilter searchFilter = new SearchFilter(r.getString(R.string.BFE_Search));
         searchFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_search)).getBitmap();
 
+        MapFilter mapFilter = new MapFilter("Map");
+        mapFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_map)).getBitmap();
+
         Filter recent = new Filter(r.getString(R.string.BFE_Recent),
                 r.getString(R.string.BFE_Recent),
                 new QueryTemplate().orderBy(Order.desc(Task.MODIFICATION_DATE)).limit(15),
@@ -51,10 +54,11 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         recent.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_new)).getBitmap();
 
         // transmit filter list
-        FilterListItem[] list = new FilterListItem[3];
+        FilterListItem[] list = new FilterListItem[4];
         list[0] = inbox;
         list[1] = recent;
         list[2] = searchFilter;
+        list[3] = mapFilter;
         Intent broadcastIntent = new Intent(AstridApiConstants.BROADCAST_SEND_FILTERS);
         broadcastIntent.putExtra(AstridApiConstants.EXTRAS_RESPONSE, list);
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);

@@ -1,7 +1,7 @@
 <%@ page import="com.google.appengine.api.users.User" %>
 <%@ page import="com.google.appengine.api.users.UserService" %>
 <%@ page import="com.google.appengine.api.users.UserServiceFactory" %>
-<%@ page import="java.util.Date" %>
+
 
 
 <%  UserService userService = UserServiceFactory.getUserService();
@@ -20,11 +20,8 @@
 	
 	<p> <u> Exmaple Form: </u> </p>
 	<p>
-    <form action="/aroundgps" method="post">
-      <div><input name="GPSLAT" type="text" value="32.1733156223" /></div>
-      <div><input name="GPSLON" type="text" value="34.9117329249" /></div>
-      <div><input name="USERS" type="text" value="moti@gmail.com::shiran@gmail.com::alondener@gmail.com" /></div>
-      <div><input name="TIMESTAMP" type="text" value="<%= new Date().getTime() %>" /></div>
+    <form action="/inviteFriend" method="post">
+      <div><input name="FRIEND" type="text" value="tomer.keshet@gmail.com" /></div>
       <div><input type="submit" value="OK" /></div>
     </form>
     </p>

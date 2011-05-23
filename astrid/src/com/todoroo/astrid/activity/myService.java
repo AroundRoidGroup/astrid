@@ -2,6 +2,8 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -22,8 +24,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -43,6 +45,8 @@ public class myService extends Service{
 
     private static DefaultHttpClient http_client = new DefaultHttpClient();
     private static CheckFriendThread cft;
+
+    public static Lock httpLock = new ReentrantLock();
 
 
     public final String TAG = "myService";
@@ -136,20 +140,8 @@ public class myService extends Service{
 
     }
 
-    private static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
-        //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
-        float[] arr = new float[3];
-        //TODO : check array
-        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
-        float dist = arr[0];
 
-        //distense - 100 kilometers
-        if (dist>100*1000)
-            Notifications.cancelLocationNotification(task.getId());
-        else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
 
-    }
 
 
 //    private static boolean isFar(Location myLocation, FriendProps fp) {
@@ -193,6 +185,20 @@ public class myService extends Service{
         return myService.http_client;
     }
 
+    public static void notifyAboutPeopleLocation(Task task,Location myLocation, FriendProps fp) {
+        float[] arr = new float[3];
+        //TODO : check array
+
+        Location.distanceBetween(myLocation.getLatitude(), myLocation.getLongitude(),Double.parseDouble(fp.getLat()), Double.parseDouble(fp.getLon()), arr);
+        float dist = arr[0];
+
+        //distance - 100 kilometers
+        //TODO change to Task.getRadius
+        if (dist>100*1000)
+            Notifications.cancelLocationNotification(task.getId());
+        else
+            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+    }
 
     protected static class CheckFriendThread extends Thread{
 
@@ -229,7 +235,12 @@ public class myService extends Service{
                         try {
                             String peopleString = AroundRoidAppConstants.join(threadLocationService.getLocationsByPeopleAsArray(task.getId())
                                     ,AroundRoidAppConstants.usersDelimiter);
-                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString);
+                            try{
+                            httpLock.lock();
+                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
+                            } finally {
+                                httpLock.unlock();
+                            }
                         } catch (ClientProtocolException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();

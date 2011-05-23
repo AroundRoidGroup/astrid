@@ -24,29 +24,41 @@ import org.xml.sax.SAXException;
 
 import android.location.Location;
 
-import com.todoroo.astrid.activity.myService;
-
 public class PeopleRequest {
 
     private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
-        nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
-        nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
+        if (userLocation!=null){
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
+            //TODO : go bacj to userLastLocation
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(userLocation.getTime())));
+        }
+        else{
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0)));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
+            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
+            //TODO : go bacj to userLastLocation
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0.0)));
+        }
         nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
         return nameValuePairs;
     }
 
-    private static InputStream requestToStream(HttpUriRequest hr) throws ClientProtocolException, IOException{
-        HttpResponse result = myService.getHttpClient().execute(hr);
+    private static InputStream requestToStream(HttpUriRequest hr, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+        HttpResponse result = arcm.executeOnHttp(hr);
         InputStream is = result.getEntity().getContent();
         return is;
     }
 
-    public static List<FriendProps> requestPeople(Location userLocation,String people) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(Location userLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation,people)));
-        InputStream is  = requestToStream(http_post);
+        InputStream is  = requestToStream(http_post,arcm);
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
@@ -86,68 +98,6 @@ public class PeopleRequest {
         return lfp;
     }
 
-    public static class FriendProps{
 
-        public final static String root = "Friend"; //$NON-NLS-1$
-
-        public final static String[] props = new String[]{"Latitude","Longtitude","Mail"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-
-        private String lat,lon;
-
-        private String mail;
-
-        public String getLat() {
-            return lat;
-        }
-
-        public void setLat(String lat) {
-            this.lat = lat;
-        }
-
-        public String getLon() {
-            return lon;
-        }
-
-        public void setLon(String lon) {
-            this.lon = lon;
-        }
-
-        public String getMail() {
-            return mail;
-        }
-
-        public void setMail(String mail) {
-            this.mail = mail;
-        }
-
-        public FriendProps() {
-            // TODO Auto-generated constructor stub
-        }
-
-        @Override
-        public String toString(){
-            return getMail() + "::" + getLat() + "::" + getLon(); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        public void loadArr (String[] arr){
-            if (arr.length!=props.length){
-                return;
-            }
-            setLat(arr[0]);
-            setLon(arr[1]);
-            setMail(arr[2]);
-        }
-
-        public static List<FriendProps> fromArrList(List<String[]> arrLst){
-            List<FriendProps> fpl = new ArrayList<FriendProps>(arrLst.size());
-            for(String[] arr : arrLst){
-                FriendProps fp = new FriendProps();
-                fp.loadArr(arr);
-                fpl.add(fp);
-            }
-            return fpl;
-        }
-
-    }
 
 }

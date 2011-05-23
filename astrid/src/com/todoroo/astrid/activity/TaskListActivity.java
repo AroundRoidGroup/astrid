@@ -58,6 +58,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AccountList;
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -234,8 +235,13 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         }
         */
 
-      Intent serviceIntent = new Intent(this,myService.class);
-      Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
+
+        Intent serviceIntent = new Intent(this,GPSService.class);
+        Toast.makeText(this, "GPSService is on:"+(startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+
+
+      //Intent serviceIntent = new Intent(this,myService.class);
+      //Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
 
   //      TaskService taskService = new TaskService();
 

@@ -20,6 +20,7 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
 		android:clickable="false"
-		android:apiKey="0opbHcqcBoLpGZ1xLAhmA6hIEbc3VtWiMG_5b6Q" />
+		android:apiKey="0k9f6DtAnocGE5wRrX9PDhJx6-hKYp8YkXamzlA" />
+
 
 </LinearLayout>
