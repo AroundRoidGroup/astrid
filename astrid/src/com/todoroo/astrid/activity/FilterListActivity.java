@@ -5,8 +5,8 @@ package com.todoroo.astrid.activity;
 
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
-import android.app.SearchManager;
 import android.app.PendingIntent.CanceledException;
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -18,20 +18,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
@@ -46,6 +46,7 @@ import com.todoroo.astrid.api.FilterCategory;
 import com.todoroo.astrid.api.FilterListItem;
 import com.todoroo.astrid.api.FilterWithCustomIntent;
 import com.todoroo.astrid.api.IntentFilter;
+import com.todoroo.astrid.core.MapFilter;
 import com.todoroo.astrid.core.SearchFilter;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.service.StartupService;
@@ -220,6 +221,9 @@ public class FilterListActivity extends ExpandableListActivity {
             return true;
         } else if(item instanceof SearchFilter) {
             onSearchRequested();
+        } else if(item instanceof MapFilter) {
+            Intent intent = new Intent(this,MapFilterActivity.class);
+            startActivity(intent);
         } else if(item instanceof IntentFilter) {
             try {
                 ((IntentFilter)item).intent.send();

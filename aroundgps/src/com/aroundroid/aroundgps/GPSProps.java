@@ -26,12 +26,16 @@ public class GPSProps {
 
     @Persistent
     private Double lat;
+    
+    @Persistent
+    private Long timeStamp;
 
-    public GPSProps(User user,String mail, double lon, double lat) {
+    public GPSProps(User user,String mail, double lon, double lat,long timeStamp) {
     	this.setMail(mail);
         this.user = user;
         this.lon = lon;
         this.lat = lat;
+        this.setTimeStamp(timeStamp);
     }
 
     public Key getKey() {
@@ -68,5 +72,13 @@ public class GPSProps {
 
 	public String getMail() {
 		return mail;
+	}
+
+	public void setTimeStamp(Long timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	public Long getTimeStamp() {
+		return timeStamp;
 	}
 }

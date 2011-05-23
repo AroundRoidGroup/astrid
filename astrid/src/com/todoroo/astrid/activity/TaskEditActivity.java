@@ -66,6 +66,8 @@ import android.widget.ToggleButton;
 
 import com.aroundroidgroup.locationTags.LocationByPeopleControlSet;
 import com.aroundroidgroup.locationTags.LocationByTypeControlSet;
+import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.LocationBySpecificControlSet;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.service.Autowired;
@@ -138,8 +140,10 @@ public final class TaskEditActivity extends TabActivity {
     public static final int RESULT_CODE_SAVED = RESULT_FIRST_USER;
     public static final int RESULT_CODE_DISCARDED = RESULT_FIRST_USER + 1;
     public static final int RESULT_CODE_DELETED = RESULT_FIRST_USER + 2;
-
+    public static final int SPECIFIC_LOCATION_MAP_RESULT_CODE = 1234; // specific map location result code
     // --- services
+
+    private LocationBySpecificControlSet specificCS;
 
     @Autowired
     private ExceptionService exceptionService;
@@ -191,6 +195,8 @@ public final class TaskEditActivity extends TabActivity {
      * ======================================================= initialization
      * ====================================================================== */
 
+
+
     public TaskEditActivity() {
         DependencyInjectionService.getInstance().inject(this);
     }
@@ -219,6 +225,8 @@ public final class TaskEditActivity extends TabActivity {
     /* ======================================================================
      * ==================================================== UI initialization
      * ====================================================================== */
+
+
 
     /** Initialize UI components */
     private void setUpUIComponents() {
@@ -249,6 +257,8 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
+        specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
+        controls.add(specificCS);
         controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
         controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 
@@ -640,6 +650,21 @@ public final class TaskEditActivity extends TabActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (resultCode == SPECIFIC_LOCATION_MAP_RESULT_CODE) {
+            Bundle b = data.getExtras();
+            DPoint[] allSpecific = null;
+            if (b != null) {
+               String[] sa = b.getStringArray(SpecificMapLocation.SPECIFIC_POINTS_SECOND);
+               allSpecific = new DPoint[sa.length];
+               for (int i = 0 ; i < sa.length ; i++)
+                   allSpecific[i] = new DPoint(Double.parseDouble(sa[i].substring(0, sa[i].indexOf(','))), Double.parseDouble(sa[i].substring(sa[i].indexOf(',') + 1)));
+            }
+            specificCS.updateSpecificPoints(allSpecific);
+            super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+
         // handle the result of voice recognition, put it into the appropiate textfield
         voiceNoteAssistant.handleActivityResult(requestCode, resultCode, data);
 
