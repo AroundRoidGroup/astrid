@@ -14,6 +14,7 @@ public class AroundroidDbAdapter {
     public static final String KEY_LAT = "lat";
     public static final String KEY_LON= "lon";
     public static final String KEY_TIME= "time";
+    public static final String KEY_CONTACTID= "contact_id";
 
     public static final String KEY_ROWID = "_id";
 
@@ -25,8 +26,8 @@ public class AroundroidDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_CREATE =
-            "create table peopleloc (_id integer primary key AUTO_INCREMENT, "
-                    + "mail text not null, "
+            "create table peopleloc (_id integer primary key autoincrement, "
+                    + "mail text not null, integer contact_id,"
                     + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";

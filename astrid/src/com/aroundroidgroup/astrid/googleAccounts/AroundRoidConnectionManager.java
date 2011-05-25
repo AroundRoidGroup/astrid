@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.Toast;
 
 public class AroundRoidConnectionManager {
     //TODO : cancel the AppInfo Activity and connect to PeopleRequest in the background
@@ -92,6 +91,7 @@ public class AroundRoidConnectionManager {
 
         public void run(AccountManagerFuture<Bundle> result) {
             Bundle bundle;
+            boolean ok  = false;
             try {
                 bundle = result.getResult();
                 Intent intent = (Intent)bundle.get(AccountManager.KEY_INTENT);
@@ -101,6 +101,7 @@ public class AroundRoidConnectionManager {
                 } else {
                     onGetAuthToken(bundle);
                 }
+                ok = true;
             } catch (OperationCanceledException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -110,6 +111,9 @@ public class AroundRoidConnectionManager {
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            }
+            finally{
+                setConnecting(ok);
             }
         }
 
@@ -171,13 +175,12 @@ public class AroundRoidConnectionManager {
         @Override
         protected void onPostExecute(Boolean result) {
             if (result){
-                Toast.makeText(cont, "Connected To People Location Service", Toast.LENGTH_LONG).show();
                 //TODO fill
-                setConnecting(false);
                 setConnected(true);
+                setConnecting(false);
             }
             else{
-                Toast.makeText(cont, "Error Connecting to People Location Service, trying again", Toast.LENGTH_LONG).show();
+                setConnecting(false);;
                 accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
                 accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
             }

@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
 
@@ -126,6 +127,26 @@ public class GPSService extends Service{
         locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
     }
 
+    private final Handler mHandler = new Handler();
+    private String mToastMsg;
+    private final Runnable mUpdateResults = new Runnable() {
+        public void run() {
+            if (mToastMsg!=null){
+                Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+
+    private  synchronized void toastMe(String toastMsg){
+        this.mToastMsg = toastMsg;
+        new Thread() {
+            @Override
+            public void run() {
+                mHandler.post(mUpdateResults);
+            }
+        }.start();
+    }
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
@@ -136,7 +157,7 @@ public class GPSService extends Service{
         private final int sleepTime = defaultSleepTime;
         private final int locationInvalidateTime = defaultLocationInvalidateTime;
 
-        private final boolean reported = false;
+        private boolean reported = false;
 
         public void setExit(){
             this.toExit = true;
@@ -154,18 +175,23 @@ public class GPSService extends Service{
                     break;
                 }
                 if (!prs.isConnected()){
-                    if (connectCount>0){
-                        //TODO stop doesn't really works
-                        prs.stop();
-                        connectCount--;
-                        startPeopleRequests(account);
-                    }
-                    else if (prs.isOn()){
-                        Toast.makeText(getApplicationContext(), "Connection lost!", Toast.LENGTH_LONG).show();
+                    if (!prs.isConnecting()){
+                        if (connectCount>0){
+                            reported = false;
+                            //TODO stop doesn't really works
+                            prs.stop();
+                            connectCount--;
+                            startPeopleRequests(account);
+                        }
+                        else if (!reported && (prs.isOn())){
+                            reported = true;
+                            toastMe("Connection lost!!!");//$NON-NLS-1$
+                        }
                     }
                 }
                 else if (!reported){
-                    Toast.makeText(getApplicationContext(), "Connected! Hurray!", Toast.LENGTH_LONG).show();
+                    reported = true;
+                    toastMe("Connected! Hooray!"); //$NON-NLS-1$
                 }
 
 
@@ -202,7 +228,7 @@ public class GPSService extends Service{
                         if (curMail.moveToFirst()){
 
                         }
-                        aDba.createPeople(key, mail, connected);
+                        //aDba.createPeople(key, mail, connected);
                     }
                     //TODO add people here
                     if ( peopleArr.length>0){
