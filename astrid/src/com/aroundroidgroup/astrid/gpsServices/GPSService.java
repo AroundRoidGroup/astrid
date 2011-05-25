@@ -255,6 +255,7 @@ public class GPSService extends Service{
     }
 
     protected void makeUseOfNewLocation(Location location) {
+        Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
         setUserLastLocation(location);
         //TODO deal with business
 
@@ -264,6 +265,7 @@ public class GPSService extends Service{
         public void onLocationChanged(Location location) {
             // Called when a new location is found by the network location provider.
             makeUseOfNewLocation(location);
+
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {

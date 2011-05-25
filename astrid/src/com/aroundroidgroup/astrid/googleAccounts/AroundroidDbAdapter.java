@@ -167,13 +167,24 @@ public class AroundroidDbAdapter {
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(String lat , String lon , String time) {
+    public boolean updatePeople(String lat , String lon , String time, Long contactId) {
         ContentValues args = new ContentValues();
         args.put(KEY_LAT, lat);
         args.put(KEY_LON, lon);
         args.put(KEY_TIME,time);
+        if (contactId!=null){
+        args.put(KEY_CONTACTID, contactId);
+        }
 
         return mDb.update(DATABASE_TABLE, args,null, null) > 0;
+    }
+    /**
+     * Update the people using the details provided.
+
+     * @return true if the people was successfully updated, false otherwise
+     */
+    public boolean updatePeople(String lat , String lon , String time) {
+        return updatePeople(lat, lon, time,null);
     }
 
     public void dropPeople(){
