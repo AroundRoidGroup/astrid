@@ -82,6 +82,7 @@ public class GPSService extends Service{
         refreshData = new DataRefresher();
         aDba.open();
         aDba.dropPeople();
+        aDba.createPeople("me",-1L);
         gpsSetup();
     }
     @Override
@@ -167,6 +168,7 @@ public class GPSService extends Service{
         public void run() {
             //TODO consider making userLastLocation a database entry
 
+            //TODO if isConnecting for to long, force close
             //initiate GPS
             while (!toExit){
                 try {
@@ -256,6 +258,7 @@ public class GPSService extends Service{
 
     protected void makeUseOfNewLocation(Location location) {
         Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
+        aDba.updatePeople("me", lon, time);
         setUserLastLocation(location);
         //TODO deal with business
 

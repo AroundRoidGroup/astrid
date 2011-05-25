@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 public class Notepadv1 extends ListActivity {
@@ -33,21 +34,18 @@ public class Notepadv1 extends ListActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        /*
         super.onCreate(savedInstanceState);
         setContentView(R.layout.notepad_list);
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
         fillData();
-        */
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {/*
+    public boolean onCreateOptionsMenu(Menu menu) {
     	boolean result = super.onCreateOptionsMenu(menu);
         menu.add(0, SCAN_ID, 0, R.string.menu_insert);
         return result;
-        */
         return true;
     }
 
@@ -76,7 +74,7 @@ public class Notepadv1 extends ListActivity {
         // Get all of the notes from the database and create the item list
         Cursor c = mDbHelper.fetchAllPeople();
         startManagingCursor(c);
-/*
+
         String[] from = new String[] { AroundroidDbAdapter.KEY_ROWID };
         int[] to = new int[] { R.id.text1 };
 
@@ -84,6 +82,6 @@ public class Notepadv1 extends ListActivity {
         SimpleCursorAdapter notes =
             new SimpleCursorAdapter(this, R.layout.notes_row, c, from, to);
         setListAdapter(notes);
-        */
+
     }
 }

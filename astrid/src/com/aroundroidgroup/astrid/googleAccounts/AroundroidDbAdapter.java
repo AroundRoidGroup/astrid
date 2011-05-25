@@ -27,7 +27,7 @@ public class AroundroidDbAdapter {
      */
     private static final String DATABASE_CREATE =
             "create table peopleloc (_id integer primary key autoincrement, "
-                    + "mail text not null, integer contact_id,"
+                    + "mail text not null, contact_id integer not null,"
                     + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
@@ -101,12 +101,24 @@ public class AroundroidDbAdapter {
      *
      * @return rowId or -1 if failed
      */
-    public long createPeople(int key , String mail) {
+    public long createPeople(String mail , Long contactId) {
         ContentValues initialValues = new ContentValues();
-        initialValues.put(KEY_ROWID, key);
         initialValues.put(KEY_MAIL, mail);
-
+        if (contactId!=null){
+        initialValues.put(KEY_CONTACTID, -2);
+        }
         return mDb.insert(DATABASE_TABLE, null, initialValues);
+    }
+
+    /**
+     * Create a new people using the title and body provided. If the people is
+     * successfully created return the new rowId for that people, otherwise return
+     * a -1 to indicate failure.
+     *
+     * @return rowId or -1 if failed
+     */
+    public long createPeople( String mail) {
+        return createPeople(mail, null);
     }
 
     /**
@@ -167,7 +179,7 @@ public class AroundroidDbAdapter {
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(String lat , String lon , String time, Long contactId) {
+    public boolean updatePeople(long rowId ,String lat , String lon , String time, Long contactId) {
         ContentValues args = new ContentValues();
         args.put(KEY_LAT, lat);
         args.put(KEY_LON, lon);
@@ -176,15 +188,16 @@ public class AroundroidDbAdapter {
         args.put(KEY_CONTACTID, contactId);
         }
 
-        return mDb.update(DATABASE_TABLE, args,null, null) > 0;
+
+        return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
     }
     /**
      * Update the people using the details provided.
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(String lat , String lon , String time) {
-        return updatePeople(lat, lon, time,null);
+    public boolean updatePeople(long rowId,String lat , String lon , String time) {
+        return updatePeople(rowId,lat, lon, time,null);
     }
 
     public void dropPeople(){
