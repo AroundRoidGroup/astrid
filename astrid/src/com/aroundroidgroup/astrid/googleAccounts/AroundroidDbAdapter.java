@@ -11,7 +11,6 @@ import android.util.Log;
 public class AroundroidDbAdapter {
 
     public static final String KEY_MAIL = "mail";
-    public static final String KEY_CONNECTED = "connected";
     public static final String KEY_LAT = "lat";
     public static final String KEY_LON= "lon";
     public static final String KEY_TIME= "time";
@@ -26,8 +25,8 @@ public class AroundroidDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_CREATE =
-            "create table peopleloc (_id integer primary key , "
-                    + "mail text not null, connected text not null, "
+            "create table peopleloc (_id integer primary key AUTO_INCREMENT, "
+                    + "mail text not null, "
                     + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
@@ -101,11 +100,10 @@ public class AroundroidDbAdapter {
      *
      * @return rowId or -1 if failed
      */
-    public long createPeople(int key , String mail, String connected) {
+    public long createPeople(int key , String mail) {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_ROWID, key);
         initialValues.put(KEY_MAIL, mail);
-        initialValues.put(KEY_CONNECTED, connected);
 
         return mDb.insert(DATABASE_TABLE, null, initialValues);
     }
@@ -128,8 +126,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeople() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,
-                KEY_CONNECTED,KEY_LAT,KEY_LON,KEY_TIME}, null, null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME}, null, null, null, null, null);
     }
 
     /**
@@ -140,7 +137,7 @@ public class AroundroidDbAdapter {
     public Cursor fetchAllMail(String mail) {
 
         return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,
-                KEY_CONNECTED,KEY_LAT,KEY_LON,KEY_TIME},"mail == "+mail, null, null, null, null);
+               KEY_LAT,KEY_LON,KEY_TIME},"mail == "+mail, null, null, null, null);
     }
 
     /**
@@ -155,7 +152,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
                 mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                        KEY_MAIL, KEY_CONNECTED, KEY_LAT, KEY_LON, KEY_TIME}, KEY_ROWID + "=" + rowId, null,
+                        KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME}, KEY_ROWID + "=" + rowId, null,
                         null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();

@@ -7,6 +7,7 @@ import android.accounts.Account;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -69,13 +70,13 @@ public class GPSService extends Service{
 
         // TODO Auto-generated method stub
         super.onStart(intent, startId);
-        Toast.makeText(this, "OnStart!?!", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "OnStart!?!", Toast.LENGTH_LONG).show();
 
     }
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "OpenedService", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "OpenedService", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
         aDba.open();
@@ -135,6 +136,8 @@ public class GPSService extends Service{
         private final int sleepTime = defaultSleepTime;
         private final int locationInvalidateTime = defaultLocationInvalidateTime;
 
+        private final boolean reported = false;
+
         public void setExit(){
             this.toExit = true;
         }
@@ -158,8 +161,11 @@ public class GPSService extends Service{
                         startPeopleRequests(account);
                     }
                     else if (prs.isOn()){
-                        //toast the user that the connection is lost!
+                        Toast.makeText(getApplicationContext(), "Connection lost!", Toast.LENGTH_LONG).show();
                     }
+                }
+                else if (!reported){
+                    Toast.makeText(getApplicationContext(), "Connected! Hurray!", Toast.LENGTH_LONG).show();
                 }
 
 
@@ -191,6 +197,13 @@ public class GPSService extends Service{
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+                    for (String people : peopleArr){
+                        Cursor curMail  =aDba.fetchAllMail(people);
+                        if (curMail.moveToFirst()){
+
+                        }
+                        aDba.createPeople(key, mail, connected);
+                    }
                     //TODO add people here
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
@@ -198,7 +211,7 @@ public class GPSService extends Service{
                         for (FriendProps fp : lfp){
                             aDba.updatePeople(fp.getLat(),fp.getLon(),fp.getTime());
                         }
-                        //TODO doesnt notify!
+                        //TODO doesnt notify!?
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
                     }
                 }
@@ -232,11 +245,11 @@ public class GPSService extends Service{
         }
 
         public void onProviderEnabled(String provider) {
-            //TODO empty
+            Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
         }
 
         public void onProviderDisabled(String provider) {
-            //TODO empty
+            Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
         }
     };
 
