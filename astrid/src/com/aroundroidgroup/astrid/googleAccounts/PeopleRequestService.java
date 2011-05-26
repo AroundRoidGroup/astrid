@@ -1,6 +1,7 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,6 +52,7 @@ public class PeopleRequestService {
 
     }
 
+    //returns a sorted list!
     public List<FriendProps> getPeopleLocations(String[] peopleArr, Location userLocation) {
         // TODO check if location l is null
         // TODO not good implementation, cancel PeopleRequest class!
@@ -58,6 +60,7 @@ public class PeopleRequestService {
                 ,AroundRoidAppConstants.usersDelimiter);
         try {
             List<FriendProps> lfp = PeopleRequest.requestPeople(userLocation,peopleString, arcm);
+            Collections.sort(lfp, FriendProps.getMailComparator());
             return lfp;
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block

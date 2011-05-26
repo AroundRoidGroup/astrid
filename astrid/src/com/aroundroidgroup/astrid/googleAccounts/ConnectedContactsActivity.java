@@ -16,6 +16,9 @@ z * Copyright (C) 2008 Google Inc.
 
 package com.aroundroidgroup.astrid.googleAccounts;
 
+import java.util.Collections;
+import java.util.List;
+
 import android.app.ListActivity;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -24,18 +27,22 @@ import android.view.MenuItem;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-public class Notepadv1 extends ListActivity {
+import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
+import com.aroundroidgroup.astrid.gpsServices.ContactsHelper.idNameMail;
+import com.timsu.astrid.R;
+
+public class ConnectedContactsActivity extends ListActivity {
 	public static final int SCAN_ID = Menu.FIRST;
 
-	private final int mNoteNumber = 1;
 	private AroundroidDbAdapter mDbHelper;
 	private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
+	private final ContactsHelper conHel  = new ContactsHelper(getContentResolver());
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.notepad_list);
+        setContentView(R.layout.contactsf_list);
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
         fillData();
@@ -44,9 +51,9 @@ public class Notepadv1 extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(0, SCAN_ID, 0, R.string.menu_insert);
+    	//TODO externalize strings
+        menu.add(0, SCAN_ID, 0, "Scan now!"); //$NON-NLS-1$
         return result;
-        return true;
     }
 
     @Override
@@ -65,14 +72,43 @@ public class Notepadv1 extends ListActivity {
     }
 
 
+    //assuming prs is connected
     private void scanContacts() {
+        List<idNameMail> chINM = conHel.friendsWithGoogle();
+        String[] peopleArr = new String[chINM.size()];
+        int i =0;
+        for (idNameMail idnm : chINM){
+            peopleArr[i++] = idnm.mail;
+        }
+        //TODO - sychronized to be parralled with the GPSService
+        //TODO - send and update only the ones that does not aleady exists
+        //the list is sorted!
+        List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
+        FriendProps exampleProps = new FriendProps();
+        for (idNameMail idnm : chINM){
+            exampleProps.setMail(idnm.mail);
+            int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
+            if (index>=0){
+                FriendProps findMe = lfp.get(index);
+                Cursor curMail = mDbHelper.fetchAllMail(idnm.mail);
+                if (curMail.moveToFirst()){
+                    mDbHelper.updatePeople((curMail.getLong(0)), findMe.getLat(), findMe.getLon(), findMe.getTime(), Long.parseLong(idnm.id));
+                }
+                else{
+                    //TODO change to one function
+                    long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
+                    mDbHelper.updatePeople(rowId, findMe.getLat(), findMe.getLon(), findMe.getTime());
+                }
+            }
+        }
+
 
         fillData();
     }
 
     private void fillData() {
         // Get all of the notes from the database and create the item list
-        Cursor c = mDbHelper.fetchAllPeople();
+        Cursor c = mDbHelper.fetchAllPeople(); //fetch all people with contact assosiated
         startManagingCursor(c);
 
         String[] from = new String[] { AroundroidDbAdapter.KEY_ROWID };
@@ -80,7 +116,7 @@ public class Notepadv1 extends ListActivity {
 
         // Now create an array adapter and set it to display using our row
         SimpleCursorAdapter notes =
-            new SimpleCursorAdapter(this, R.layout.notes_row, c, from, to);
+            new SimpleCursorAdapter(this, R.layout.contactsf_row, c, from, to);
         setListAdapter(notes);
 
     }

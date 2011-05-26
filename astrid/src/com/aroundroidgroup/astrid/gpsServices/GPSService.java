@@ -1,6 +1,5 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
-import java.util.Collections;
 import java.util.List;
 
 import android.accounts.Account;
@@ -235,9 +234,12 @@ public class GPSService extends Service{
                     //TODO add people here
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
-                        Collections.sort(lfp, FriendProps.getMailComparator());
                         for (FriendProps fp : lfp){
-                            aDba.updatePeople(fp.getLat(),fp.getLon(),fp.getTime());
+                            Cursor c = aDba.fetchAllMail(fp.getMail());
+                            c.moveToFirst();
+                            long id = c.getInt(0);
+                            c.close();
+                            aDba.updatePeople(id,fp.getLat(),fp.getLon(),fp.getTime());
                         }
                         //TODO doesnt notify!?
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
@@ -258,7 +260,12 @@ public class GPSService extends Service{
 
     protected void makeUseOfNewLocation(Location location) {
         Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
-        aDba.updatePeople("me", lon, time);
+        //TODO fetch by other id
+        Cursor cur = aDba.fetchAllMail("me");
+        cur.moveToFirst();
+        long l = cur.getLong(0);
+        cur.close();
+        aDba.updatePeople(l,String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(location.getTime()));
         setUserLastLocation(location);
         //TODO deal with business
 

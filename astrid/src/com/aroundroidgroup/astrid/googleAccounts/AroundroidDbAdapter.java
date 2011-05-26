@@ -36,6 +36,8 @@ public class AroundroidDbAdapter {
 
     private final Context mCtx;
 
+    //TODO fix stuff that are passed as strings
+
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseHelper(Context context) {
