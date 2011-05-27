@@ -35,7 +35,7 @@ public class ConnectedContactsActivity extends ListActivity {
 
     private AroundroidDbAdapter mDbHelper;
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
-    private final ContactsHelper conHel  = new ContactsHelper(getContentResolver());
+    private ContactsHelper conHel;
 
     /** Called when the activity is first created. */
     @Override
@@ -44,7 +44,9 @@ public class ConnectedContactsActivity extends ListActivity {
         setContentView(R.layout.contactsf_list);
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
+        conHel = new ContactsHelper(getContentResolver());
         fillData();
+        Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT);
     }
 
     @Override

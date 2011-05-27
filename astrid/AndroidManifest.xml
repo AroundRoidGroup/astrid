@@ -557,6 +557,7 @@
     <activity android:name="com.todoroo.astrid.activity.SpecificMapLocation"></activity>
     <activity android:name="com.todoroo.astrid.activity.MapFilterActivity"></activity>
     <service android:name="com.aroundroidgroup.astrid.gpsServices.GPSService"></service>
+    <activity android:name="com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity"></activity>
 
   </application>
 

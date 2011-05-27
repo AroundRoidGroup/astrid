@@ -26,9 +26,9 @@ public class AroundroidDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_CREATE =
-            "create table peopleloc (_id integer primary key autoincrement, "
-                    + "mail text not null, contact_id integer not null,"
-                    + "lon double , lat double , time long "+");";
+        "create table peopleloc (_id integer primary key autoincrement, "
+        + "mail text not null, contact_id integer not null,"
+        + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
     private static final String DATABASE_TABLE = "peopleloc";
@@ -107,7 +107,7 @@ public class AroundroidDbAdapter {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_MAIL, mail);
         if (contactId!=null){
-        initialValues.put(KEY_CONTACTID, -2);
+            initialValues.put(KEY_CONTACTID, -2);
         }
         return mDb.insert(DATABASE_TABLE, null, initialValues);
     }
@@ -154,12 +154,12 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + mail, null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + "'"+mail+"'", null,
                     null, null, null, null);
-    if (mCursor != null) {
-        mCursor.moveToFirst();
-    }
-    return mCursor;
+        if (mCursor != null) {
+            mCursor.moveToFirst();
+        }
+        return mCursor;
     }
 
     /**
@@ -173,9 +173,9 @@ public class AroundroidDbAdapter {
 
         Cursor mCursor =
 
-                mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                        KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_ROWID + "=" + rowId, null,
-                        null, null, null, null);
+            mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_ROWID + "=" + rowId, null,
+                    null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
         }
@@ -194,7 +194,7 @@ public class AroundroidDbAdapter {
         args.put(KEY_LON, lon);
         args.put(KEY_TIME,time);
         if (contactId!=null){
-        args.put(KEY_CONTACTID, contactId);
+            args.put(KEY_CONTACTID, contactId);
         }
 
 
