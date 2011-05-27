@@ -182,7 +182,7 @@ public class AroundRoidConnectionManager {
             else{
                 setConnecting(false);;
                 accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
-                accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
+                //accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
             }
         }
     }

@@ -31,6 +31,12 @@ public class ContactsHelper {
         public String id;
         public String name;
         public String mail;
+        @Override
+        public String toString() {
+            return name!=null?name:super.toString();
+        }
+
+
     }
 
     public List<idNameMail> getFriends(Cursor cur){

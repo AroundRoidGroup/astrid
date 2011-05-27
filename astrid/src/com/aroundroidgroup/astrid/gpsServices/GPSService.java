@@ -159,7 +159,7 @@ public class GPSService extends Service{
 
         private long lastConnectionTime;
 
-        private final long maxWait = 1000 * 60;
+        private final long maxWait = 1000 * 90;
 
         private boolean reported = false;
 
