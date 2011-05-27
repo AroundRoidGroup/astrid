@@ -12,6 +12,12 @@
   <!-- for GPS use -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   
+  <!-- Skyhook shit -->
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  
   <!-- for using contacts-->
   <uses-permission android:name="android.permission.READ_CONTACTS" />
   

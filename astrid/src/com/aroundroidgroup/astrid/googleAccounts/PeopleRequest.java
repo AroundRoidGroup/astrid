@@ -22,11 +22,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import android.location.Location;
+import com.skyhookwireless.wps.WPSLocation;
 
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
+    private static List<NameValuePair> createPostData(WPSLocation userLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (userLocation!=null){
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
@@ -54,7 +54,7 @@ public class PeopleRequest {
         return is;
     }
 
-    public static List<FriendProps> requestPeople(Location userLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(WPSLocation userLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation,people)));

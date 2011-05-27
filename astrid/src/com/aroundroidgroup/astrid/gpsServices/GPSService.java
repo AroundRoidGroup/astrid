@@ -4,14 +4,8 @@ import java.util.List;
 
 import android.accounts.Account;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -20,6 +14,15 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
+import com.skyhookwireless.wps.IPLocation;
+import com.skyhookwireless.wps.IPLocationCallback;
+import com.skyhookwireless.wps.WPSAuthentication;
+import com.skyhookwireless.wps.WPSContinuation;
+import com.skyhookwireless.wps.WPSLocation;
+import com.skyhookwireless.wps.WPSLocationCallback;
+import com.skyhookwireless.wps.WPSPeriodicLocationCallback;
+import com.skyhookwireless.wps.WPSReturnCode;
+import com.skyhookwireless.wps.XPS;
 import com.todoroo.andlib.utility.DateUtilities;
 
 
@@ -34,7 +37,7 @@ public class GPSService extends Service{
 
     private final LocationService threadLocationService = new LocationService();
 
-    private Location userLastLocation = null;
+    private WPSLocation userLastLocation = null;
     private final Object userLocationLock = new Object();
 
     private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
@@ -45,15 +48,15 @@ public class GPSService extends Service{
     public static Account account = null;
     public static int connectCount = 0;
 
-    public Location getUserLastLocation(){
+    public WPSLocation getUserLastLocation(){
         synchronized (userLocationLock){
             return userLastLocation;
         }
     }
 
-    private Location setUserLastLocation(Location l){
+    private WPSLocation setUserLastLocation(WPSLocation l){
         synchronized (userLocationLock){
-            Location temp = userLastLocation;
+            WPSLocation temp = userLastLocation;
             userLastLocation = l;
             return temp;
         }
@@ -82,7 +85,7 @@ public class GPSService extends Service{
         aDba.open();
         aDba.dropPeople();
         aDba.createPeople("me",-1L);
-        gpsSetup();
+        //gpsSetup();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -115,6 +118,7 @@ public class GPSService extends Service{
         notifyAll();
     }
 
+    /*
     private void gpsSetup(){
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -126,6 +130,75 @@ public class GPSService extends Service{
         String provider = locationManager.getBestProvider(criteria, true);
         locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
     }
+    */
+
+    private static final int LOCATION_MESSAGE = 1;
+    private static final int ERROR_MESSAGE = 2;
+    private static final int DONE_MESSAGE = 3;
+    private static final Handler _handler = new Handler();
+    private XPS _xps;
+    private final MyLocationCallback _callback = new MyLocationCallback();
+
+    private void skyhookSetup(){
+        Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
+
+        _xps = new XPS(this);
+        WPSAuthentication auth =
+            new WPSAuthentication("aroundroid", "AroundRoid");
+        _xps.getXPSLocation(auth,10,100,_callback);
+    }
+
+    private class MyLocationCallback
+    implements IPLocationCallback,
+    WPSLocationCallback,
+    WPSPeriodicLocationCallback
+    {
+        public void done()
+        {
+            Toast.makeText(getApplicationContext(), "done", Toast.LENGTH_LONG).show();
+            // tell the UI thread to re-enable the buttons
+            _handler.sendMessage(_handler.obtainMessage(DONE_MESSAGE));
+        }
+
+        public WPSContinuation handleError(WPSReturnCode error)
+        {
+            Toast.makeText(getApplicationContext(), "handleError", Toast.LENGTH_LONG).show();
+            // send a message to display the error
+            _handler.sendMessage(_handler.obtainMessage(ERROR_MESSAGE,
+                    error));
+            // return WPS_STOP if the user pressed the Stop button
+                return WPSContinuation.WPS_CONTINUE;
+        }
+
+        public void handleIPLocation(IPLocation location)
+        {
+            // send a message to display the location
+            _handler.sendMessage(_handler.obtainMessage(LOCATION_MESSAGE,
+                    location));
+        }
+
+        public void handleWPSLocation(WPSLocation location)
+        {
+            // send a message to display the location
+            makeUseOfNewLocation(location);
+            _handler.sendMessage(_handler.obtainMessage(LOCATION_MESSAGE,
+                    location));
+        }
+
+        public WPSContinuation handleWPSPeriodicLocation(WPSLocation location)
+        {
+            makeUseOfNewLocation(location);
+            _handler.sendMessage(_handler.obtainMessage(LOCATION_MESSAGE,
+                    location));
+
+            // return WPS_STOP if the user pressed the Stop button
+            if (true)
+                return WPSContinuation.WPS_CONTINUE;
+            else
+                return WPSContinuation.WPS_STOP;
+        }
+    }
+
 
     private final Handler mHandler = new Handler();
     private String mToastMsg;
@@ -199,7 +272,7 @@ public class GPSService extends Service{
                 //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
 
                 //make userLastLocation null if it is irrelevant because of time
-                Location prevLocation = getUserLastLocation();
+                WPSLocation prevLocation = getUserLastLocation();
 
                 //TODO find out the date problem
                 if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
@@ -220,7 +293,7 @@ public class GPSService extends Service{
                 //locationManager.requestLocationUpdates(provider, minTime, minDistance, listener)
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
 
-                Location currentLocation = getUserLastLocation();
+                WPSLocation currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
@@ -258,7 +331,7 @@ public class GPSService extends Service{
 
     }
 
-    protected void makeUseOfNewLocation(Location location) {
+    protected void makeUseOfNewLocation(WPSLocation location) {
         Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
         //TODO fetch by other id
         Cursor cur = aDba.fetchByMail("me");
@@ -272,6 +345,7 @@ public class GPSService extends Service{
 
     }
 
+    /*
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             // Called when a new location is found by the network location provider.
@@ -291,5 +365,6 @@ public class GPSService extends Service{
             Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
         }
     };
+    */
 
 }

@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,7 +15,6 @@ import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
@@ -106,31 +100,17 @@ public void onCreate(Bundle savedInstanceState) {
     /* adding people that are related to the task */
     people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
     if (people.length > 0) {
-        try {
-            String cat = AroundRoidAppConstants.join(people, "::");
-            myService.httpLock.lock();
-            try{
-            List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat,null);
-            for (FriendProps f : fp) {
-                Toast.makeText(this, f.getLat() + " " + f.getLon(), Toast.LENGTH_LONG).show();
-                peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));
-                mapOverlays.add(peopleOverlay);
-            }
-            } finally {
-                myService.httpLock.unlock();
-            }
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        String cat = AroundRoidAppConstants.join(people, "::");
+        myService.httpLock.lock();
+        try{
+        List<FriendProps> fp = null;//PeopleRequest.requestPeople(new Location(new String()), cat,null);
+        for (FriendProps f : fp) {
+            Toast.makeText(this, f.getLat() + " " + f.getLon(), Toast.LENGTH_LONG).show();
+            peopleOverlay.addOverlay(new OverlayItem(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))), f.getMail(), "people!"));
+            mapOverlays.add(peopleOverlay);
+        }
+        } finally {
+            myService.httpLock.unlock();
         }
         mapView.setClickable(true);
     }

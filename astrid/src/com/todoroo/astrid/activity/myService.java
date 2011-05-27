@@ -1,15 +1,10 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.xml.sax.SAXException;
 
 import android.app.Service;
 import android.content.Context;
@@ -25,7 +20,6 @@ import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -232,27 +226,13 @@ public class myService extends Service{
                         cursor.moveToNext();
                         task.readFromCursor(cursor);
                         List<FriendProps> lfp = null;
-                        try {
-                            String peopleString = AroundRoidAppConstants.join(threadLocationService.getLocationsByPeopleAsArray(task.getId())
-                                    ,AroundRoidAppConstants.usersDelimiter);
-                            try{
-                            httpLock.lock();
-                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
-                            } finally {
-                                httpLock.unlock();
-                            }
-                        } catch (ClientProtocolException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        } catch (ParserConfigurationException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        } catch (SAXException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                        String peopleString = AroundRoidAppConstants.join(threadLocationService.getLocationsByPeopleAsArray(task.getId())
+                                ,AroundRoidAppConstants.usersDelimiter);
+                        try{
+                        httpLock.lock();
+                        //lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
+                        } finally {
+                            httpLock.unlock();
                         }
 
                         for (FriendProps myFriend: lfp)

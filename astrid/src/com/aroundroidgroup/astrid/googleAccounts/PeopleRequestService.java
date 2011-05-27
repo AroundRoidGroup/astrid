@@ -11,7 +11,8 @@ import org.xml.sax.SAXException;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.location.Location;
+
+import com.skyhookwireless.wps.WPSLocation;
 
 public class PeopleRequestService {
 
@@ -53,7 +54,7 @@ public class PeopleRequestService {
     }
 
     //returns a sorted list!
-    public List<FriendProps> getPeopleLocations(String[] peopleArr, Location userLocation) {
+    public List<FriendProps> getPeopleLocations(String[] peopleArr, WPSLocation userLocation) {
         // TODO check if location l is null
         // TODO not good implementation, cancel PeopleRequest class!
         String peopleString = AroundRoidAppConstants.join(peopleArr

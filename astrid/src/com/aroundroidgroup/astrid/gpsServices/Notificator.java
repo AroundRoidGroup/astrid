@@ -7,6 +7,7 @@ import android.location.Location;
 
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
+import com.skyhookwireless.wps.WPSLocation;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.data.Task;
@@ -14,7 +15,7 @@ import com.todoroo.astrid.reminders.Notifications;
 import com.todoroo.astrid.reminders.ReminderService;
 
 public class Notificator {
-    public static void notifyAboutPeopleLocation(Task task,Location myLocation, double lat, double lon) {
+    public static void notifyAboutPeopleLocation(Task task,WPSLocation myLocation, double lat, double lon) {
         float[] arr = new float[3];
         //TODO : check array
 
@@ -34,7 +35,7 @@ public class Notificator {
 
 
     //assuming lfp is sorted by mail
-    public static void notifyAllPeople(Location currentLocation,
+    public static void notifyAllPeople(WPSLocation currentLocation,
             List<FriendProps> lfp, LocationService ls) {
         //notify the tasks
         TodorooCursor<Task> cursor = AstridQueries.getDefaultCursor();
