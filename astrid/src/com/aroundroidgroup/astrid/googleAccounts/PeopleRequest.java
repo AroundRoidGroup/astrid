@@ -24,6 +24,8 @@ import org.xml.sax.SAXException;
 
 import android.location.Location;
 
+import com.todoroo.andlib.utility.DateUtilities;
+
 public class PeopleRequest {
 
     private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
@@ -42,7 +44,7 @@ public class PeopleRequest {
             //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
             //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
             //TODO : go bacj to userLastLocation
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0.0)));
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(DateUtilities.now())));
         }
         nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
         return nameValuePairs;

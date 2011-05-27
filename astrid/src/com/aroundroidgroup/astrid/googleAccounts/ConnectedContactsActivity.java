@@ -85,7 +85,7 @@ public class ConnectedContactsActivity extends ListActivity {
         //TODO - send and update only the ones that does not aleady exists
         //the list is sorted!
         List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
-        if (lfp!=null){
+        if (lfp!=null && lfp.size()>0){
             FriendProps exampleProps = new FriendProps();
             for (idNameMail idnm : chINM){
                 exampleProps.setMail(idnm.mail);
@@ -93,14 +93,18 @@ public class ConnectedContactsActivity extends ListActivity {
                 if (index>=0){
                     FriendProps findMe = lfp.get(index);
                     Cursor curMail = mDbHelper.fetchByMail(idnm.mail);
-                    if (curMail!=null){
-                        mDbHelper.updatePeople((curMail.getLong(0)), findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
+                    if (curMail!=null && curMail.moveToFirst()){
+                        long l = curMail.getLong(0);
+                        curMail.close();
+                        mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
+                        curMail.close();
                     }
                     else{
                         //TODO change to one function
                         long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
                         mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
                     }
+
                 }
             }
             fillData();
@@ -114,6 +118,17 @@ public class ConnectedContactsActivity extends ListActivity {
     }
 
     private void fillData() {
+        /*
+        Cursor cur = mDbHelper.fetchAllPeopleWContact();
+        while(cur.moveToNext()){
+            int index = cur.getColumnIndex(mDbHelper.KEY_CONTACTID);
+            int rowID = cur.getInt(index);
+            List<idNameMail> idNm = conHel.oneFriendWithGoogle(rowID);
+            if (idNm!=null&&idNm.size()>0){
+
+            }
+        }
+        */
         /*
         // Get all of the notes from the database and create the item list
         Cursor c = mDbHelper.fetchAllPeople(); //fetch all people with contact assosiated

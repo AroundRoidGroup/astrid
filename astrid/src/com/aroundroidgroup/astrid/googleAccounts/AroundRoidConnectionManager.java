@@ -187,4 +187,10 @@ public class AroundRoidConnectionManager {
         }
     }
 
+
+    public void stop() {
+        this.setConnected(false);
+        this.setConnecting(false);
+    }
+
 }

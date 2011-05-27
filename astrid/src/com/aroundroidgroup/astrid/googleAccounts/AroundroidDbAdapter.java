@@ -145,6 +145,16 @@ public class AroundroidDbAdapter {
     }
 
     /**
+     * Return a Cursor over the list of all people in the database with real contact id connected to them
+     *
+     * @return Cursor over all people
+     */
+    public Cursor fetchAllPeopleWContact() {
+
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID}, KEY_CONTACTID + ">=0", null, null, null, null);
+    }
+
+    /**
      * Return a Cursor over the list of all people in the database where the mail
      * @param mail mail
      * @return Cursor over all people

@@ -95,9 +95,7 @@ public class PeopleRequestService {
 
     public void stop(){
         setOn(false);
-        if (arcm.isConnected()){
-            arcm.reconnect();
-        }
+        arcm.stop();
     }
 
 }

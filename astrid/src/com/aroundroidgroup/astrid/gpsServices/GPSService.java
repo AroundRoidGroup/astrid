@@ -157,6 +157,10 @@ public class GPSService extends Service{
         private final int sleepTime = defaultSleepTime;
         private final int locationInvalidateTime = defaultLocationInvalidateTime;
 
+        private long lastConnectionTime;
+
+        private final long maxWait = 1000 * 60;
+
         private boolean reported = false;
 
         public void setExit(){
@@ -182,12 +186,16 @@ public class GPSService extends Service{
                             //TODO stop doesn't really works
                             prs.stop();
                             connectCount--;
+                            lastConnectionTime = DateUtilities.now();
                             startPeopleRequests(account);
                         }
                         else if (!reported && (prs.isOn())){
                             reported = true;
                             toastMe("Connection lost!!!");//$NON-NLS-1$
                         }
+                    }
+                    else if (DateUtilities.now()-lastConnectionTime>maxWait){
+                        prs.stop();
                     }
                 }
                 else if (!reported){
@@ -262,7 +270,7 @@ public class GPSService extends Service{
         Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
         //TODO fetch by other id
         Cursor cur = aDba.fetchByMail("me");
-        if (cur!=null){
+        if (cur!=null && cur.moveToFirst()){
             long l = cur.getLong(0);
             cur.close();
             aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());

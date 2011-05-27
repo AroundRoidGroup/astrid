@@ -21,15 +21,20 @@ public class ContactsHelper {
         return cur;
     }
 
+    private Cursor getOneFriendContactCursor(long rowID){
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+                null, ContactsContract.Contacts._ID + "=" + rowID, null, null);
+        return cur;
+    }
+
     public static class idNameMail{
         public String id;
         public String name;
         public String mail;
     }
 
-    public List<idNameMail> friendsWithGoogle(){
+    public List<idNameMail> getFriends(Cursor cur){
         List<idNameMail> friends = new ArrayList<idNameMail>();
-        Cursor cur = getContactsCursor();
         if (cur.getCount() > 0) {
             while (cur.moveToNext()) {
                 idNameMail idm = new idNameMail();
@@ -62,6 +67,20 @@ public class ContactsHelper {
             }
         }
         return friends;
+    }
+
+    public List<idNameMail> friendsWithGoogle(){
+        Cursor cur = getContactsCursor();
+        List<idNameMail>  l = getFriends(cur);
+        cur.close();
+        return l;
+    }
+
+    public List<idNameMail> oneFriendWithGoogle(long rowID){
+        Cursor cur = getOneFriendContactCursor(rowID);
+        List<idNameMail>  l = getFriends(cur);
+        cur.close();
+        return l;
     }
 
 
