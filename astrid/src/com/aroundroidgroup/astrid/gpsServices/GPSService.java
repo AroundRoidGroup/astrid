@@ -86,6 +86,7 @@ public class GPSService extends Service{
         aDba.dropPeople();
         aDba.createPeople("me",-1L);
         //gpsSetup();
+        skyhookSetup();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
