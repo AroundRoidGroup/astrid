@@ -40,6 +40,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -58,6 +59,7 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AccountList;
+import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
@@ -440,7 +442,17 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
             }
         });
 
-        //TODO : check this
+        //TODO : remove the on long click listener
+        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnLongClickListener(new OnLongClickListener() {
+
+
+            @Override
+            public boolean onLongClick(View v) {
+                Intent intent = new Intent(TaskListActivity.this, ConnectedContactsActivity.class);
+                startActivity(intent);
+                return true;
+            }
+        });
         ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnClickListener(new OnClickListener() {
 
 
