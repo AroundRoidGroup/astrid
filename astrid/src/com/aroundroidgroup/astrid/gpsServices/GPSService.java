@@ -225,8 +225,8 @@ public class GPSService extends Service{
                 if (currentLocation!=null &&  prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     for (String people : peopleArr){
-                        Cursor curMail  =aDba.fetchAllMail(people);
-                        if (curMail.moveToFirst()){
+                        Cursor curMail  =aDba.fetchByMail(people);
+                        if (curMail!=null){
 
                         }
                         //aDba.createPeople(key, mail, connected);
@@ -235,11 +235,12 @@ public class GPSService extends Service{
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
                         for (FriendProps fp : lfp){
-                            Cursor c = aDba.fetchAllMail(fp.getMail());
-                            c.moveToFirst();
-                            long id = c.getInt(0);
-                            c.close();
-                            aDba.updatePeople(id,fp.getLat(),fp.getLon(),fp.getTime());
+                            Cursor c = aDba.fetchByMail(fp.getMail());
+                            if (c!=null){
+                                long id = c.getInt(0);
+                                c.close();
+                                aDba.updatePeople(id,fp.getDlat(),fp.getDlon(),fp.getTimestamp());
+                            }
                         }
                         //TODO doesnt notify!?
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
@@ -261,11 +262,11 @@ public class GPSService extends Service{
     protected void makeUseOfNewLocation(Location location) {
         Toast.makeText(getApplicationContext(), "Coords are: Lat - "+location.getLatitude()+" ,Lon - " + location.getLongitude(), Toast.LENGTH_LONG).show();
         //TODO fetch by other id
-        Cursor cur = aDba.fetchAllMail("me");
+        Cursor cur = aDba.fetchByMail("me");
         cur.moveToFirst();
         long l = cur.getLong(0);
         cur.close();
-        aDba.updatePeople(l,String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()), String.valueOf(location.getTime()));
+        aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());
         setUserLastLocation(location);
         //TODO deal with business
 

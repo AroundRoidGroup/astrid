@@ -24,7 +24,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
@@ -32,11 +31,11 @@ import com.aroundroidgroup.astrid.gpsServices.ContactsHelper.idNameMail;
 import com.timsu.astrid.R;
 
 public class ConnectedContactsActivity extends ListActivity {
-	public static final int SCAN_ID = Menu.FIRST;
+    public static final int SCAN_ID = Menu.FIRST;
 
-	private AroundroidDbAdapter mDbHelper;
-	private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
-	private final ContactsHelper conHel  = new ContactsHelper(getContentResolver());
+    private AroundroidDbAdapter mDbHelper;
+    private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
+    private final ContactsHelper conHel  = new ContactsHelper(getContentResolver());
 
     /** Called when the activity is first created. */
     @Override
@@ -50,18 +49,18 @@ public class ConnectedContactsActivity extends ListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-    	boolean result = super.onCreateOptionsMenu(menu);
-    	//TODO externalize strings
+        boolean result = super.onCreateOptionsMenu(menu);
+        //TODO externalize strings
         menu.add(0, SCAN_ID, 0, "Scan now!"); //$NON-NLS-1$
         return result;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	switch (item.getItemId()) {
+        switch (item.getItemId()) {
         case SCAN_ID:
             if (prs.isConnected()){
-            scanContacts();
+                scanContacts();
             }
             else{
                 Toast.makeText(getApplicationContext(), "Not connected to the people location service!", Toast.LENGTH_SHORT);
@@ -84,29 +83,36 @@ public class ConnectedContactsActivity extends ListActivity {
         //TODO - send and update only the ones that does not aleady exists
         //the list is sorted!
         List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
-        FriendProps exampleProps = new FriendProps();
-        for (idNameMail idnm : chINM){
-            exampleProps.setMail(idnm.mail);
-            int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
-            if (index>=0){
-                FriendProps findMe = lfp.get(index);
-                Cursor curMail = mDbHelper.fetchAllMail(idnm.mail);
-                if (curMail.moveToFirst()){
-                    mDbHelper.updatePeople((curMail.getLong(0)), findMe.getLat(), findMe.getLon(), findMe.getTime(), Long.parseLong(idnm.id));
-                }
-                else{
-                    //TODO change to one function
-                    long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
-                    mDbHelper.updatePeople(rowId, findMe.getLat(), findMe.getLon(), findMe.getTime());
+        if (lfp!=null){
+            FriendProps exampleProps = new FriendProps();
+            for (idNameMail idnm : chINM){
+                exampleProps.setMail(idnm.mail);
+                int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
+                if (index>=0){
+                    FriendProps findMe = lfp.get(index);
+                    Cursor curMail = mDbHelper.fetchByMail(idnm.mail);
+                    if (curMail!=null){
+                        mDbHelper.updatePeople((curMail.getLong(0)), findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
+                    }
+                    else{
+                        //TODO change to one function
+                        long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
+                        mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
+                    }
                 }
             }
+            fillData();
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "Scan faild, cannot connect to service", Toast.LENGTH_LONG);
         }
 
 
-        fillData();
+
     }
 
     private void fillData() {
+        /*
         // Get all of the notes from the database and create the item list
         Cursor c = mDbHelper.fetchAllPeople(); //fetch all people with contact assosiated
         startManagingCursor(c);
@@ -118,6 +124,8 @@ public class ConnectedContactsActivity extends ListActivity {
         SimpleCursorAdapter notes =
             new SimpleCursorAdapter(this, R.layout.contactsf_row, c, from, to);
         setListAdapter(notes);
+         */
+        Toast.makeText(getApplicationContext(), "Scan was a Marvelous success!", Toast.LENGTH_LONG);
 
     }
 }

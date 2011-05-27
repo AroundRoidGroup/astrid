@@ -141,7 +141,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeople() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME}, null, null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID}, null, null, null, null, null);
     }
 
     /**
@@ -149,10 +149,17 @@ public class AroundroidDbAdapter {
      * @param mail mail
      * @return Cursor over all people
      */
-    public Cursor fetchAllMail(String mail) {
+    public Cursor fetchByMail(String mail) {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,
-               KEY_LAT,KEY_LON,KEY_TIME},"mail == "+mail, null, null, null, null);
+        Cursor mCursor =
+
+            mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + mail, null,
+                    null, null, null, null);
+    if (mCursor != null) {
+        mCursor.moveToFirst();
+    }
+    return mCursor;
     }
 
     /**
@@ -167,7 +174,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
                 mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                        KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME}, KEY_ROWID + "=" + rowId, null,
+                        KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_ROWID + "=" + rowId, null,
                         null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
@@ -181,7 +188,7 @@ public class AroundroidDbAdapter {
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(long rowId ,String lat , String lon , String time, Long contactId) {
+    public boolean updatePeople(long rowId ,double lat , double lon , long time, Long contactId) {
         ContentValues args = new ContentValues();
         args.put(KEY_LAT, lat);
         args.put(KEY_LON, lon);
@@ -198,7 +205,7 @@ public class AroundroidDbAdapter {
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(long rowId,String lat , String lon , String time) {
+    public boolean updatePeople(long rowId,double lat , double lon , long time) {
         return updatePeople(rowId,lat, lon, time,null);
     }
 
