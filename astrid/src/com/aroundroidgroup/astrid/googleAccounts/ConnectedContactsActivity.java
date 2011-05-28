@@ -22,6 +22,7 @@ import java.util.List;
 
 import android.app.ListActivity;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -85,7 +86,7 @@ public class ConnectedContactsActivity extends ListActivity {
         switch (item.getItemId()) {
         case SCAN_ID:
             if (prs.isConnected()){
-                scanContacts();
+                new ScanContactsTask().execute();
             }
             else{
                 Toast.makeText(getApplicationContext(), "Not connected to the people location service!", Toast.LENGTH_SHORT);
@@ -94,51 +95,6 @@ public class ConnectedContactsActivity extends ListActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-    //assuming prs is connected
-    private void scanContacts() {
-        List<idNameMail> chINM = conHel.friendsWithGoogle();
-        String[] peopleArr = new String[chINM.size()];
-        int i =0;
-        for (idNameMail idnm : chINM){
-            peopleArr[i++] = idnm.mail;
-        }
-        //TODO - sychronized to be parralled with the GPSService
-        //TODO - send and update only the ones that does not aleady exists
-        //the list is sorted!
-        List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
-        if (lfp!=null && lfp.size()>0){
-            FriendProps exampleProps = new FriendProps();
-            for (idNameMail idnm : chINM){
-                exampleProps.setMail(idnm.mail);
-                int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
-                if (index>=0){
-                    FriendProps findMe = lfp.get(index);
-                    Cursor curMail = mDbHelper.fetchByMail(idnm.mail);
-                    if (curMail!=null && curMail.moveToFirst()){
-                        long l = curMail.getLong(0);
-                        curMail.close();
-                        mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
-                    }
-                    else{
-                        //TODO change to one function
-                        long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
-                        mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
-                    }
-
-                }
-            }
-            fillData();
-        }
-        else{
-            Toast.makeText(getApplicationContext(), "Scan faild, cannot connect to service", Toast.LENGTH_LONG);
-        }
-
-
-
-    }
-
 
     private void fillData() {
 
@@ -159,7 +115,67 @@ public class ConnectedContactsActivity extends ListActivity {
         //TODO find out where the SQL error comes from
         setListAdapter(lastAdapter);
 
-        Toast.makeText(getApplicationContext(), "Scan was a Marvelous success!", Toast.LENGTH_LONG);
 
+
+    }
+
+    private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
+
+        //assuming prs is connected
+        private boolean scanContacts() {
+            List<idNameMail> chINM = conHel.friendsWithGoogle();
+            String[] peopleArr = new String[chINM.size()];
+            int i =0;
+            for (idNameMail idnm : chINM){
+                peopleArr[i++] = idnm.mail;
+            }
+            //TODO - sychronized to be parralled with the GPSService
+            //TODO - send and update only the ones that does not aleady exists
+            //the list is sorted!
+            List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
+            if (lfp!=null && lfp.size()>0){
+                FriendProps exampleProps = new FriendProps();
+                for (idNameMail idnm : chINM){
+                    exampleProps.setMail(idnm.mail);
+                    int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
+                    if (index>=0){
+                        FriendProps findMe = lfp.get(index);
+                        Cursor curMail = mDbHelper.fetchByMail(idnm.mail);
+                        if (curMail!=null && curMail.moveToFirst()){
+                            long l = curMail.getLong(0);
+                            curMail.close();
+                            mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
+                        }
+                        else{
+                            //TODO change to one function
+                            long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
+                            mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
+                        }
+
+                    }
+                }
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result){
+                fillData();
+                Toast.makeText(getApplicationContext(), "Scan was a Marvelous success!", Toast.LENGTH_LONG);
+            }
+            else{
+                Toast.makeText(getApplicationContext(), "Scan faild, cannot connect to service", Toast.LENGTH_LONG);
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return scanContacts();
+        }
     }
 }

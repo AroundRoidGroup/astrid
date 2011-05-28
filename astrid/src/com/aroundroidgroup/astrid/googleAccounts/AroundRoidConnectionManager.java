@@ -145,6 +145,7 @@ public class AroundRoidConnectionManager {
         return props;
     }
 
+    //TODO change from async task to something real.
     private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
         @Override
         protected Boolean doInBackground(String... tokens) {
