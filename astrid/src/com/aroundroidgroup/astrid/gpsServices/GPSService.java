@@ -33,7 +33,7 @@ public class GPSService extends Service{
 
     //private final ContactsHelper contactsHelper= new ContactsHelper(getContentResolver());
 
-    public final String TAG = "GPSService";
+    public final String TAG = "GPSService"; //$NON-NLS-1$
 
     private final static LocationService threadLocationService = new LocationService();
 
@@ -93,16 +93,16 @@ public class GPSService extends Service{
     private static final int DONE_MESSAGE = 3;
     private XPS _xps;
     private final MyLocationCallback _callback = new MyLocationCallback();
-
+    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid");
+    int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
         Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
-        WPSAuthentication auth =
-            new WPSAuthentication("aroundroid", "AroundRoid");
+
         _xps.getXPSLocation(auth,
                             // note we convert _period to seconds
-                            8,
-                            50,
+                            30,
+                            currMin,
                             _callback);
     }
 
@@ -330,6 +330,18 @@ public class GPSService extends Service{
         }
         setUserLastLocation(location);
         Notificator.handleByTypeAndBySpecificNotification(location);
+        int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
+        if (realMin!=currMin){
+            currMin = realMin;
+            _xps.abort();
+            double speed = Math.min(location.getSpeed(),40);
+            _xps.getXPSLocation(auth,
+                    // note we convert _period to seconds
+                    (int)(location.getSpeed()<0.5?5*60:currMin/speed),
+                    currMin,
+                    _callback);
+
+        }
         //TODO deal with business
 
     }

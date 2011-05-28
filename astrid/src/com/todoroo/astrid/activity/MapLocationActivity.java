@@ -4,23 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
-import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
-import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
@@ -106,6 +98,7 @@ public void onCreate(Bundle savedInstanceState) {
     /* adding people that are related to the task */
     people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
     if (people.length > 0) {
+        /*
         try {
             String cat = AroundRoidAppConstants.join(people, "::");
             myService.httpLock.lock();
@@ -133,6 +126,7 @@ public void onCreate(Bundle savedInstanceState) {
             e.printStackTrace();
         }
         mapView.setClickable(true);
+        */
     }
 
     /* determine the central point in the map to be current location of the device */

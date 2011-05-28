@@ -7,6 +7,7 @@ import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Join;
+import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.api.R;
@@ -19,7 +20,7 @@ import com.todoroo.astrid.service.MetadataService;
 
 public class LocationService {
 
-//TODO : check synchronized??
+    //TODO : check synchronized??
 
     public String[] getLocationsByTypeAsArray(long taskID){
         return getLocationPropertyAsArray(taskID,LocationFields.locationsType,
@@ -192,10 +193,10 @@ public class LocationService {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
-            Metadata item = new Metadata();
-            item.setValue(Metadata.KEY, LocationFields.CAR_RADIUS_METADATA_KEY);
-            item.setValue(LocationFields.carRadius, radius+"");
-            metadata.add(item);
+        Metadata item = new Metadata();
+        item.setValue(Metadata.KEY, LocationFields.CAR_RADIUS_METADATA_KEY);
+        item.setValue(LocationFields.carRadius, radius+""); //$NON-NLS-1$
+        metadata.add(item);
         return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(LocationFields.CAR_RADIUS_METADATA_KEY)) > 0;
     }
 
@@ -203,13 +204,46 @@ public class LocationService {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
-            Metadata item = new Metadata();
-            item.setValue(Metadata.KEY, LocationFields.FOOT_RADIUS_METADATA_KEY);
-            item.setValue(LocationFields.footRadius, radius+"");
-            metadata.add(item);
+        Metadata item = new Metadata();
+        item.setValue(Metadata.KEY, LocationFields.FOOT_RADIUS_METADATA_KEY);
+        item.setValue(LocationFields.footRadius, radius+""); //$NON-NLS-1$
+        metadata.add(item);
 
 
         return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(LocationFields.FOOT_RADIUS_METADATA_KEY)) > 0;
+    }
+
+    public int minimalRadiusRelevant(double speed) {
+        StringProperty prop;
+        String metadataKey;
+        int defaultRadKey;
+        if (speed<25){
+            prop=LocationFields.footRadius;
+            metadataKey = LocationFields.FOOT_RADIUS_METADATA_KEY;
+            defaultRadKey = R.string.p_rmd_default_foot_radius_key;
+        }else{
+            prop=LocationFields.carRadius;
+            metadataKey = LocationFields.CAR_RADIUS_METADATA_KEY;
+            defaultRadKey = R.string.p_rmd_default_car_radius_key;
+        }
+        Query query = Query.select(prop).where(
+                MetadataCriteria.withKey(metadataKey)
+        ).orderBy(Order.desc(prop));
+        TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
+        try {
+            int defaultR = Integer.parseInt(Preferences.getStringValue(defaultRadKey));
+            int min = 10*defaultR;
+            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                String str = cursor.get(prop);
+                if(str!=null)
+                    min = Math.min(min, Integer.parseInt(str));
+                else
+                    min = Math.min(min, defaultR);
+            }
+            return min;
+        } finally {
+            cursor.close();
+        }
     }
 
 }
