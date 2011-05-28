@@ -155,8 +155,8 @@ public class GPSService extends Service{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 1000;
-        private final int defaultLocationInvalidateTime = 1000 * 60;
+        private final int defaultSleepTime = 1000 * 20;
+        private final int defaultLocationInvalidateTime = 1000 * 120;
 
         private final int sleepTime = defaultSleepTime;
         private final int locationInvalidateTime = defaultLocationInvalidateTime;
