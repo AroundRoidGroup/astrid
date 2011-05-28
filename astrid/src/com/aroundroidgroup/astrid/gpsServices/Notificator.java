@@ -50,7 +50,7 @@ public class Notificator {
                 int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
                 if (index>=0){
                     FriendProps findMe = lfp.get(index);
-                    Notificator.notifyAboutPeopleLocation(task, currentLocation,findMe.getDlon(),findMe.getDlat());
+                    Notificator.notifyAboutPeopleLocation(task, currentLocation,findMe.getDlat(),findMe.getDlon());
                 }
             }
         }
