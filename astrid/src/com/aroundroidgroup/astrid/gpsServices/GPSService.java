@@ -76,7 +76,7 @@ public class GPSService extends Service{
 
     @Override
     public void onCreate() {
-        Toast.makeText(getApplicationContext(), "OpenedService", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
         aDba.open();

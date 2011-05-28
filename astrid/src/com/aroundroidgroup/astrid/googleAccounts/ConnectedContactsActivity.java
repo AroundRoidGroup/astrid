@@ -48,7 +48,6 @@ public class ConnectedContactsActivity extends ListActivity {
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
     private ContactsHelper conHel;
 
-    private ArrayAdapter<idNameMail> lastAdapter;
 
     /** Called when the activity is first created. */
     @Override
@@ -59,7 +58,7 @@ public class ConnectedContactsActivity extends ListActivity {
         mDbHelper.open();
         conHel = new ContactsHelper(getContentResolver());
         fillData();
-        Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT);
+        Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT).show();
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
 
@@ -69,6 +68,9 @@ public class ConnectedContactsActivity extends ListActivity {
             // When clicked, show a toast with the TextView text
             Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
                 Toast.LENGTH_SHORT).show();
+            idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
+            Toast.makeText(getApplicationContext(), idnm.id,
+                    Toast.LENGTH_SHORT).show();
           }
         });
     }
@@ -89,7 +91,7 @@ public class ConnectedContactsActivity extends ListActivity {
                 new ScanContactsTask().execute();
             }
             else{
-                Toast.makeText(getApplicationContext(), "Not connected to the people location service!", Toast.LENGTH_SHORT);
+                Toast.makeText(getApplicationContext(), "Not connected to the people location service!", Toast.LENGTH_SHORT).show();
             }
             return true;
         }
@@ -110,9 +112,10 @@ public class ConnectedContactsActivity extends ListActivity {
         }
         cur.close();
 
+        ArrayAdapter<idNameMail> lastAdapter;
 
         lastAdapter = new ArrayAdapter<idNameMail>(this,R.layout.contactsf_row, idnmList);
-        //TODO find out where the SQL error comes from
+
         setListAdapter(lastAdapter);
 
 
@@ -149,7 +152,7 @@ public class ConnectedContactsActivity extends ListActivity {
                         else{
                             //TODO change to one function
                             long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
-                            mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
+                            mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
                         }
 
                     }
@@ -166,10 +169,10 @@ public class ConnectedContactsActivity extends ListActivity {
         protected void onPostExecute(Boolean result) {
             if (result){
                 fillData();
-                Toast.makeText(getApplicationContext(), "Scan was a Marvelous success!", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "Scan was a Marvelous success!", Toast.LENGTH_LONG).show();
             }
             else{
-                Toast.makeText(getApplicationContext(), "Scan faild, cannot connect to service", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "Scan faild, cannot connect to service", Toast.LENGTH_LONG).show();
             }
         }
 
