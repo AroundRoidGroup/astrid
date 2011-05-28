@@ -124,6 +124,10 @@ public class GPSService extends Service{
         criteria.setCostAllowed(true);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
         String provider = locationManager.getBestProvider(criteria, true);
+        Location loc = locationManager.getLastKnownLocation(provider);
+        if (loc!=null){
+            makeUseOfNewLocation(loc);
+        }
         locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
     }
 
@@ -234,7 +238,7 @@ public class GPSService extends Service{
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     for (String people : peopleArr){
                         Cursor curMail  =aDba.fetchByMail(people);
-                        if (curMail==null){
+                        if (curMail==null || !curMail.moveToFirst()){
                             aDba.createPeople(people);
                         }
                     }
@@ -242,8 +246,8 @@ public class GPSService extends Service{
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
                         for (FriendProps fp : lfp){
                             Cursor c = aDba.fetchByMail(fp.getMail());
-                            if (c!=null){
-                                long id = c.getInt(0);
+                            if (c!=null && c.moveToFirst()){
+                                long id = c.getLong(0);
                                 c.close();
                                 aDba.updatePeople(id,fp.getDlat(),fp.getDlon(),fp.getTimestamp());
                             }
