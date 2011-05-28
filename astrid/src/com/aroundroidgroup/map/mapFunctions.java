@@ -36,7 +36,7 @@ public class mapFunctions {
                 /* running on all the tags (bank, post-office, ATM, etc...) */
                 for (Map.Entry<String, DPoint> p : kindLocations.entrySet())
                     map.addItemToOverlay(Misc.degToGeo(p.getValue()), p.getKey(),
-                            Geocoding.reverseGeocoding(p.getValue()), null,
+                            type, Geocoding.reverseGeocoding(p.getValue()),
                             overlayUniqueName);
             } catch (IOException e) {
                 e.printStackTrace();

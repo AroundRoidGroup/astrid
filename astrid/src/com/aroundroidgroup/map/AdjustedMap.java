@@ -157,6 +157,15 @@ public class AdjustedMap extends MapView {
     public void removeTappedLocation(int index) {
         removePoint(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, index);
     }
+
+    public void removeTypeLocation(String type) {
+        MapItemizedOverlay typeOverlay = overlays.get(KIND_OVERLAY_UNIQUE_NAME);
+        for (int i = 0 ; i < typeOverlay.size() ; i++)
+            if (typeOverlay.getItem(i).getSnippet().equals(type))
+                typeOverlay.removeOverlay(i);
+        mapOverlays.add(typeOverlay);
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (addByTap) {
@@ -200,6 +209,8 @@ public class AdjustedMap extends MapView {
                                 for (int i = 0 ; i < allSpecific.length ; i++)
                                     la.add(allSpecific[i]);
                                 la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
+
+                                //TODO consider remove this line because when this close, all points are saved
                                 x.syncLocationsBySpecific(currentTastID, la);
                                 addItemToOverlay(Misc.degToGeo(lastPointedLocation), "Specific Location", address, address, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER); //$NON-NLS-1$
                                 refresh();

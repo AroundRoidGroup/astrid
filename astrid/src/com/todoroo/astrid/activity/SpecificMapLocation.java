@@ -1,6 +1,7 @@
 package com.todoroo.astrid.activity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -13,19 +14,22 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
-import com.aroundroidgroup.map.AsyncAutoComplete;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
 import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.mapFunctions;
 import com.google.android.maps.MapActivity;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.ContextManager;
@@ -37,6 +41,7 @@ public class SpecificMapLocation extends MapActivity {
     public static final String SPECIFIC_POINTS_SECOND = "SpecificMapLocation2"; //$NON-NLS-1$
     public static final int FOCACCIA_RESULT_CODE = 1;
     public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 2;
+    public static final int FOCACCIA_RESULT_CODE_FOR_KIND = 3;
 
     private static final int MENU_SPECIFIC_GROUP = 1;
     private static final int MENU_KIND_GROUP = 65536;
@@ -45,8 +50,27 @@ public class SpecificMapLocation extends MapActivity {
     private long taskID;
     private AdjustedMap mapView;
 
-    private Thread previousThread = null;
+    private LocationService locationService;
+    private List<String> types = null;
+    private final Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
+
+    private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(SpecificMapLocation.this, "No locations for this task", Toast.LENGTH_LONG).show();
+        }
+    };
+
+    private final OnLongClickListener nothingToShowLongClickListener = new View.OnLongClickListener() {
+
+        @Override
+        public boolean onLongClick(View v) {
+            Toast.makeText(SpecificMapLocation.this, "No locations for this task", Toast.LENGTH_LONG).show();
+            return false;
+        }
+    };
 
     @Override
     protected boolean isRouteDisplayed() {
@@ -61,40 +85,48 @@ public class SpecificMapLocation extends MapActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenuInfo menuInfo) {
-      super.onCreateContextMenu(menu, v, menuInfo);
-      menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
-      String[] specificAsAddress = mapView.getTappedAddress();
-      DPoint[] specificAsCoords = mapView.getTappedCoords();
-      for (int i = 0 ; i < specificAsAddress.length ; i++)
-          menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
+            ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
+        String[] specificAsAddress = mapView.getTappedAddress();
+        DPoint[] specificAsCoords = mapView.getTappedCoords();
+        for (int i = 0 ; i < specificAsAddress.length ; i++)
+            menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
+        for (int i = 0 ; i < types.size() ; i++)
+            menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-      switch (item.getGroupId()) {
-      case MENU_SPECIFIC_GROUP:
-          mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
-          Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
-          AdjustedOverlayItem mItem = mapView.getTappedItem(item.getItemId() - MENU_SPECIFIC_GROUP);
-          String[] sentData = new String[6];
-          sentData[0] = item.getItemId() - MENU_SPECIFIC_GROUP + ""; //$NON-NLS-1$
-          sentData[1] = item.getTitle().toString();
-          sentData[2] = mItem.getTitle();
-          sentData[3] = mItem.getSnippet();
-          sentData[4] = mItem.getAddress();
-          sentData[5] = "1"; // can be removed //$NON-NLS-1$
-
-          intent.putExtra(Focaccia.SOURCE_SPECIFICMAP, sentData);
-          this.startActivityForResult(intent, 1);
-          return true;
-      case MENU_KIND_GROUP:
-          return true;
-      case MENU_PEOPLE_GROUP:
-          mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
-          return true;
-      default: return super.onContextItemSelected(item);
-      }
+        switch (item.getGroupId()) {
+        case MENU_SPECIFIC_GROUP:
+            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
+            AdjustedOverlayItem mItem = mapView.getTappedItem(item.getItemId() - MENU_SPECIFIC_GROUP);
+            String[] sentData = new String[6];
+            sentData[0] = item.getItemId() - MENU_SPECIFIC_GROUP + ""; //$NON-NLS-1$
+            sentData[1] = item.getTitle().toString();
+            sentData[2] = mItem.getTitle();
+            sentData[3] = mItem.getSnippet();
+            sentData[4] = mItem.getAddress();
+            sentData[5] = "1"; // can be removed //$NON-NLS-1$
+            intent.putExtra(Focaccia.SOURCE_SPECIFICMAP, sentData);
+            this.startActivityForResult(intent, 1);
+            return true;
+        case MENU_KIND_GROUP:
+            //TODO find the closest location of this type and center the map around it
+            Intent intentKind = new Intent(ContextManager.getContext(), Focaccia.class);
+            String[] sentDataKind = new String[2];
+            sentDataKind[0] = mapView.getOverlaySize(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME) + ""; //$NON-NLS-1$
+            sentDataKind[1] = item.getTitle().toString();
+            intentKind.putExtra(Focaccia.SOURCE_SPECIFICMAP_KIND, sentDataKind);
+            this.startActivityForResult(intentKind, 1);
+            return true;
+        case MENU_PEOPLE_GROUP:
+            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            return true;
+        default: return super.onContextItemSelected(item);
+        }
     }
 
     @Override
@@ -110,24 +142,26 @@ public class SpecificMapLocation extends MapActivity {
         /* disabling the feature that shows the device location on the map */
         mapView.removeDeviceLocation();
 
+        mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
+
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-        textView.setAdapter(adapter);
+//        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
+//        textView.setAdapter(adapter);
 
-        textView.setOnKeyListener(new View.OnKeyListener() {
-
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (previousThread != null) {
-                    if (previousThread.isAlive())
-                        previousThread.destroy();
-                    previousThread = null;
-                }
-                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-                previousThread.run();
-                return false;
-            }
-        });
+//        textView.setOnKeyListener(new View.OnKeyListener() {
+//
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                if (previousThread != null) {
+//                    if (previousThread.isAlive())
+//                        previousThread.destroy();
+//                    previousThread = null;
+//                }
+//                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
+//                previousThread.run();
+//                return false;
+//            }
+//        });
 
 
 
@@ -158,43 +192,37 @@ public class SpecificMapLocation extends MapActivity {
             mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
         }
 
+        locationService = new LocationService();
+        types = new ArrayList<String>();
+        /* adding the existed business types */
+        String[] existedTypes = locationService.getLocationsByTypeAsArray(taskID);
+        for (String s : existedTypes)
+            types.add(s);
+
         Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
-        if (mapView.getTappedPointsCount() == 0) {
-            viewAll.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(SpecificMapLocation.this, "No locations for this task", Toast.LENGTH_LONG).show();
-                }
-            });
-            viewAll.setOnLongClickListener(new View.OnLongClickListener() {
-
-                @Override
-                public boolean onLongClick(View v) {
-                    Toast.makeText(SpecificMapLocation.this, "No locations for this task", Toast.LENGTH_LONG).show();
-                    return false;
-                }
-            });
+        if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+            viewAll.setOnClickListener(nothingToShowClickListener);
+            viewAll.setOnLongClickListener(nothingToShowLongClickListener);
         }
 
 
         /* getting the task by the taskID that has been extracted from the Intent */
-//        TaskService taskService = new TaskService();
-//        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.TITLE).
-//                where(MetadataCriteria.byTask(taskID)).
-//                orderBy(SortHelper.defaultTaskOrder()).limit(100));
-//        try {
-//            Toast.makeText(this, cursor.getCount() + " results", Toast.LENGTH_LONG).show();
-//            Task task = new Task();
-//            cursor.moveToNext();
-//            task.readFromCursor(cursor);
-//        } finally {
-//            cursor.close();
-//        }
+        //        TaskService taskService = new TaskService();
+        //        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.TITLE).
+        //                where(MetadataCriteria.byTask(taskID)).
+        //                orderBy(SortHelper.defaultTaskOrder()).limit(100));
+        //        try {
+        //            Toast.makeText(this, cursor.getCount() + " results", Toast.LENGTH_LONG).show();
+        //            Task task = new Task();
+        //            cursor.moveToNext();
+        //            task.readFromCursor(cursor);
+        //        } finally {
+        //            cursor.close();
+        //        }
 
         /* setting a headline with the task's title */
-//        TextView title = (TextView)findViewById(R.id.takeTitle);
+        //        TextView title = (TextView)findViewById(R.id.takeTitle);
 
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
@@ -215,28 +243,39 @@ public class SpecificMapLocation extends MapActivity {
             @Override
             public void onClick(View v) {
                 DPoint d = null;
-                try {
-                    d = Geocoding.geocoding(address.getText().toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                String text = address.getText().toString();
+
+                if (Misc.isType(text)) {
+                    String[] type = new String[1];
+                    type[0] = text.replace(' ', '_');
+                    mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
+                    types.add(text);
                 }
-                if (d != null) {
-                    String address = null;
+                else {
                     try {
-                        address = Geocoding.reverseGeocoding(d);
+                        d = Geocoding.geocoding(text);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    if (address == null)
-                        address = new String("Specific Location"); //$NON-NLS-1$
+                    if (d != null) {
+                        String address = null;
+                        try {
+                            address = Geocoding.reverseGeocoding(d);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if (address == null)
+                            address = new String("Specific Location"); //$NON-NLS-1$
                         mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
                         mapView.invalidate();
+                    }
+                    else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+
                 }
-                else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             }
         });
 
@@ -244,8 +283,8 @@ public class SpecificMapLocation extends MapActivity {
 
             @Override
             public void onClick(View v) {
-               address.setText(""); //$NON-NLS-1$
-               address.setOnClickListener(null);
+                address.setText(""); //$NON-NLS-1$
+                address.setOnClickListener(null);
             }
         });
 
@@ -258,6 +297,14 @@ public class SpecificMapLocation extends MapActivity {
             mapView.removeTappedLocation(Integer.parseInt(bundle.getString(Focaccia.SOURCE_ADJUSTEDMAP)));
             mapView.invalidate();
             Toast.makeText(this, "after there are " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+            super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+        if (resultCode == FOCACCIA_RESULT_CODE_FOR_KIND) {
+            Bundle bundle = data.getExtras();
+            Toast.makeText(this, "going to remove the type: " + bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND), Toast.LENGTH_LONG).show();
+            mapView.removeTypeLocation(bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND));
+            Toast.makeText(this, "type: " + bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND) + " has been removed", Toast.LENGTH_LONG).show();
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }

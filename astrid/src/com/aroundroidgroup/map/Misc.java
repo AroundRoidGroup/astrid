@@ -20,6 +20,30 @@ import com.google.android.maps.GeoPoint;
 
 public class Misc {
 
+    public static final String[] types = {"accounting", "airport", "amusement park", "aquarium", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        "art gallery", "atm", "bakery", "bank", "bar", "beauty salon", "bicycle store", "book store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+        "bowling alley", "bus station", "cafe", "campground", "car dealer", "car rental", "car repair", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "car wash", "casino", "cemetery", "church", "city hall", "clothing store", "convenience store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "courthouse", "dentist", "department store", "doctor", "electrician", "electronics store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        "embassy", "establishment", "finance", "fire station", "florist", "food", "funeral home", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "furniture store", "gas station", "general contractor", "geocode", "grocery or supermarket", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        "gym", "hair care", "hardware store", "health", "hindu temple", "home goods store", "hospital", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "insurance agency", "jewelry store", "laundry", "lawyer", "library", "liquor store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        "local government office", "locksmith", "lodging", "meal delivery", "meal takeaway", "mosque", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        "movie rental", "movie theater", "moving company", "museum", "night club", "painter", "park", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "parking", "pet store", "pharmacy", "physiotherapist", "place of worship", "plumber", "police", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "post office", "real estate agency", "restaurant", "roofing contractor", "rv park", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        "shoe store", "shopping mall", "spa", "stadium", "storage", "store", "subway station", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+        "synagogue", "taxi stand", "train station", "travel agency", "university", "veterinary care", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        "zoo"};     //$NON-NLS-1$
+
+    public static boolean isType(String type) {
+        for (String s : types)
+            if (s.equalsIgnoreCase(type))
+                return true;
+        return false;
+    }
+
     /* the service returns up to 20 results. */
     public static Map<String, DPoint> googlePlacesQuery(String type, Location location, double radius) throws IOException, JSONException {
         URL googlePlacesURL = new URL("https://maps.googleapis.com/maps/api/place/search/json?" + //$NON-NLS-1$
