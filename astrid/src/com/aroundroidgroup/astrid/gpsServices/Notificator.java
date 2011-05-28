@@ -13,6 +13,7 @@ import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
+import com.skyhookwireless.wps.WPSLocation;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
@@ -26,20 +27,20 @@ import com.todoroo.astrid.service.TaskService;
 
 public class Notificator {
     static LocationService locationService = new LocationService();
-    public static void notifyAboutPeopleLocation(Task task,Location myLocation, double lat, double lon) {
+    public static void notifyAboutPeopleLocation(Task task,WPSLocation currentLocation, double lat, double lon) {
         float[] arr = new float[3];
         //TODO : check array
 
         Location.distanceBetween(
-                myLocation.getLatitude(),
-                myLocation.getLongitude(),
+                currentLocation.getLatitude(),
+                currentLocation.getLongitude(),
                 lat,lon, arr);
         float dist = arr[0];
 
         //distance - 100 kilometers
         //TODO change 25 to an editable parameter
         int radius = 0;
-        if (myLocation.getSpeed()>25)
+        if (currentLocation.getSpeed()>25)
             radius = locationService.getCarRadius(task.getId());
         else
             radius = locationService.getFootRadius(task.getId());
@@ -52,7 +53,7 @@ public class Notificator {
 
 
     //assuming lfp is sorted by mail
-    public static void notifyAllPeople(Location currentLocation,
+    public static void notifyAllPeople(WPSLocation currentLocation,
             List<FriendProps> lfp, LocationService ls) {
         //notify the tasks
         TodorooCursor<Task> cursor = AstridQueries.getDefaultCursor();
@@ -74,7 +75,7 @@ public class Notificator {
         }
     }
 
-    public static void handleByTypeAndBySpecificNotification(Location location) {
+    public static void handleByTypeAndBySpecificNotification(WPSLocation location) {
         TaskService taskService = new TaskService();
         TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
                 Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
@@ -93,7 +94,7 @@ public class Notificator {
         }
     }
 
-    private static void notifyAboutLocationIfNeeded(Task task,Location location, boolean inDriveMode) {
+    private static void notifyAboutLocationIfNeeded(Task task,WPSLocation location, boolean inDriveMode) {
         //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
         int radius;
         if (inDriveMode)
@@ -108,7 +109,7 @@ public class Notificator {
     }
 
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
-            Location location, int radius) {
+            WPSLocation location, int radius) {
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
                 if (!(Misc.googlePlacesQuery(str,location,radius).isEmpty()))
@@ -127,7 +128,7 @@ public class Notificator {
     }
 
     private static boolean notifyAboutSpecificLocationNeeded(Task task,
-            Location location, int radius) {
+            WPSLocation location, int radius) {
         for (String str: locationService.getLocationsBySpecificAsArray(task.getId())){
             DPoint dp = new DPoint(str);
             float[] arr = new float[1];
