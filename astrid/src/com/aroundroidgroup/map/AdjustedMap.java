@@ -2,14 +2,18 @@ package com.aroundroidgroup.map;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -20,26 +24,31 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
-import com.google.android.maps.OverlayItem;
 import com.timsu.astrid.R;
+import com.todoroo.andlib.service.ContextManager;
+import com.todoroo.astrid.activity.myService;
 
 public class AdjustedMap extends MapView {
 
     Context context = null;
     private DPoint lastPointedLocation = null;
-    private long currentTastID;
+    private long currentTastID = -1;
     private String address = null;
-    private MapItemizedOverlay specificOverlays;
+    private Map<String, MapItemizedOverlay> overlays;
     private List<Overlay> mapOverlays;
 
-    public String[] getAllPoints() {
-        String[] allPoints = new String[specificOverlays.size()];
-        for (int i = 0 ; i < specificOverlays.size() ; i++) {
-            DPoint d = (Misc.geoToDeg(specificOverlays.getItem(i).getPoint()));
-            allPoints[i] = d.getX() + "," + d.getY();
-        }
-        return allPoints;
-    }
+    /* setting this boolean to true, will enable the feature that add location by */
+    /* tapping on the map */
+    private boolean addByTap = false;
+    private static final String UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER = "KAPZHrRxCrtfTINb4zRjSWCXYuFBBc34P1hF6jgwuV059jLr"; //$NON-NLS-1$
+
+    /* setting this boolean to true, will enable the feature that shows the device location on the map */
+    private boolean showDeviceLocation = false;
+
+    public static final String SPECIFIC_OVERLAY_UNIQUE_NAME = "specific"; //$NON-NLS-1$
+    public static final String KIND_OVERLAY_UNIQUE_NAME = "kind"; //$NON-NLS-1$
+    public static final String PEOPLE_OVERLAY_UNIQUE_NAME = "people"; //$NON-NLS-1$
+    private static final String DEVICE_LOCATION_OVERLAY_UNIQUE_NAME = "deviceLocation"; //$NON-NLS-1$
 
     public AdjustedMap(Context context, String apiKey) {
         super(context, apiKey);
@@ -59,103 +68,238 @@ public class AdjustedMap extends MapView {
         init();
     }
 
+    public void showDeviceLocation() {
+        if (showDeviceLocation == false) {
+            showDeviceLocation = true;
+            createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
+            GeoPoint lastDeviceLocation = Misc.locToGeo(myService.getLastUserLocation());
+            addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+        }
+    }
+
+    public void removeDeviceLocation() {
+        if (showDeviceLocation == true) {
+            showDeviceLocation = false;
+            mapOverlays.remove(overlays.get(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME));
+            overlays.remove(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME);
+        }
+    }
+
+    public boolean createOverlay(String uniqueName, Drawable d) {
+        if (uniqueName == null || d == null)
+            return false;
+        if (overlays.get(uniqueName) == null) {
+            overlays.put(uniqueName, new MapItemizedOverlay(d));
+            return true;
+        }
+        return false;
+    }
+
+    public MapItemizedOverlay getOverlay(String uniqueName) {
+        return overlays.get(uniqueName);
+    }
+
+    public void addItemToOverlay(GeoPoint g, String title, String snippet, String address, String identifier) {
+        if (identifier == null)
+            return;
+        MapItemizedOverlay overlay = overlays.get(identifier);
+        if (overlay != null) {
+            if (g != null && title != null && snippet != null) {
+                overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, address));
+                mapOverlays.add(overlay);
+            }
+        }
+    }
+
+    public int getAllPointsCount() {
+        int count = 0;
+        for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet())
+            count += pair.getValue().size();
+        return count;
+    }
+
+    public int getTappedPointsCount() {
+        if (addByTap)
+            return overlays.get(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER).size();
+        return 0;
+    }
+
+    public int getOverlaySize(String identifier) {
+        if (identifier == null)
+            return -1;
+        return overlays.get(identifier).size();
+    }
+
     public void associateMapWithTask(long taskID) {
         currentTastID = taskID;
     }
 
     private void init() {
+        overlays = new HashMap<String, MapItemizedOverlay>();
         mapOverlays = getOverlays();
-        Drawable drawable = this.getResources().getDrawable(R.drawable.icon_pp);
-        specificOverlays = new MapItemizedOverlay(drawable);
+        showDeviceLocation();
+        getController().setZoom(18);
+        getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
     }
 
+    /* calling this function will automatically add an overlay for specific locations */
+    public void enableAddByTap() {
+        addByTap = true;
+        createOverlay(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER,
+                this.getResources().getDrawable(R.drawable.icon_pp));
+    }
+
+    public void addTappedLocation(GeoPoint g, String title, String snippet) {
+        if (addByTap)
+            addItemToOverlay(g, title, snippet, snippet, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER);
+    }
+
+    public void removeTappedLocation(int index) {
+        removePoint(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, index);
+    }
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        int actionType = event.getAction();
-        switch (actionType) {
-        case MotionEvent.ACTION_UP:
-            GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
-            lastPointedLocation = Misc.geoToDeg(p);
+        if (addByTap) {
+            int actionType = event.getAction();
+            switch (actionType) {
+            case MotionEvent.ACTION_UP:
+                if (event.getEventTime() - event.getDownTime() > 1500) {
+                    GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
+                    lastPointedLocation = Misc.geoToDeg(p);
 
-            /* popping up a dialog so the user could confirm his location choice */
-            AlertDialog dialog = new AlertDialog.Builder(context).create();
-            dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                    /* popping up a dialog so the user could confirm his location choice */
+                    AlertDialog dialog = new AlertDialog.Builder(context).create();
+                    dialog.setIcon(android.R.drawable.ic_dialog_alert);
 
-            /* setting the dialog title */
-            dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
+                    /* setting the dialog title */
+                    dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
 
-            /* setting the dialog message. in this case, asking the user if he's sure he */
-            /* wants to add the tapped location to the task, so the task will be specific- */
-            /* location based */
+                    /* setting the dialog message. in this case, asking the user if he's sure he */
+                    /* wants to add the tapped location to the task, so the task will be specific- */
+                    /* location based */
 
 
-            try {
-                address = Geocoding.reverseGeocoding(lastPointedLocation);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (JSONException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            if (address != null) {
-                dialog.setMessage("Would you like to add the following location:\n" + address); //$NON-NLS-1$
-
-                /* setting the confirm button text and action to be executed if it has been chosen */
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
-                        new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dg, int which) {
-                        /* adding the location to the task */
-                        LocationService x = new LocationService();
-                        String[] allSpecific = x.getLocationsBySpecificAsArray(currentTastID);
-                        LinkedHashSet<String> la = new LinkedHashSet<String>();
-                        for (int i = 0 ; i < allSpecific.length ; i++)
-                            la.add(allSpecific[i]);
-                        la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
-                        x.syncLocationsBySpecific(currentTastID, la);
-                       specificOverlays.addOverlay(new OverlayItem(Misc.degToGeo(lastPointedLocation), address, "Specific Location"));
-                       mapOverlays.add(specificOverlays);
-                       refresh();
+                    try {
+                        address = Geocoding.reverseGeocoding(lastPointedLocation);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                });
-                /* setting the refuse button text and action to be executed if it has been chosen */
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
-                        new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dg, int which) {
-                        return;
+                    if (address != null) {
+                        dialog.setMessage("Would you like to add the following location:\n" + address); //$NON-NLS-1$
+
+                        /* setting the confirm button text and action to be executed if it has been chosen */
+                        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
+                                new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dg, int which) {
+                                /* adding the location to the task */
+                                LocationService x = new LocationService();
+                                String[] allSpecific = x.getLocationsBySpecificAsArray(currentTastID);
+                                LinkedHashSet<String> la = new LinkedHashSet<String>();
+                                for (int i = 0 ; i < allSpecific.length ; i++)
+                                    la.add(allSpecific[i]);
+                                la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
+                                x.syncLocationsBySpecific(currentTastID, la);
+                                addItemToOverlay(Misc.degToGeo(lastPointedLocation), "Specific Location", address, address, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER); //$NON-NLS-1$
+                                refresh();
+                            }
+                        });
+                        /* setting the refuse button text and action to be executed if it has been chosen */
+                        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
+                                new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dg, int which) {
+                                return;
+                            }
+                        });
+                        dialog.show();
                     }
-                });
-                dialog.show();
+                    else Toast.makeText(context, "geocoding failed!", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
+                }
             }
-            else Toast.makeText(context, "fall back!", Toast.LENGTH_SHORT).show(); //$NON-NLS-1$
         }
         return super.dispatchTouchEvent(event);
     }
 
-public void refresh() {
-    this.invalidate();
-}
+    public void refresh() {
+        this.invalidate();
+    }
 
     public DPoint getPointedCoordinates() {
         return lastPointedLocation;
     }
 
-    public class MapItemizedOverlay extends ItemizedOverlay<OverlayItem> {
-        private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-        Context mContext;
+    public void removePoint(String identifier, int index) {
+        if (identifier == null)
+            return;
+        overlays.get(identifier).removeOverlay(index);
+    }
+
+    public String[] getAllByIDAsAddress(String identifier) {
+        MapItemizedOverlay overlay = overlays.get(identifier);
+        if (overlay == null)
+            return new String[0];
+        String[] points = new String[overlay.size()];
+        for (int i = 0 ; i < points.length ; i++)
+            points[i] = overlay.getItem(i).getAddress();
+        return points;
+    }
+
+    public DPoint[] getAllByIDAsCoords(String identifier) {
+        MapItemizedOverlay overlay = overlays.get(identifier);
+        if (overlay == null)
+            return new DPoint[0];
+        DPoint[] points = new DPoint[overlay.size()];
+        for (int i = 0 ; i < points.length ; i++)
+            points[i] = Misc.geoToDeg(overlay.getItem(i).getPoint());
+        return points;
+    }
+
+    public String[] getTappedAddress() {
+        return getAllByIDAsAddress(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER);
+    }
+
+    public DPoint[] getTappedCoords() {
+        return getAllByIDAsCoords(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER);
+    }
+
+    public DPoint[] getAllPoints() {
+        int count = 0;
+        DPoint[] allPoints = new DPoint[getAllPointsCount()];
+        for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
+            MapItemizedOverlay overlay = pair.getValue();
+            for (int i = 0 ; i < allPoints.length ; i++)
+                allPoints[count + i] = Misc.geoToDeg(overlay.getItem(i).getPoint());
+            count += overlay.size();
+        }
+        return allPoints;
+    }
+
+    public String[] getAllAddresses() {
+        int count = 0;
+        String[] AllAddresses = new String[getAllPointsCount()];
+        for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
+            MapItemizedOverlay overlay = pair.getValue();
+            for (int i = 0 ; i < AllAddresses.length ; i++)
+                AllAddresses[count + i] = overlay.getItem(i).getAddress();
+            count += overlay.size();
+        }
+        return AllAddresses;
+    }
+
+    public AdjustedOverlayItem getTappedItem(int index) {
+        return overlays.get(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER).createItem(index);
+    }
+
+    public class MapItemizedOverlay extends ItemizedOverlay<AdjustedOverlayItem> {
+        private final ArrayList<AdjustedOverlayItem> mOverlays = new ArrayList<AdjustedOverlayItem>();
 
         public MapItemizedOverlay(Drawable defaultMarker) {
             super(boundCenterBottom(defaultMarker));
-            // TODO Auto-generated constructor stub
-        }
-
-        public MapItemizedOverlay(Drawable defaultMarker, Context context) {
-            super(defaultMarker);
-            mContext = context;
         }
 
         @Override
-        protected OverlayItem createItem(int i) {
+        protected AdjustedOverlayItem createItem(int i) {
             return mOverlays.get(i);
         }
 
@@ -164,10 +308,49 @@ public void refresh() {
             return mOverlays.size();
         }
 
-        public void addOverlay(OverlayItem overlay) {
+        @Override
+        protected boolean onTap(int index) {
+            AdjustedOverlayItem item = mOverlays.get(index);
+            Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
+            String[] sentData = new String[6];
+            sentData[0] = index + ""; //$NON-NLS-1$
+            sentData[1] = Misc.geoToDeg(item.getPoint()).toString();
+            sentData[2] = item.getTitle();
+            sentData[3] = item.getSnippet();
+            sentData[4] = item.getAddress();
+            if (overlays.get(SPECIFIC_OVERLAY_UNIQUE_NAME) == this) {
+                sentData[5] = "1"; // can be removed //$NON-NLS-1$
+            }
+            else if (overlays.get(KIND_OVERLAY_UNIQUE_NAME) == this) {
+                sentData[5] = "0"; // can't be removed //$NON-NLS-1$
+            }
+            else if (overlays.get(PEOPLE_OVERLAY_UNIQUE_NAME) == this) {
+                sentData[5] = "0"; // can't be removed //$NON-NLS-1$
+            }
+            else if (overlays.get(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME) == this) {
+                sentData[5] = "0"; // can't be removed //$NON-NLS-1$
+            }
+            else if (overlays.get(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER) == this) {
+                sentData[5] = "1"; // can be removed //$NON-NLS-1$
+            }
+            intent.putExtra(Focaccia.SOURCE_ADJUSTEDMAP, sentData);
+            ((Activity) AdjustedMap.this.context).startActivityForResult(intent, 1);
+            return true;
+        }
+
+        public void addOverlay(AdjustedOverlayItem overlay) {
+            Toast.makeText(context, "hosafa", Toast.LENGTH_LONG).show();
             mOverlays.add(overlay);
             populate();
         }
+
+        public void removeOverlay(int index) {
+            //TODO check if index is not out of borders
+//            mOverlays.remove(createItem(index));
+            mOverlays.clear();
+            populate();
+        }
+
     }
 
 }

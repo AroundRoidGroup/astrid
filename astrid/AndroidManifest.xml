@@ -64,7 +64,7 @@
   <supports-screens />
   
   <application android:icon="@drawable/icon" android:label="@string/app_name"
-               android:theme="@style/Theme">
+               android:theme="@style/Theme" android:debuggable="true">
                
     <!-- ====================================================== Google Maps = -->
     
@@ -552,7 +552,9 @@
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.AccountList"></activity>
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.AppInfo"></activity>
     <activity android:name="com.todoroo.astrid.activity.SpecificMapLocation"></activity>
-    <activity android:name="com.todoroo.astrid.activity.MapFilterActivity"></activity>
+    <activity android:name="com.todoroo.astrid.activity.MapFilterActivity">
+    </activity>
+    <activity android:name="com.aroundroidgroup.map.Focaccia" android:theme="@style/Theme.Dialog"></activity>
 
   </application>
 

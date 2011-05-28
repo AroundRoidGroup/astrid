@@ -9,6 +9,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 import android.app.Service;
@@ -166,11 +167,44 @@ public class myService extends Service{
     private static void notifyAboutLocation(Task task,Location myLocation, String str) {
         //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
 
-
-        if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
-            Notifications.cancelLocationNotification(task.getId());
-        else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+        //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+      //TODO @@@@@@@@@@@@@@@@@@@@@@@@@@@
+        try {
+            if (Misc.googlePlacesQuery(str,myLocation,500.0).isEmpty())
+                Notifications.cancelLocationNotification(task.getId());
+            else
+                ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
     public static Location getLastUserLocation() {

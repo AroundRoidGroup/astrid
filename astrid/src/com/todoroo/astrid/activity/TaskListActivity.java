@@ -845,7 +845,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         AdapterContextMenuInfo adapterInfo = (AdapterContextMenuInfo)menuInfo;
         Task task = ((ViewHolder)adapterInfo.targetView.getTag()).task;
         int id = (int)task.getId();
-        menu.setHeaderTitle(task.getValue(Task.TITLE));
+        menu.setHeaderTitle(task.getValue(Task.TITLE) + " gerbil");
 
         if(task.isDeleted()) {
             menu.add(id, CONTEXT_MENU_UNDELETE_TASK_ID, Menu.NONE,

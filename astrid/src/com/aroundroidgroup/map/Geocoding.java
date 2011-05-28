@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public class Geocoding {
     public static DPoint geocoding(String address) throws IOException, JSONException {
         URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?" +
-                "address=" + address + "&sensor=true");
+                "address=" + webString(address) + "&sensor=true");
         URLConnection connection = url.openConnection();
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000000);
@@ -69,5 +69,9 @@ public class Geocoding {
             }
         }
         return null;
+    }
+
+    private static String webString(String str) {
+        return new String(str.replace(' ', '+'));
     }
 }
