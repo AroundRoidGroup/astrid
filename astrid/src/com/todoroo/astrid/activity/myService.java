@@ -27,7 +27,6 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.locationTags.LocationService;
-import com.aroundroidgroup.map.Misc;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
@@ -153,10 +152,10 @@ public class myService extends Service{
         //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
 
 
-        if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
+     /*   if (Misc.getPlaces(str,10,myLocation,5).isEmpty())
             Notifications.cancelLocationNotification(task.getId());
         else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+       */     ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
 
     }
     public static Location getLastUserLocation() {

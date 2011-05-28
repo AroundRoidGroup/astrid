@@ -8,6 +8,8 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
+import com.todoroo.andlib.utility.Preferences;
+import com.todoroo.astrid.api.R;
 import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.dao.MetadataDao;
 import com.todoroo.astrid.data.Metadata;
@@ -158,11 +160,12 @@ public class LocationService {
                         MetadataCriteria.byTask(taskId)));
         TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
         try {
+            int defaultR = Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_car_radius_key));
             if (cursor.getCount()==0)
-                return -1;
+                return defaultR;
             cursor.moveToNext();
             String str = cursor.get(LocationFields.carRadius);
-            return str==null?-1:Integer.parseInt(str);
+            return str==null?defaultR:Integer.parseInt(str);
         } finally {
             cursor.close();
         }
@@ -174,11 +177,12 @@ public class LocationService {
                         MetadataCriteria.byTask(taskId)));
         TodorooCursor<Metadata> cursor = new MetadataDao().query(query);
         try {
+            int defaultR = Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_foot_radius_key));
             if (cursor.getCount()==0)
-                return -1;
+                return defaultR;
             cursor.moveToNext();
             String str = cursor.get(LocationFields.footRadius);
-            return str==null?-1:Integer.parseInt(str);
+            return str==null?defaultR:Integer.parseInt(str);
         } finally {
             cursor.close();
         }

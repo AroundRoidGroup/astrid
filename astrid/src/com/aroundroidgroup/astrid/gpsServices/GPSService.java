@@ -32,7 +32,7 @@ public class GPSService extends Service{
 
     public final String TAG = "GPSService";
 
-    private final LocationService threadLocationService = new LocationService();
+    private final static LocationService threadLocationService = new LocationService();
 
     private Location userLastLocation = null;
     private final Object userLocationLock = new Object();
@@ -276,6 +276,7 @@ public class GPSService extends Service{
             aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());
         }
         setUserLastLocation(location);
+        Notificator.handleByTypeAndBySpecificNotification(location);
         //TODO deal with business
 
     }
@@ -299,5 +300,8 @@ public class GPSService extends Service{
             Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
         }
     };
+
+
+
 
 }

@@ -1,9 +1,7 @@
 package com.aroundroidgroup.map;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 
-public class DPoint implements Parcelable{
+public class DPoint{
 
     private final double x;
     private final double y;
@@ -11,6 +9,29 @@ public class DPoint implements Parcelable{
     public DPoint(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public DPoint(DPoint d) {
+        this.x = d.x;
+        this.y = d.y;
+    }
+
+    public DPoint(String str) {
+        int delimiterIndex = str.indexOf(',');
+        if (delimiterIndex == -1) {
+            this.x = Double.NaN;
+            this.y = Double.NaN;
+            return;
+        }
+        double tmpX = Double.parseDouble(str.substring(0, delimiterIndex));
+        double tmpY = Double.parseDouble(str.substring(delimiterIndex + 1));
+        if (Double.isNaN(tmpX) || Double.isNaN(tmpY)) {
+            this.x = Double.NaN;
+            this.y = Double.NaN;
+            return;
+        }
+        this.x = tmpX;
+        this.y = tmpY;
     }
 
     public double getX() {
@@ -21,33 +42,12 @@ public class DPoint implements Parcelable{
         return y;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public boolean isNaN() {
+        return Double.isNaN(x);
     }
 
     @Override
-    public void writeToParcel(Parcel arg0, int arg1) {
-        double[] dblArray = new double[2];
-        dblArray[0] = x;
-        dblArray[1] = y;
-        arg0.writeDoubleArray(dblArray);
-    }
-    public static final Parcelable.Creator<DPoint> CREATOR
-    = new Parcelable.Creator<DPoint>() {
-        public DPoint createFromParcel(Parcel in) {
-            return new DPoint(in);
-        }
-
-        public DPoint[] newArray(int size) {
-            return new DPoint[size];
-        }
-    };
-
-    private DPoint(Parcel in) {
-        double[] darr = new double[2];
-        in.readDoubleArray(darr);
-        x = darr[0];
-        y = darr[1];
+    public String toString() {
+        return x + "," + y; //$NON-NLS-1$
     }
 }
