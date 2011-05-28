@@ -17,11 +17,12 @@ import org.json.JSONObject;
 import android.location.Location;
 
 import com.google.android.maps.GeoPoint;
+import com.skyhookwireless.wps.WPSLocation;
 
 public class Misc {
 
     /* the service returns up to 20 results. */
-    public static Map<String, DPoint> googlePlacesQuery(String type, Location location, double radius) throws IOException, JSONException {
+    public static Map<String, DPoint> googlePlacesQuery(String type, WPSLocation location, double radius) throws IOException, JSONException {
         String strr = "https://maps.googleapis.com/maps/api/place/search/json?" + //$NON-NLS-1$
         "location=" + location.getLatitude() + "," + location.getLongitude() + //$NON-NLS-1$ //$NON-NLS-2$
         "&radius=" + radius + //$NON-NLS-1$

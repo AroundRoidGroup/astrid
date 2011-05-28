@@ -22,21 +22,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import android.location.Location;
-
+import com.skyhookwireless.wps.WPSLocation;
 import com.todoroo.andlib.utility.DateUtilities;
 
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(Location userLocation,String peopleString){
+    private static List<NameValuePair> createPostData(WPSLocation currentLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-        if (userLocation!=null){
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(userLocation.getLatitude())));
-            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(userLocation.getLongitude())));
+        if (currentLocation!=null){
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
             //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
             //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
             //TODO : go bacj to userLastLocation
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(userLocation.getTime())));
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(currentLocation.getTime())));
         }
         else{
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
@@ -56,10 +55,10 @@ public class PeopleRequest {
         return is;
     }
 
-    public static List<FriendProps> requestPeople(Location userLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(WPSLocation currentLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createPostData(userLocation,people)));
+        http_post.setEntity(new UrlEncodedFormEntity(createPostData(currentLocation,people)));
         InputStream is  = requestToStream(http_post,arcm);
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

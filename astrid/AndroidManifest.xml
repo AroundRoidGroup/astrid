@@ -9,6 +9,12 @@
       
   <!-- ================================================== Used Permissions = -->
   
+<!-- permissions for skyhhok -->
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_UPDATES" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+  
   <!-- for GPS use -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   

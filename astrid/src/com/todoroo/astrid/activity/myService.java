@@ -1,15 +1,9 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.xml.sax.SAXException;
 
 import android.app.Service;
 import android.content.Context;
@@ -23,9 +17,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
-import com.aroundroidgroup.astrid.googleAccounts.PeopleRequest;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
@@ -210,6 +202,7 @@ public class myService extends Service{
         @Override
         public void run() {
 
+            /*
             while(true){
                 try {
                     Thread.sleep(sleepTime);
@@ -236,7 +229,7 @@ public class myService extends Service{
                                     ,AroundRoidAppConstants.usersDelimiter);
                             try{
                             httpLock.lock();
-                            lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
+                            //lfp = PeopleRequest.requestPeople(userLastLocation,peopleString,null);
                             } finally {
                                 httpLock.unlock();
                             }
@@ -266,7 +259,7 @@ public class myService extends Service{
             }
 
 
-
+             */
         }
     }
 
