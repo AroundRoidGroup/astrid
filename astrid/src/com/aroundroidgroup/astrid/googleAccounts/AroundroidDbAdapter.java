@@ -241,20 +241,14 @@ public class AroundroidDbAdapter {
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
-        try{
-            c= fetchByMail("me");
-            if (c!=null && c.moveToFirst()){
-                return c;
-            }
-            else{
-                long rowID = createSpecialUser();
-                return this.fetchPeople(rowID);
-            }
+        c= fetchByMail("me");
+        if (c!=null && c.moveToFirst()){
+            return c;
         }
-        finally{
-            if (c!=null){
-                c.close();
-            }
+        else{
+            if (c!=null) c.close();
+            long rowID = createSpecialUser();
+            return this.fetchPeople(rowID);
         }
     }
 
@@ -266,24 +260,18 @@ public class AroundroidDbAdapter {
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
+        DPoint returnMe = null;
         Cursor cur = null;
-        try{
-            cur = createAndfetchSpecialUser();
-            if (cur==null || !cur.moveToFirst()){
-                return null;
-            }
-
-            if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
-                return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
-            }
-
-            return null;
+        cur = createAndfetchSpecialUser();
+        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
+            returnMe = new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
         }
-        finally{
-            if (cur!=null){
-                cur.close();
-            }
+
+        if (cur!=null){
+            cur.close();
         }
+
+        return returnMe;
     }
 
 
