@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,7 +32,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
@@ -40,7 +40,20 @@ import com.timsu.astrid.R;
 
 public class ConnectedContactsActivity extends ListActivity {
 
+
+    //TODO find out why when back is pressed all collapse
+
+    //TODO fix UI problems
+
     //TODO on on resume fill data
+
+    @Override
+    protected void onDestroy() {
+        mDbHelper.close();
+    }
+
+    public static final int ADD_PEOPLE_RESULT_CODE = 1;
+    public static final String FRIEND_MAIL = "mail";
 
     public static final int SCAN_ID = Menu.FIRST;
 
@@ -59,18 +72,28 @@ public class ConnectedContactsActivity extends ListActivity {
         conHel = new ContactsHelper(getContentResolver());
         fillData();
         Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT).show();
+
+        //Button submitBtn = (Button) findViewById(R.id.sumbit);
+
+
         ListView lv = getListView();
+
         lv.setTextFilterEnabled(true);
+
+        setResult(RESULT_CANCELED);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
           public void onItemClick(AdapterView<?> parent, View view,
               int position, long id) {
+            //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
             // When clicked, show a toast with the TextView text
-            Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-                Toast.LENGTH_SHORT).show();
             idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
-            Toast.makeText(getApplicationContext(), idnm.id,
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Added: " + idnm.name, //$NON-NLS-1$
+                Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent();
+            intent.putExtra(FRIEND_MAIL, idnm.mail);
+            setResult(RESULT_OK, intent);
+            finish();
           }
         });
     }
@@ -118,11 +141,16 @@ public class ConnectedContactsActivity extends ListActivity {
 
         setListAdapter(lastAdapter);
 
+        if (idnmList.size()==0){
+            Toast.makeText(getApplicationContext(), "No Friends were found!", Toast.LENGTH_SHORT).show();
+        }
+
 
 
     }
 
     private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
+
 
         //assuming prs is connected
         private boolean scanContacts() {
@@ -136,7 +164,7 @@ public class ConnectedContactsActivity extends ListActivity {
             //TODO - send and update only the ones that does not aleady exists
             //the list is sorted!
             List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
-            if (lfp!=null && lfp.size()>0){
+            if (lfp!=null && lfp.size()>0 ){
                 FriendProps exampleProps = new FriendProps();
                 for (idNameMail idnm : chINM){
                     exampleProps.setMail(idnm.mail);
@@ -157,11 +185,10 @@ public class ConnectedContactsActivity extends ListActivity {
 
                     }
                 }
-                return true;
             }
-            else{
-                return false;
-            }
+
+            return lfp!=null;
+
         }
 
 
