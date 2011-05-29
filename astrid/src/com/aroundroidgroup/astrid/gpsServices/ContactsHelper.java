@@ -33,7 +33,7 @@ public class ContactsHelper {
         public String mail;
         @Override
         public String toString() {
-            return name!=null?name:super.toString();
+            return name!=null&&mail!=null?name+ " : " + mail:super.toString();
         }
 
 

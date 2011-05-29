@@ -84,7 +84,7 @@ public class GPSService extends Service{
         refreshData = new DataRefresher();
         aDba.open();
         aDba.dropPeople();
-        aDba.createPeople("me",-1L);
+        aDba.createAndfetchSpecialUser();
         skyhookSetup();
     }
 
@@ -322,7 +322,7 @@ public class GPSService extends Service{
 
     protected void makeUseOfNewLocation(WPSLocation location) {
        //TODO fetch by other id
-        Cursor cur = aDba.fetchByMail("me");
+        Cursor cur = aDba.createAndfetchSpecialUser();
         if (cur!=null && cur.moveToFirst()){
             long l = cur.getLong(0);
             cur.close();

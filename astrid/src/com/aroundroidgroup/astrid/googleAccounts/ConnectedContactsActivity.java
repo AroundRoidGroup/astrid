@@ -32,7 +32,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
@@ -41,7 +40,15 @@ import com.timsu.astrid.R;
 
 public class ConnectedContactsActivity extends ListActivity {
 
+
+    //TODO find out why when back is pressed all collapse
+
     //TODO on on resume fill data
+
+    @Override
+    protected void onDestroy() {
+        mDbHelper.close();
+    }
 
     public static final int ADD_PEOPLE_RESULT_CODE = 1;
     public static final String FRIEND_MAIL = "mail";
@@ -73,12 +80,11 @@ public class ConnectedContactsActivity extends ListActivity {
               int position, long id) {
             //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
             // When clicked, show a toast with the TextView text
-            CharSequence name = ((TextView) view).getText();
-            Toast.makeText(getApplicationContext(), name,
+            idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
+            Toast.makeText(getApplicationContext(), "Added: " + idnm.name, //$NON-NLS-1$
                 Toast.LENGTH_SHORT).show();
-            //idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
             Intent intent = new Intent();
-            intent.putExtra(FRIEND_MAIL, name);
+            intent.putExtra(FRIEND_MAIL, idnm.mail);
             setResult(RESULT_OK, intent);
             finish();
           }

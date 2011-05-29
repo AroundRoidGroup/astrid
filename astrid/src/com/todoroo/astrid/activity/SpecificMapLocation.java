@@ -212,7 +212,8 @@ public class SpecificMapLocation extends MapActivity {
         }
 
 
-        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnClickListener(new OnClickListener() {
+
+        ((Button)findViewById(R.id.addPeople)).setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -220,6 +221,7 @@ public class SpecificMapLocation extends MapActivity {
                 startActivityForResult(intent,CONTACTS_REQUEST_CODE);
             }
         });
+
 
         /* getting the task by the taskID that has been extracted from the Intent */
         //        TaskService taskService = new TaskService();

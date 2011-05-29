@@ -38,6 +38,8 @@ public class AroundroidDbAdapter {
 
     //TODO consider change in the table of astrid that mails will be saved as row numbers in the database?
 
+    //TODO check why when on first time installed there is a database cursor sql error
+
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseHelper(Context context) {
@@ -221,6 +223,24 @@ public class AroundroidDbAdapter {
 
     public void dropPeople(){
         mDbHelper.kill(mDb);
+    }
+
+    //TODO change to fetch by contact id
+    public Cursor createAndfetchSpecialUser(){
+        Cursor c = fetchByMail("me");
+        if (c!=null && c.moveToFirst()){
+            return c;
+        }
+        else{
+            long rowID = this.createPeople("me", -1L);
+            this.updatePeople(rowID, 0.0, 0.0, 21600L);
+            if (rowID==-1){
+                return null;
+            }
+            else{
+                return this.fetchPeople(rowID);
+            }
+        }
     }
 
 
