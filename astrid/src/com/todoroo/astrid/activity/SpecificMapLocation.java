@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
+import com.aroundroidgroup.map.AsyncAutoComplete;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -53,7 +54,7 @@ public class SpecificMapLocation extends MapActivity {
 
     private LocationService locationService;
     private List<String> types = null;
-    private final Thread previousThread = null;
+    private Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
 
     private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
@@ -146,23 +147,23 @@ public class SpecificMapLocation extends MapActivity {
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
 
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-        //        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-        //        textView.setAdapter(adapter);
-        //
-        //        textView.setOnKeyListener(new View.OnKeyListener() {
-        //
-        //            @Override
-        //            public boolean onKey(View v, int keyCode, KeyEvent event) {
-        //                if (previousThread != null) {
-        //                    if (previousThread.isAlive())
-        //                        previousThread.destroy();
-        //                    previousThread = null;
-        //                }
-        //                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-        //                previousThread.run();
-        //                return false;
-        //            }
-        //        });
+                adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
+                textView.setAdapter(adapter);
+
+                textView.setOnKeyListener(new View.OnKeyListener() {
+
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if (previousThread != null) {
+                            if (previousThread.isAlive())
+                                previousThread.destroy();
+                            previousThread = null;
+                        }
+                        previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
+                        previousThread.run();
+                        return false;
+                    }
+                });
 
 
 
@@ -233,13 +234,13 @@ public class SpecificMapLocation extends MapActivity {
 
 
 
-        if (false){
-            DPoint d = new DPoint(1.0,1.0);
+//        if (false){
+            DPoint d = new DPoint(40.714867,-74.006009);
             /* Centralizing the map to the last known location of the device */
             mapView.getController().setCenter(Misc.degToGeo(d));
 
-        }
-        else {
+//        }
+//        else {
 
             final EditText address = (EditText)findViewById(R.id.specificAddress);
 
@@ -296,7 +297,7 @@ public class SpecificMapLocation extends MapActivity {
                     address.setOnClickListener(null);
                 }
             });
-        }
+//        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -341,22 +342,23 @@ public class SpecificMapLocation extends MapActivity {
          *                    reversed geocoded. location at position k in the array has its address
          *                    at position 2k in the array. */
         Intent intent = new Intent();
-        int pointsCount = mapView.getTappedPointsCount() + mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        String[] classOvelrays = new String[pointsCount * 2];
+        int tappedCount = mapView.getTappedPointsCount();
+        int specificCount = mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        String[] classOvelrays = new String[(tappedCount + specificCount) * 2];
 
         DPoint[] tappedPoints = mapView.getTappedCoords();
-        for (int i = 0 ; i < mapView.getTappedPointsCount() ; i++)
+        for (int i = 0 ; i < tappedCount ; i++)
             classOvelrays[i] = tappedPoints[i].toString();
         DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME) ; i++)
-            classOvelrays[mapView.getTappedPointsCount() + i] = specificPoints[i].toString();
+        for (int i = 0 ; i < specificCount ; i++)
+            classOvelrays[tappedCount + i] = specificPoints[i].toString();
 
         String[] tappedAddresses = mapView.getTappedAddress();
-        for (int i = 0 ; i < mapView.getTappedPointsCount() ; i++)
-            classOvelrays[mapView.getTappedPointsCount() * 2 + i] = tappedAddresses[i];
+        for (int i = 0 ; i < tappedCount ; i++)
+            classOvelrays[tappedCount + specificCount + i] = tappedAddresses[i];
         String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME) ; i++)
-            classOvelrays[pointsCount + mapView.getTappedPointsCount() + i] = specificAddresses[i].toString();
+        for (int i = 0 ; i < specificCount ; i++)
+            classOvelrays[2 * tappedCount + specificCount + i] = specificAddresses[i].toString();
 
         intent.putExtra(SPECIFIC_POINTS_SECOND, classOvelrays);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);

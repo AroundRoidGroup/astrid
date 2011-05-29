@@ -255,10 +255,10 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        //specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
-        //controls.add(specificCS);
-        //controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
-        //controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
+        specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
+        controls.add(specificCS);
+//        controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
+//        controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {

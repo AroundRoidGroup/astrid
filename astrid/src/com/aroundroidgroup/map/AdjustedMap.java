@@ -70,12 +70,12 @@ public class AdjustedMap extends MapView {
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
           //TODO USERLOCATION
-            if (true)
-                return;
+//            if (true)
+//                return;
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
 
-            DPoint d = new DPoint(1.0,1.0);
+            DPoint d = new DPoint(40.714867,-74.006009);
             GeoPoint lastDeviceLocation = Misc.degToGeo(d);
             addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
         }
@@ -144,9 +144,9 @@ public class AdjustedMap extends MapView {
         showDeviceLocation();
         getController().setZoom(18);
         //TODO USERLOCATION
-        if (true)
-            return;
-        DPoint d = new DPoint(1.0,1.0);
+//        if (true)
+//            return;
+        DPoint d = new DPoint(40.714867,-74.006009);
         getController().setCenter(Misc.degToGeo(d));
     }
 

@@ -35,9 +35,9 @@ public class MapFilterActivity extends MapActivity {
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
       //TODO USERLOCATION
-        if (true)
-            return;
-        DPoint d = new DPoint(1.0,1.0);
+//        if (true)
+//            return;
+        DPoint d = new DPoint(40.714867,-74.006009);
 
 
             mapView.getController().setCenter(Misc.degToGeo(d));
