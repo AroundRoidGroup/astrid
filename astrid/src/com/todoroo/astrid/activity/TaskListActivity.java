@@ -443,6 +443,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         });
 
         //TODO : remove the on long click listener
+
         ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnLongClickListener(new OnLongClickListener() {
 
 
@@ -462,6 +463,8 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
                 startActivity(intent);
             }
         });
+
+
 
         // gestures / animation
         try {

@@ -159,6 +159,7 @@ public class EditPreferences extends TodorooPreferences {
             for(Preference preference : entry.getValue())
                 screen.addPreference(preference);
         }
+
     }
 
     @SuppressWarnings("nls")
@@ -236,6 +237,8 @@ public class EditPreferences extends TodorooPreferences {
             else
                 preference.setSummary(R.string.EPr_statistics_desc_enabled);
         }
+
+
 
         // voice input and output
         if(!addOnService.hasPowerPack())

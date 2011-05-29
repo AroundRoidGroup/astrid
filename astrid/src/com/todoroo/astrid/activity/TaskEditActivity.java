@@ -64,8 +64,6 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.aroundroidgroup.locationTags.LocationByPeopleControlSet;
-import com.aroundroidgroup.locationTags.LocationByTypeControlSet;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.LocationBySpecificControlSet;
 import com.timsu.astrid.R;
@@ -257,10 +255,10 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
-        controls.add(specificCS);
-        controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
-        controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
+        //specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
+        //controls.add(specificCS);
+        //controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
+        //controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
@@ -287,7 +285,7 @@ public final class TaskEditActivity extends TabActivity {
                         LinearLayout extrasAddons = (LinearLayout) findViewById(R.id.tab_extra_addons);
                         controls.add(new RepeatControlSet(TaskEditActivity.this, extrasAddons));
                         controls.add(new GCalControlSet(TaskEditActivity.this, extrasAddons));
-                       controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
+                        controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
 
 
 
@@ -660,7 +658,7 @@ public final class TaskEditActivity extends TabActivity {
                for (int i = 0 ; i < sa.length ; i++)
                    allSpecific[i] = new DPoint(Double.parseDouble(sa[i].substring(0, sa[i].indexOf(','))), Double.parseDouble(sa[i].substring(sa[i].indexOf(',') + 1)));
             }
-            specificCS.updateSpecificPoints(allSpecific);
+            //specificCS.updateSpecificPoints(allSpecific);
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }

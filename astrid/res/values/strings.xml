@@ -19,4 +19,6 @@
    	<string name="specificAddressText">By Address...</string>
    	<string name="specificButtonText">Quit</string>
    	<string name="specificAddressButtonText">Add</string>
+   	<string name="EPr_people_base_remainder">People Base Reminder</string>
+   	<string name="EPr_connect">Connect...</string>
 </resources>
