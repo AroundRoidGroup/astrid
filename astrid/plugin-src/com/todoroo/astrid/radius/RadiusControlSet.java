@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.todoroo.andlib.service.DependencyInjectionService;
+import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.activity.TaskEditActivity.TaskEditControlSet;
 import com.todoroo.astrid.api.R;
@@ -121,8 +122,9 @@ public class RadiusControlSet implements TaskEditControlSet{
     public String writeToModel(Task task) {
         if(!enabled.isChecked())
             return null;
-        locService.syncFootRadius(task.getId(), Integer.parseInt((String)footValue.getText()));
-        locService.syncCarRadius(task.getId(), Integer.parseInt((String)carValue.getText()));
+        if (locService.syncFootRadius(task.getId(), Integer.parseInt((String)footValue.getText())) ||
+        locService.syncCarRadius(task.getId(), Integer.parseInt((String)carValue.getText())))
+            task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
         return null;
     }
 
