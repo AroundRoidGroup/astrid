@@ -35,11 +35,11 @@ public class PlacesLocations {
 	public List<placeInfo> getPlaces() throws JSONException, MalformedURLException, IOException {
 		List<placeInfo> list = new ArrayList<placeInfo>();
 		if (json != null) {
-			JSONObject all = json.getJSONObject("responseData");
+			JSONObject all = json.getJSONObject("responseData"); //$NON-NLS-1$
 			if (all != null) {
-				JSONObject extraInfo = all.getJSONObject("cursor");
+				JSONObject extraInfo = all.getJSONObject("cursor"); //$NON-NLS-1$
 				if (extraInfo != null) {
-					JSONArray pages = extraInfo.getJSONArray("pages");
+					JSONArray pages = extraInfo.getJSONArray("pages"); //$NON-NLS-1$
 					if (pages != null)
 						for (int k = 0 ; k < pages.length() ; k++)
 							list.addAll(jsonToList(urlToJSONObject(urlBuilder(query, lat, lng, k))));
@@ -49,22 +49,22 @@ public class PlacesLocations {
 		return list;
 	}
 
-    private URL urlBuilder(String q, double lat, double lng, int start) throws MalformedURLException {
+    private URL urlBuilder(String q, double latitude, double longtitude, int start) throws MalformedURLException {
         return new URL(
-                "http://ajax.googleapis.com/ajax/services/search/local?" + /* basic url */
-                "v=1.0&" + /* protocol version number (always 1.0) */
-                "q=" + q + "&" + /* query (in this case we want all results */
-                "sll=" + lat + "," + lng + "&" + /* search center point (we'll use current device location */
-                "rsz=8&" + /* number of results to return per page */
-                "start=" + start +
+                "http://ajax.googleapis.com/ajax/services/search/local?" + /* basic url */ //$NON-NLS-1$
+                "v=1.0&" + /* protocol version number (always 1.0) */ //$NON-NLS-1$
+                "q=" + q + "&" + /* query (in this case we want all results */ //$NON-NLS-1$ //$NON-NLS-2$
+                "sll=" + latitude + "," + longtitude + "&" + /* search center point (we'll use current device location */ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "rsz=8&" + /* number of results to return per page */ //$NON-NLS-1$
+                "start=" + start + //$NON-NLS-1$
                 /* "sspn=&" +  a box that the local search should be relative to. */
                 //              "key=ABQIAAAAObA0GRIqXQNR793dPFwR8BTZfQpz0IQ9_INffx12OPoBPuPM7hSLpvO3lnM8iCuwWf3V8zc49jSZEQ&" + /* */
                 //              "userip=192.168.0.1" + /* IP address of the end-user on whose behalf the request is being made */
-        "");
+        ""); //$NON-NLS-1$
     }
 
-    private JSONObject urlToJSONObject(URL url) throws IOException, JSONException {
-        URLConnection connection = url.openConnection();
+    private JSONObject urlToJSONObject(URL URL) throws IOException, JSONException {
+        URLConnection connection = URL.openConnection();
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000000);
 
@@ -80,22 +80,22 @@ public class PlacesLocations {
 
     private List<placeInfo> jsonToList(JSONObject jObj) throws JSONException {
         List<placeInfo> list = new ArrayList<placeInfo>();
-        JSONObject all = jObj.getJSONObject("responseData");
+        JSONObject all = jObj.getJSONObject("responseData"); //$NON-NLS-1$
         if (all != null) {
-            JSONArray q = all.getJSONArray("results");
+            JSONArray q = all.getJSONArray("results"); //$NON-NLS-1$
             if (q != null) {
                 for (int i = 0 ; i < q.length() ; i++) {
                     JSONObject info = q.getJSONObject(i);
                     if (info != null)
-                        list.add(new placeInfo(info.getString("title"),
-                                info.getString("streetAddress"),
-                                info.getString("region"),
-                                info.getString("city"),
-                                info.getString("country"),
-                                Double.parseDouble(info.getString("lng")),
-                                Double.parseDouble(info.getString("lat")),
-                                info.getString("staticMapUrl"),
-                                info.getString("url")));
+                        list.add(new placeInfo(info.getString("title"), //$NON-NLS-1$
+                                info.getString("streetAddress"), //$NON-NLS-1$
+                                info.getString("region"), //$NON-NLS-1$
+                                info.getString("city"), //$NON-NLS-1$
+                                info.getString("country"), //$NON-NLS-1$
+                                Double.parseDouble(info.getString("lng")), //$NON-NLS-1$
+                                Double.parseDouble(info.getString("lat")), //$NON-NLS-1$
+                                info.getString("staticMapUrl"), //$NON-NLS-1$
+                                info.getString("url"))); //$NON-NLS-1$
                 }
             }
         }

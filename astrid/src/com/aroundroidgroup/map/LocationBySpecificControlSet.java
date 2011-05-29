@@ -1,8 +1,8 @@
 package com.aroundroidgroup.map;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,9 +18,10 @@ import com.todoroo.astrid.activity.TaskEditActivity.TaskEditControlSet;
 import com.todoroo.astrid.data.Task;
 
 public class LocationBySpecificControlSet implements TaskEditControlSet{
-    private final List<DPoint> specificPoints = new ArrayList<DPoint>();
+    private final Map<DPoint, String> pointsAndAddresses = new HashMap<DPoint, String>();
     private final LocationService locationService = new LocationService();
     private final Activity activity;
+    private long taskID;
 
     public LocationBySpecificControlSet(Activity activity) {
         this.activity = activity;
@@ -29,40 +30,52 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
 
             @Override
             public void onClick(View v) {
-//                Toast.makeText(LocationBySpecificControlSet.this.activity, "ovedddddddd", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(ContextManager.getContext(), SpecificMapLocation.class);
-                String[] sa = new String[specificPoints.size()];
-                for (int i = 0 ; i < specificPoints.size() ; i++)
-                    sa[i] = new String(specificPoints.get(i).getX() + "," + specificPoints.get(i).getY());
-                intent.putExtra(SpecificMapLocation.SPECIFIC_POINTS, sa);
+                String[] specificLocations = new String[pointsAndAddresses.size() + 1];
+
+                /* sending the taskID as first parameter */
+                specificLocations[0] = Long.toString(taskID);
+                int i = 1;
+                for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet()) {
+                    specificLocations[i] = pair.getKey().toString();
+                    i++;
+                }
+                intent.putExtra(SpecificMapLocation.SPECIFIC_POINTS, specificLocations);
                 LocationBySpecificControlSet.this.activity.startActivityForResult(intent, 1);
             }
         });
     }
 
-    public void updateSpecificPoints(DPoint[] points) {
-        for (DPoint d : points)
-            specificPoints.add(d);
+    public void updateSpecificPoints(DPoint[] points, String[] addresses) {
+        if (points != null) {
+            pointsAndAddresses.clear();
+            for (int i = 0 ; i < points.length ; i++)
+                pointsAndAddresses.put(points[i], addresses[i]);
+        }
     }
 
     @Override
     public void readFromTask(Task task) {
+        taskID = task.getId();
         String[] allSpecific =  locationService.getLocationsBySpecificAsArray(task.getId());
-        for (String s : allSpecific)
-            specificPoints.add(new DPoint(Double.parseDouble(s.substring(0, s.indexOf(','))),
-                    Double.parseDouble(s.substring(s.indexOf(',') + 1))));
+        mainLoop: for (String s : allSpecific) {
+            for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
+                if (s.equalsIgnoreCase(pair.getKey().toString()))
+                    continue mainLoop;
+            pointsAndAddresses.put(new DPoint(s), null);
+        }
     }
 
     @Override
     public String writeToModel(Task task) {
-        LinkedHashSet<String> mashu = new LinkedHashSet<String>();
-        for (DPoint dp : specificPoints)
-            mashu.add(new String(dp.getX() + "," + dp.getY()));
-        locationService.syncLocationsBySpecific(task.getId(), mashu);
-
-        if(locationService.syncLocationsByType(task.getId(), mashu))
-            task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
-
+        if (pointsAndAddresses != null) {
+            LinkedHashSet<String> mashu = new LinkedHashSet<String>();
+            for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
+                mashu.add(new String(pair.getKey().toString()));
+            locationService.syncLocationsBySpecific(task.getId(), mashu);
+            if(locationService.syncLocationsByType(task.getId(), mashu))
+                task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
+        }
         return null;
     }
 

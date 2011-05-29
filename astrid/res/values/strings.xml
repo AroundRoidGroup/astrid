@@ -11,6 +11,7 @@
    	<string name="initFrom">WI</string> 
    	<string name="titleHdr">Task Title:</string>
    	<string name="connectPeople">Connect To People Base Reminder!</string>
+
    	<string name="noContacs">Hit SCAN button from the menu to search for contacts!</string>
    	<string name="noCreds">There are no users associated with this Android device.</string>
    	<string name="waitngForContacts">Scanning contact list and checking who is registered! this may take a few minutes, please wait.</string>
@@ -21,4 +22,19 @@
    	<string name="specificAddressButtonText">Add</string>
    	<string name="EPr_people_base_remainder">People Base Reminder</string>
    	<string name="EPr_connect">Connect...</string>
+
+   	<!-- in Focaccia activity -->
+   	<string name="specificLocation">Specific Location</string>
+   	<string name="temp">address</string>
+   	
+   	<!-- GOOGLE MAPS API KEY -->
+   	<string name="GOOGLE_MAPS_API_KEY">0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w</string>
+   	
+   	<!-- GOOGLE PLACES API KEY -->
+   	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+   	
+   	<!-- SPECIFIC MAP -->
+   	<string name="addPeopleButton">Add People</string>
+   	<string name="viewAllButton">View All</string>
+
 </resources>

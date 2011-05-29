@@ -15,11 +15,11 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:textSize="8pt"/>
-	<com.google.android.maps.MapView
+	<com.aroundroidgroup.map.AdjustedMap
 		android:id="@+id/mapview" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
-		android:clickable="false"
-		android:apiKey="0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA" />
+		android:clickable="true"
+		android:apiKey="@string/GOOGLE_MAPS_API_KEY" />
 
 </LinearLayout>

@@ -652,13 +652,18 @@ public final class TaskEditActivity extends TabActivity {
         if (resultCode == SPECIFIC_LOCATION_MAP_RESULT_CODE) {
             Bundle b = data.getExtras();
             DPoint[] allSpecific = null;
+            String[] allAddresses = null;
             if (b != null) {
                String[] sa = b.getStringArray(SpecificMapLocation.SPECIFIC_POINTS_SECOND);
-               allSpecific = new DPoint[sa.length];
-               for (int i = 0 ; i < sa.length ; i++)
-                   allSpecific[i] = new DPoint(Double.parseDouble(sa[i].substring(0, sa[i].indexOf(','))), Double.parseDouble(sa[i].substring(sa[i].indexOf(',') + 1)));
+               int locationCount = sa.length / 2;
+               allSpecific = new DPoint[locationCount];
+               for (int i = 0 ; i < locationCount ; i++)
+                   allSpecific[i] = new DPoint(sa[i]);
+               allAddresses = new String[locationCount];
+               for (int i = 0 ; i < locationCount ; i++)
+                   allAddresses[i] = new String(sa[locationCount + i]);
             }
-            //specificCS.updateSpecificPoints(allSpecific);
+            specificCS.updateSpecificPoints(allSpecific, allAddresses);
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
