@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.aroundroidgroup.map.DPoint;
+import com.todoroo.andlib.utility.DateUtilities;
 
 public class AroundroidDbAdapter {
 
@@ -227,34 +228,50 @@ public class AroundroidDbAdapter {
         mDbHelper.kill(mDb);
     }
 
+    public long createSpecialUser(){
+        long rowID = this.createPeople("me", -1L);
+        //begining of time!
+        if (rowID==-1){
+            return -1;
+        }
+        this.updatePeople(rowID, 0.0, 0.0, 21600L);
+        return rowID;
+    }
+
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
-        Cursor c = fetchByMail("me");
+        Cursor c = null;
+        c= fetchByMail("me");
         if (c!=null && c.moveToFirst()){
             return c;
         }
         else{
-            long rowID = this.createPeople("me", -1L);
-            this.updatePeople(rowID, 0.0, 0.0, 21600L);
-            if (rowID==-1){
-                return null;
-            }
-            else{
-                return this.fetchPeople(rowID);
-            }
+            if (c!=null) c.close();
+            long rowID = createSpecialUser();
+            return this.fetchPeople(rowID);
         }
+    }
+
+
+    private static final long validTime = 120 * 1000;
+    private static boolean validTime(long time){
+        return DateUtilities.now()-time <= validTime;
     }
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
-        Cursor cur  = createAndfetchSpecialUser();
-        if (cur==null){
-            return null;
+        DPoint returnMe = null;
+        Cursor cur = null;
+        cur = createAndfetchSpecialUser();
+        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
+            returnMe = new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
         }
-        /*
-        if (cur.getLong(cur.getColumnIndex(KEY_TIME))
-        */
-        return null;
+
+        if (cur!=null){
+            cur.close();
+        }
+
+        return returnMe;
     }
 
 
