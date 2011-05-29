@@ -26,7 +26,6 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.ContextManager;
-import com.todoroo.astrid.activity.myService;
 
 public class AdjustedMap extends MapView {
 
@@ -70,9 +69,14 @@ public class AdjustedMap extends MapView {
 
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
+          //TODO USERLOCATION
+            if (true)
+                return;
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
-            GeoPoint lastDeviceLocation = Misc.locToGeo(myService.getLastUserLocation());
+
+            DPoint d = new DPoint(1.0,1.0);
+            GeoPoint lastDeviceLocation = Misc.degToGeo(d);
             addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
         }
     }
@@ -139,7 +143,11 @@ public class AdjustedMap extends MapView {
         mapOverlays = getOverlays();
         showDeviceLocation();
         getController().setZoom(18);
-        getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+        //TODO USERLOCATION
+        if (true)
+            return;
+        DPoint d = new DPoint(1.0,1.0);
+        getController().setCenter(Misc.degToGeo(d));
     }
 
     /* calling this function will automatically add an overlay for specific locations */

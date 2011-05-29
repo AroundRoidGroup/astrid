@@ -340,10 +340,12 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         // set mapbutton invisible when there is no @location tag
         final Button mapButton = viewHolder.mapbutton; {
             if (!(new LocationService()).isLocationTask(task.getId())){
-                mapButton.setVisibility(View.INVISIBLE);
+                //mapButton.setVisibility(View.INVISIBLE);
+                mapButton.setBackgroundResource(R.drawable.google_gray_64);
             }
             else{
-                mapButton.setVisibility(View.VISIBLE);
+                mapButton.setBackgroundResource(R.drawable.google_64);
+                //mapButton.setVisibility(View.VISIBLE);
             }
         }
 

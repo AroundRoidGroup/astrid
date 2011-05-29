@@ -6,7 +6,6 @@ import java.util.List;
 import org.json.JSONException;
 
 import com.todoroo.astrid.activity.SpecificMapLocation;
-import com.todoroo.astrid.activity.myService;
 
 public class AsyncAutoComplete implements Runnable{
 
@@ -20,7 +19,11 @@ public class AsyncAutoComplete implements Runnable{
     @Override
     public void run() {
         try {
-            List<String> c = Misc.googleAutoCompleteQuery(text, myService.getLastUserLocation());
+            //TODO USERLOCATION
+            if (true)
+                return;
+            DPoint d = new DPoint(1.0,1.0);
+            List<String> c = Misc.googleAutoCompleteQuery(text, d);
             for (String s : Misc.types)
                 c.add(s);
             SpecificMapLocation.updateSuggestions(c);

@@ -27,5 +27,15 @@
         android:title="@string/rmd_EPr_defaultRemind_title"
         android:entries="@array/EPr_reminder_random"
         android:entryValues="@array/EPr_reminder_random_hours"/>
+     <ListPreference
+        android:key="@string/p_rmd_default_car_radius_key"
+        android:title="@string/EPr_defaultCarRadius_title"
+        android:entries="@array/EPr_car_radius"
+        android:entryValues="@array/EPr_car_radius_defult_value"/>
+           <ListPreference
+        android:key="@string/p_rmd_default_foot_radius_key"
+        android:title="@string/EPr_defaultFootRadius_title"
+        android:entries="@array/EPr_foot_radius"
+        android:entryValues="@array/EPr_foot_radius_defult_value"/>  
         
 </PreferenceScreen>

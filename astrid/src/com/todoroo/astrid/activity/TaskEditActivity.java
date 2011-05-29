@@ -64,8 +64,6 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.aroundroidgroup.locationTags.LocationByPeopleControlSet;
-import com.aroundroidgroup.locationTags.LocationByTypeControlSet;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.LocationBySpecificControlSet;
 import com.timsu.astrid.R;
@@ -82,6 +80,7 @@ import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.gcal.GCalControlSet;
 import com.todoroo.astrid.producteev.ProducteevControlSet;
 import com.todoroo.astrid.producteev.ProducteevUtilities;
+import com.todoroo.astrid.radius.RadiusControlSet;
 import com.todoroo.astrid.reminders.Notifications;
 import com.todoroo.astrid.repeats.RepeatControlSet;
 import com.todoroo.astrid.service.AddOnService;
@@ -256,10 +255,10 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
-        controls.add(specificCS);
-        controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
-        controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
+        //specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
+        //controls.add(specificCS);
+        //controls.add(new LocationByTypeControlSet(TaskEditActivity.this,R.id.locations_by_type_container));
+        //controls.add(new LocationByPeopleControlSet(TaskEditActivity.this,R.id.locations_by_people_container));
 
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
@@ -286,6 +285,10 @@ public final class TaskEditActivity extends TabActivity {
                         LinearLayout extrasAddons = (LinearLayout) findViewById(R.id.tab_extra_addons);
                         controls.add(new RepeatControlSet(TaskEditActivity.this, extrasAddons));
                         controls.add(new GCalControlSet(TaskEditActivity.this, extrasAddons));
+                        controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
+
+
+
 
                         LinearLayout addonsAddons = (LinearLayout) findViewById(R.id.tab_addons_addons);
 

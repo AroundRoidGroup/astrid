@@ -20,6 +20,7 @@ import com.google.android.maps.GeoPoint;
 
 public class Misc {
 
+
     public static final String[] types = {"accounting", "airport", "amusement park", "aquarium", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         "art gallery", "atm", "bakery", "bank", "bar", "beauty salon", "bicycle store", "book store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
         "bowling alley", "bus station", "cafe", "campground", "car dealer", "car rental", "car repair", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
@@ -45,14 +46,13 @@ public class Misc {
     }
 
     /* the service returns up to 20 results. */
-    public static Map<String, DPoint> googlePlacesQuery(String type, Location location, double radius) throws IOException, JSONException {
+    public static Map<String, DPoint> googlePlacesQuery(String type, DPoint location, double radius) throws IOException, JSONException {
         URL googlePlacesURL = new URL("https://maps.googleapis.com/maps/api/place/search/json?" + //$NON-NLS-1$
-                "location=" + location.getLatitude() + "," + location.getLongitude() + //$NON-NLS-1$ //$NON-NLS-2$
+                "location=" + location.getX() + "," + location.getY() + //$NON-NLS-1$ //$NON-NLS-2$
                 "&radius=" + radius + //$NON-NLS-1$
                 "&types=" + type + //$NON-NLS-1$
                 "&sensor=false" + //$NON-NLS-1$
                 "&key=AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs"); //$NON-NLS-1$
-
         /* connecting to the URL */
         URLConnection googlePlacesCon = googlePlacesURL.openConnection();
         googlePlacesCon.setConnectTimeout(10000000); /* 10 seconds */
@@ -111,11 +111,11 @@ public class Misc {
         return results;
     }
 
-    public static List<String> googleAutoCompleteQuery(String text, Location location) throws IOException, JSONException {
+    public static List<String> googleAutoCompleteQuery(String text, DPoint location) throws IOException, JSONException {
         URL googleAutoCompleteURL = new URL("https://maps.googleapis.com/maps/api/place/autocomplete/json?" + //$NON-NLS-1$
                 "input=" + text + //$NON-NLS-1$
                 "&types=geocode" + //$NON-NLS-1$
-                "&location=" + location.getLatitude() + "," + location.getLongitude() + //$NON-NLS-1$ //$NON-NLS-2$
+                "&location=" + location.getX() + "," + location.getY() + //$NON-NLS-1$ //$NON-NLS-2$
                 "&sensor=false" + //$NON-NLS-1$
                 "&key=AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs"); //$NON-NLS-1$
 

@@ -29,6 +29,9 @@ public class GPSProps {
     
     @Persistent
     private Long timeStamp;
+    
+    @Persistent
+    private boolean reminded;
 
     public GPSProps(User user,String mail, double lon, double lat,long timeStamp) {
     	this.setMail(mail);
@@ -36,6 +39,7 @@ public class GPSProps {
         this.lon = lon;
         this.lat = lat;
         this.setTimeStamp(timeStamp);
+        this.setReminded(false);
     }
 
     public Key getKey() {
@@ -80,5 +84,13 @@ public class GPSProps {
 
 	public Long getTimeStamp() {
 		return timeStamp;
+	}
+
+	public void setReminded(boolean reminded) {
+		this.reminded = reminded;
+	}
+
+	public boolean isReminded() {
+		return reminded;
 	}
 }
