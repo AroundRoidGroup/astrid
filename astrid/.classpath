@@ -17,7 +17,7 @@
 	<classpathentry kind="lib" path="libs/framework.jar"/>
 	<classpathentry kind="src" path="facebook_src"/>
 	<classpathentry kind="src" path="GreenDroid_src"/>
-	<classpathentry kind="lib" path="C:/Users/Tomer/Desktop/wpsapi.jar"/>
 	<classpathentry kind="src" path="astridApi_src"/>
+	<classpathentry kind="lib" path="libs/wpsapi.jar"/>
 	<classpathentry kind="output" path="ecbuild"/>
 </classpath>
