@@ -47,11 +47,12 @@
         android:title="@string/EPr_statistics_title"
         android:defaultValue="true" />
     
-   <PreferenceCategory
-        android:title="@string/EPr_people_base_remainder">
+  <PreferenceCategory
+       android:title="@string/EPr_people_base_remainder">
+   </PreferenceCategory>
         <PreferenceScreen
             android:title="@string/EPr_connect"
-            android:id="@+id/peopleBaseConnect">
+            android:key="gerbil">
         </PreferenceScreen>
-    </PreferenceCategory>
+   
 </PreferenceScreen>

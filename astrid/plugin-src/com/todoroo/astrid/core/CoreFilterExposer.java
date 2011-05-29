@@ -44,7 +44,7 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         SearchFilter searchFilter = new SearchFilter(r.getString(R.string.BFE_Search));
         searchFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_search)).getBitmap();
 
-        MapFilter mapFilter = new MapFilter("Map");
+        MapFilter mapFilter = new MapFilter(r.getString(R.string.locationFilterTitle));
         mapFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_map)).getBitmap();
 
         Filter recent = new Filter(r.getString(R.string.BFE_Recent),
