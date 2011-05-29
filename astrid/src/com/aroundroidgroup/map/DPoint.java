@@ -34,10 +34,12 @@ public class DPoint{
         this.y = tmpY;
     }
 
+    //X IS LAT
     public double getX() {
         return x;
     }
 
+    //Y IS LON
     public double getY() {
         return y;
     }

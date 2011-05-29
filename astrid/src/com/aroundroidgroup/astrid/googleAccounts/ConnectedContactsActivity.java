@@ -43,6 +43,8 @@ public class ConnectedContactsActivity extends ListActivity {
 
     //TODO find out why when back is pressed all collapse
 
+    //TODO fix UI problems
+
     //TODO on on resume fill data
 
     @Override
@@ -70,7 +72,12 @@ public class ConnectedContactsActivity extends ListActivity {
         conHel = new ContactsHelper(getContentResolver());
         fillData();
         Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT).show();
+
+        //Button submitBtn = (Button) findViewById(R.id.sumbit);
+
+
         ListView lv = getListView();
+
         lv.setTextFilterEnabled(true);
 
         setResult(RESULT_CANCELED);

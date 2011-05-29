@@ -1,5 +1,6 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.accounts.Account;
@@ -14,6 +15,7 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
+import com.aroundroidgroup.map.DPoint;
 import com.skyhookwireless.wps.IPLocation;
 import com.skyhookwireless.wps.IPLocationCallback;
 import com.skyhookwireless.wps.WPSAuthentication;
@@ -113,13 +115,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("done");
+            toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
        }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("handleError");
+            toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
                 return WPSContinuation.WPS_CONTINUE;
@@ -128,14 +130,14 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("handleIPLocation");
+            toastMe("WPS handleIPLocation");
 
         }
 
         public void handleWPSLocation(WPSLocation location)
         {
             // send a message to display the location
-            toastMe("handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
+            //toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
             makeUseOfNewLocation(location);
         }
 
@@ -164,6 +166,7 @@ public class GPSService extends Service{
 
     @Override
     public synchronized void onDestroy() {
+        this.aDba.close();
         // The service is no longer used and is being destroyed
         if (refreshData.isAlive()){
             refreshData.setExit();
@@ -190,6 +193,8 @@ public class GPSService extends Service{
             }
         }
     };
+
+    private final List<UpdataeListener> listeners = new ArrayList<UpdataeListener>();
 
     private  synchronized void toastMe(String toastMsg){
         this.mToastMsg = toastMsg;
@@ -257,6 +262,14 @@ public class GPSService extends Service{
                     toastMe("Connected! Hooray!"); //$NON-NLS-1$
                 }
 
+                DPoint dp = aDba.specialUserToDPoint();
+                if (dp!=null){
+                    toastMe("LAT :" + String.valueOf(dp.getX()) + ", LON :" + String.valueOf(dp.getY()) );
+                }
+                else{
+                    toastMe("NO LOCATION");
+                }
+
 
                 //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
 
@@ -264,8 +277,8 @@ public class GPSService extends Service{
                 WPSLocation prevLocation = getUserLastLocation();
 
                 //TODO find out the date problem
-                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
-                    //setUserLastLocation(null);
+                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() <=locationInvalidateTime)){
+                    setUserLastLocation(null);
                 }
 
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
@@ -340,10 +353,16 @@ public class GPSService extends Service{
                     (int)(location.getSpeed()<0.5?5*60:currMin/speed),
                     currMin,
                     _callback);
-
         }
-        //TODO deal with business
-
+        for (UpdataeListener listener: listeners)
+            listener.onEvenet();
     }
 
+    public void addListener(UpdataeListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeFromListener(UpdataeListener listener){
+        listeners.remove(listener);
+    }
 }

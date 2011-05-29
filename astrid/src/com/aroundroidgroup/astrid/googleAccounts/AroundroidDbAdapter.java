@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.aroundroidgroup.map.DPoint;
+import com.todoroo.andlib.utility.DateUtilities;
 
 public class AroundroidDbAdapter {
 
@@ -235,6 +236,7 @@ public class AroundroidDbAdapter {
         }
         else{
             long rowID = this.createPeople("me", -1L);
+            //begining of time!
             this.updatePeople(rowID, 0.0, 0.0, 21600L);
             if (rowID==-1){
                 return null;
@@ -245,7 +247,23 @@ public class AroundroidDbAdapter {
         }
     }
 
+
+    private static final long validTime = 120 * 1000;
+    private static boolean validTime(long time){
+        return DateUtilities.now()-time <= validTime;
+    }
+
+    //TODO change to a better way
     public DPoint specialUserToDPoint(){
+        Cursor cur  = createAndfetchSpecialUser();
+        if (cur==null || !cur.moveToFirst()){
+            return null;
+        }
+
+        if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
+            return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
+        }
+
         return null;
     }
 
