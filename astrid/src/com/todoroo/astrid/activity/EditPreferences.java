@@ -26,6 +26,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AccountList;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
@@ -57,6 +58,7 @@ public class EditPreferences extends TodorooPreferences {
 
     private static final int ABOUT_PREFERENCE = 0; // see preferences.xml for order of prefs
     private static final int POWER_PACK_PREFERENCE = 2;
+    private static final int CONNECTPEOPLE = 5;
 
     // --- instance variables
 
@@ -100,6 +102,18 @@ public class EditPreferences extends TodorooPreferences {
                 return true;
             }
         });
+
+
+        Preference connectToPeople = screen.getPreference(CONNECTPEOPLE);
+        connectToPeople.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference p) {
+                          Intent intent = new Intent(EditPreferences.this, AccountList.class);
+                         startActivity(intent);
+               // showAbout();
+                         return true;
+            }
+        });
+
 
         addDebugPreferences();
 
@@ -301,37 +315,37 @@ public class EditPreferences extends TodorooPreferences {
                 DialogUtilities.okCancelDialog(this,
                         r.getString(R.string.EPr_voiceInputInstall_dlg),
                         new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                    int which) {
-                                voiceInputAssistant.showVoiceInputMarketSearch(new OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog1,
-                                            int which1) {
-                                        ((CheckBoxPreference)preference).setChecked(false);
-                                    }
-                                });
-                            }
-                        },
-                        new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                    int which) {
-                                ((CheckBoxPreference)preference).setChecked(false);
-                                dialog.dismiss();
-                            }
-                        });
-            } else {
-                DialogUtilities.okDialog(this,
-                        r.getString(R.string.EPr_voiceInputUnavailable_dlg),
-                        new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,
+                            int which) {
+                        voiceInputAssistant.showVoiceInputMarketSearch(new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog1,
                                     int which1) {
                                 ((CheckBoxPreference)preference).setChecked(false);
-                                dialog1.dismiss();
                             }
                         });
+                    }
+                },
+                new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,
+                            int which) {
+                        ((CheckBoxPreference)preference).setChecked(false);
+                        dialog.dismiss();
+                    }
+                });
+            } else {
+                DialogUtilities.okDialog(this,
+                        r.getString(R.string.EPr_voiceInputUnavailable_dlg),
+                        new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog1,
+                            int which1) {
+                        ((CheckBoxPreference)preference).setChecked(false);
+                        dialog1.dismiss();
+                    }
+                });
             }
         }
     }
