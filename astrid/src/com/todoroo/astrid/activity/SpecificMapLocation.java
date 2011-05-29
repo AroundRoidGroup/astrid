@@ -2,6 +2,7 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.json.JSONException;
@@ -347,6 +348,7 @@ public class SpecificMapLocation extends MapActivity {
 
         intent.putExtra(SPECIFIC_POINTS_SECOND, classOvelrays);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
+        locationService.syncLocationsByType(taskID, new LinkedHashSet<String>(types));
         SpecificMapLocation.this.finish();
     }
 
