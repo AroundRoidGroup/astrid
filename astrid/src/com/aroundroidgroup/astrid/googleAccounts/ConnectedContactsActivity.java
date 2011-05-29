@@ -28,9 +28,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -76,7 +79,20 @@ public class ConnectedContactsActivity extends ListActivity {
         fillData();
         Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT).show();
 
-        //Button submitBtn = (Button) findViewById(R.id.sumbit);
+        Button submitBtn = (Button) findViewById(R.id.submitContactButton);
+        submitBtn.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                CharSequence cs = ((EditText)findViewById(R.id.editTextFriendMail)).getText();
+                if (!cs.equals("")){
+                    intent.putExtra(FRIEND_MAIL, cs);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            }
+        });
 
 
         ListView lv = getListView();
@@ -86,18 +102,18 @@ public class ConnectedContactsActivity extends ListActivity {
         setResult(RESULT_CANCELED);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
-          public void onItemClick(AdapterView<?> parent, View view,
-              int position, long id) {
-            //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
-            // When clicked, show a toast with the TextView text
-            idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
-            Toast.makeText(getApplicationContext(), "Added: " + idnm.name, //$NON-NLS-1$
-                Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent();
-            intent.putExtra(FRIEND_MAIL, idnm.mail);
-            setResult(RESULT_OK, intent);
-            finish();
-          }
+            public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+                //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
+                // When clicked, show a toast with the TextView text
+                idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
+                Toast.makeText(getApplicationContext(), "Added: " + idnm.name, //$NON-NLS-1$
+                        Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent();
+                intent.putExtra(FRIEND_MAIL, idnm.mail);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         });
     }
 
