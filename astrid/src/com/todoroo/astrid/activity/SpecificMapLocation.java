@@ -336,15 +336,22 @@ public class SpecificMapLocation extends MapActivity {
          *                    reversed geocoded. location at position k in the array has its address
          *                    at position 2k in the array. */
         Intent intent = new Intent();
-        int pointsCount = mapView.getAllPointsCount();
+        int pointsCount = mapView.getTappedPointsCount() + mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
         String[] classOvelrays = new String[pointsCount * 2];
 
-        DPoint[] allPoints = mapView.getAllPoints();
-        for (int i = 0 ; i < pointsCount ; i++)
-            classOvelrays[i] = allPoints[i].toString();
-        String[] allAddresses = mapView.getAllAddresses();
-        for (int i = 0 ; i < pointsCount ; i++)
-            classOvelrays[pointsCount + i] = allAddresses[i];
+        DPoint[] tappedPoints = mapView.getTappedCoords();
+        for (int i = 0 ; i < mapView.getTappedPointsCount() ; i++)
+            classOvelrays[i] = tappedPoints[i].toString();
+        DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (int i = 0 ; i < mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME) ; i++)
+            classOvelrays[mapView.getTappedPointsCount() + i] = specificPoints[i].toString();
+
+        String[] tappedAddresses = mapView.getTappedAddress();
+        for (int i = 0 ; i < mapView.getTappedPointsCount() ; i++)
+            classOvelrays[mapView.getTappedPointsCount() * 2 + i] = tappedAddresses[i];
+        String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (int i = 0 ; i < mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME) ; i++)
+            classOvelrays[pointsCount + mapView.getTappedPointsCount() + i] = specificAddresses[i].toString();
 
         intent.putExtra(SPECIFIC_POINTS_SECOND, classOvelrays);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
