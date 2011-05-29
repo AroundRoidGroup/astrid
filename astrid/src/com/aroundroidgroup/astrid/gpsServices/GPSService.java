@@ -1,5 +1,6 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.accounts.Account;
@@ -191,6 +192,8 @@ public class GPSService extends Service{
         }
     };
 
+    private final List<UpdataeListener> listeners = new ArrayList<UpdataeListener>();
+
     private  synchronized void toastMe(String toastMsg){
         this.mToastMsg = toastMsg;
         new Thread() {
@@ -340,10 +343,16 @@ public class GPSService extends Service{
                     (int)(location.getSpeed()<0.5?5*60:currMin/speed),
                     currMin,
                     _callback);
-
         }
-        //TODO deal with business
-
+        for (UpdataeListener listener: listeners)
+            listener.onEvenet();
     }
 
+    public void addListener(UpdataeListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeFromListener(UpdataeListener listener){
+        listeners.remove(listener);
+    }
 }
