@@ -103,6 +103,7 @@ public class SpecificMapLocation extends MapActivity {
         DPoint[] specificAsCoords = mapView.getTappedCoords();
         for (int i = 0 ; i < specificAsAddress.length ; i++)
             menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
+        //mapView.getTappedItem(i).getAddress()
         for (int i = 0 ; i < types.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
         int i = 0;
@@ -363,7 +364,9 @@ public class SpecificMapLocation extends MapActivity {
                     //DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
                     DPoint dp = new DPoint(40.716558,-74.00013);
                     people.put(contact, dp);
+                    x.close();
                 }
+
             }
         }
 
@@ -466,6 +469,14 @@ public class SpecificMapLocation extends MapActivity {
         intent.putExtra(SPECIFIC_POINTS_SECOND, dataToSendBackAsArray);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
         SpecificMapLocation.this.finish();
+    }
+
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mdba.close();
     }
 
     @Override
