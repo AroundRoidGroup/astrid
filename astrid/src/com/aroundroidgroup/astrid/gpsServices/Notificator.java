@@ -110,9 +110,14 @@ public class Notificator {
 
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
             WPSLocation location, int radius) {
+        //TODO USERLOCATION
+        if (true){
+            return false;
+        }
+        DPoint d = new DPoint(1.0,1.0);
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
-                if (!(Misc.googlePlacesQuery(str,location,radius).isEmpty()))
+                if (!(Misc.googlePlacesQuery(str,d,radius).isEmpty()))
                     return true;
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block

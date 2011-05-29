@@ -90,6 +90,7 @@ public class AroundRoidConnectionManager {
     private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
 
         public void run(AccountManagerFuture<Bundle> result) {
+            //TODO error when trying to open new activity1!! (when there is a problem with the authentication of an account)
             Bundle bundle;
             boolean ok  = false;
             try {
@@ -103,16 +104,10 @@ public class AroundRoidConnectionManager {
                 }
                 ok = true;
             } catch (OperationCanceledException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                setConnecting(ok);
             } catch (AuthenticatorException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                setConnecting(ok);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            finally{
                 setConnecting(ok);
             }
         }

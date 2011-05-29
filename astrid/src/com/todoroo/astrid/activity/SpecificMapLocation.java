@@ -146,23 +146,23 @@ public class SpecificMapLocation extends MapActivity {
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
 
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-//        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-//        textView.setAdapter(adapter);
-//
-//        textView.setOnKeyListener(new View.OnKeyListener() {
-//
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                if (previousThread != null) {
-//                    if (previousThread.isAlive())
-//                        previousThread.destroy();
-//                    previousThread = null;
-//                }
-//                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-//                previousThread.run();
-//                return false;
-//            }
-//        });
+        //        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
+        //        textView.setAdapter(adapter);
+        //
+        //        textView.setOnKeyListener(new View.OnKeyListener() {
+        //
+        //            @Override
+        //            public boolean onKey(View v, int keyCode, KeyEvent event) {
+        //                if (previousThread != null) {
+        //                    if (previousThread.isAlive())
+        //                        previousThread.destroy();
+        //                    previousThread = null;
+        //                }
+        //                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
+        //                previousThread.run();
+        //                return false;
+        //            }
+        //        });
 
 
 
@@ -229,77 +229,82 @@ public class SpecificMapLocation extends MapActivity {
         mapView.setBuiltInZoomControls(true);
         mapView.getController().setZoom(13);
 
-        if (myService.getLastUserLocation() != null){
+        //TODO USERLOCATION
 
+
+
+        if (false){
+            DPoint d = new DPoint(1.0,1.0);
             /* Centralizing the map to the last known location of the device */
-            mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+            mapView.getController().setCenter(Misc.degToGeo(d));
 
         }
+        else {
 
-        final EditText address = (EditText)findViewById(R.id.specificAddress);
+            final EditText address = (EditText)findViewById(R.id.specificAddress);
 
-        Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
-        addressButton.setOnClickListener(new View.OnClickListener() {
+            Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
+            addressButton.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                DPoint d = null;
-                String text = address.getText().toString();
+                @Override
+                public void onClick(View v) {
+                    DPoint d = null;
+                    String text = address.getText().toString();
 
-                if (Misc.isType(text)) {
-                    String[] type = new String[1];
-                    type[0] = text.replace(' ', '_');
-                    mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
-                    mapView.invalidate();
-                    types.add(text);
-                    viewAll.setOnClickListener(null);
-                    viewAll.setOnLongClickListener(null);
-                }
-                else {
-                    try {
-                        d = Geocoding.geocoding(text);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    if (Misc.isType(text)) {
+                        String[] type = new String[1];
+                        type[0] = text.replace(' ', '_');
+                        mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
+                        mapView.invalidate();
+                        types.add(text);
+                        viewAll.setOnClickListener(null);
+                        viewAll.setOnLongClickListener(null);
                     }
-                    if (d != null) {
-                        String address = null;
+                    else {
                         try {
-                            address = Geocoding.reverseGeocoding(d);
+                            d = Geocoding.geocoding(text);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if (address == null)
-                            address = new String("Specific Location"); //$NON-NLS-1$
-                        mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
-                        mapView.invalidate();
+                        if (d != null) {
+                            String address = null;
+                            try {
+                                address = Geocoding.reverseGeocoding(d);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            if (address == null)
+                                address = new String("Specific Location"); //$NON-NLS-1$
+                            mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
+                            mapView.invalidate();
+                        }
+                        else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+
                     }
-                    else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
                 }
-            }
-        });
+            });
 
-        address.setOnClickListener(new View.OnClickListener() {
+            address.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                address.setText(""); //$NON-NLS-1$
-                address.setOnClickListener(null);
-            }
-        });
-
+                @Override
+                public void onClick(View v) {
+                    address.setText(""); //$NON-NLS-1$
+                    address.setOnClickListener(null);
+                }
+            });
+        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == FOCACCIA_RESULT_CODE) {
             Bundle bundle = data.getExtras();
-//            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+            //            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             mapView.removeTappedLocation(Integer.parseInt(bundle.getString(Focaccia.SOURCE_ADJUSTEDMAP)));
-//            Toast.makeText(this, "after there are " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+            //            Toast.makeText(this, "after there are " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
@@ -307,9 +312,9 @@ public class SpecificMapLocation extends MapActivity {
             Bundle bundle = data.getExtras();
             String type = bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND);
             if (types.contains(type)) {
-//                Toast.makeText(this, "going to remove the type: " + type, Toast.LENGTH_LONG).show();
+                //                Toast.makeText(this, "going to remove the type: " + type, Toast.LENGTH_LONG).show();
                 mapView.removeTypeLocation(type);
-//                Toast.makeText(this, "type: " + type + " has been removed", Toast.LENGTH_LONG).show();
+                //                Toast.makeText(this, "type: " + type + " has been removed", Toast.LENGTH_LONG).show();
                 types.remove(type);
                 if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
                     Button viewAll = (Button)findViewById(R.id.viewAll);

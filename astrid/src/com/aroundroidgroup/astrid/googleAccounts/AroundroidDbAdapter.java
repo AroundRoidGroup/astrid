@@ -222,4 +222,6 @@ public class AroundroidDbAdapter {
     public void dropPeople(){
         mDbHelper.kill(mDb);
     }
+
+
 }

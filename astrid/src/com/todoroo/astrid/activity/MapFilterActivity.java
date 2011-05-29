@@ -34,9 +34,13 @@ public class MapFilterActivity extends MapActivity {
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
-        if (myService.getLastUserLocation() != null) {
+      //TODO USERLOCATION
+        if (true)
+            return;
+        DPoint d = new DPoint(1.0,1.0);
 
-            mapView.getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+
+            mapView.getController().setCenter(Misc.degToGeo(d));
             /* enable zoom option */
             mapView.setBuiltInZoomControls(true);
 
@@ -70,7 +74,7 @@ public class MapFilterActivity extends MapActivity {
 
                 mapFunctions.addLocationSetToMap(mapView, AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, points, "Specific Location"); //$NON-NLS-1$
             }
-        }
+
     }
 }
 
