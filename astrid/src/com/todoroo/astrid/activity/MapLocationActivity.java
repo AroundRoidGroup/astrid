@@ -75,9 +75,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
       //TODO USERLOCATION
-        if (true)
-            return;
-        DPoint d = new DPoint(1.0,1.0);
+//        if (true)
+//            return;
+        DPoint d = new DPoint(40.714867,-74.006009);
 
             /* Centralizing the map to the current (to be more accurate, the last) location of the device */
             mapController.setCenter(Misc.degToGeo(d));

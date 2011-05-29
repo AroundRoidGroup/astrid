@@ -15,11 +15,11 @@ public class mapFunctions {
 
     public static int[] addTagsToMap(AdjustedMap map, String overlayUniqueName, String[] locationTypes, double radius) {
         //TODO USERLOCATION
-        if (true)
-        {
-            return new int[locationTypes.length];
-        }
-        DPoint d = new DPoint(1.0,1.0);
+//        if (true)
+//        {
+//            return new int[locationTypes.length];
+//        }
+        DPoint d = new DPoint(40.714867,-74.006009);
         int i = 0;
         int[] feedback = new int[locationTypes.length];
         for (String type : locationTypes) {

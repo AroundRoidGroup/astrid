@@ -20,9 +20,9 @@ public class AsyncAutoComplete implements Runnable{
     public void run() {
         try {
             //TODO USERLOCATION
-            if (true)
-                return;
-            DPoint d = new DPoint(1.0,1.0);
+//            if (true)
+//                return;
+            DPoint d = new DPoint(40.714867,-74.006009);
             List<String> c = Misc.googleAutoCompleteQuery(text, d);
             for (String s : Misc.types)
                 c.add(s);
