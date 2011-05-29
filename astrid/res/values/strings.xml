@@ -11,11 +11,18 @@
    	<string name="initFrom">WI</string> 
    	<string name="titleHdr">Task Title:</string>
    	<string name="connectPeople">Connect To People Base Reminder!</string>
-   	<string name="specificTitleText">Address: </string>
+
+   	<string name="noContacs">Hit SCAN button from the menu to search for contacts!</string>
+   	<string name="noCreds">There are no users associated with this Android device.</string>
+   	<string name="waitngForContacts">Scanning contact list and checking who is registered! this may take a few minutes, please wait.</string>
+   	<string name="scanContacts">Scan now!</string>
+   	<string name="specificTitleText">Address:</string>
    	<string name="specificAddressText">By Address...</string>
    	<string name="specificButtonText">Quit</string>
    	<string name="specificAddressButtonText">Add</string>
-   	
+   	<string name="EPr_people_base_remainder">People Base Reminder</string>
+   	<string name="EPr_connect">Connect...</string>
+
    	<!-- in Focaccia activity -->
    	<string name="specificLocation">Specific Location</string>
    	<string name="temp">address</string>
@@ -29,4 +36,5 @@
    	<!-- SPECIFIC MAP -->
    	<string name="addPeopleButton">Add People</string>
    	<string name="viewAllButton">View All</string>
+
 </resources>

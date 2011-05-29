@@ -13,7 +13,9 @@
     if (user != null) {
 %>
 <p>Hello, <b><%= user.getNickname() %></b>! . Welcome To AroundRoid People Based Location Service.</p>
-<p> Click <a href = "examplePostForm.jsp">here</a> to go to an example post form.</p>
+
+<p> Click <a href = "examplePostForm.jsp">here</a> to go to an example gps post form.</p>
+<p> Click <a href = "exampleInviteFriendForm.jsp">here</a> to go to an example invite friend form.</p>
 
 <p>Click <a href="<%= userService.createLogoutURL(request.getRequestURI()) %>">here</a> to sign out</p> 
 <%

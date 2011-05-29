@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +26,8 @@ public class Focaccia extends Activity {
     private boolean neededToReverseGecode = false;
     public static final String SOURCE_ADJUSTEDMAP = "AdjustedMap"; //$NON-NLS-1$
     public static final String SOURCE_SPECIFICMAP = "SpecificMap"; //$NON-NLS-1$
+    public static final String SOURCE_SPECIFICMAP_KIND = "SpecificMapKind"; //$NON-NLS-1$
+    private boolean isKind = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,38 +42,44 @@ public class Focaccia extends Activity {
         resources = bundle.getStringArray(SOURCE_ADJUSTEDMAP);
         if (resources == null)
             resources = bundle.getStringArray(SOURCE_SPECIFICMAP);
+        if (resources == null) {
+            resources = bundle.getStringArray(SOURCE_SPECIFICMAP_KIND);
+            isKind = true;
+        }
         TextView tv = (TextView)findViewById(R.id.locationType);
-        tv.setText(resources[2]);
+
+        if (isKind)
+            tv.setText(resources[1]);
+        else tv.setText(resources[2]);
 
         TextView addressTV = (TextView)findViewById(R.id.locationAddress);
 
-        try {
-            /* getting the address by the coordinates only if the location never been reversed gecoded */
-            if (resources[4] == null) {
-                neededToReverseGecode = true;
-                addressText = Geocoding.reverseGeocoding(new DPoint(resources[1]));
-            }
-            else addressText = resources[4];
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (isKind) {
+            addressTV.setText(resources[0] + " locations."); //$NON-NLS-1$
         }
+        else {
+            try {
+                /* getting the address by the coordinates only if the location never been reversed gecoded */
+                if (resources[4] == null) {
+                    neededToReverseGecode = true;
+                    addressText = Geocoding.reverseGeocoding(new DPoint(resources[1]));
+                }
+                else addressText = resources[4];
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        /* if gecoding process succeeded, the address is shown. otherwise the    */
-        /* coordinates are shown                                                 */
-        if (addressText != null)
-            addressTV.setText(addressText);
-        else addressTV.setText(resources[1]);
+            /* if gecoding process succeeded, the address is shown. otherwise the    */
+            /* coordinates are shown                                                 */
+            if (addressText != null)
+                addressTV.setText(addressText);
+            else addressTV.setText(resources[1]);
+        }
 
         ImageButton removeButton = (ImageButton)findViewById(R.id.removeOverlay);
-        if (resources[5].equals("0") == true) { //$NON-NLS-1$
-            removeButton.setClickable(false);
-            removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
-        }
-        if (resources[5].equals("1") == true) { //$NON-NLS-1$
-            removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
-            removeButton.setOnClickListener(new View.OnClickListener() {
+        OnClickListener buttonListener = new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -79,18 +88,28 @@ public class Focaccia extends Activity {
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
 
                 /* setting the dialog title */
-                dialog.setTitle("Confirm Remove Location"); //$NON-NLS-1$
+                if (isKind)
+                    dialog.setTitle("Confirm Remove Location Type"); //$NON-NLS-1$
+                else dialog.setTitle("Confirm Remove Location"); //$NON-NLS-1$
 
                 /* setting the dialog content message */
-                dialog.setMessage("Are you sure you want to remove this location ?"); //$NON-NLS-1$
+                if (isKind)
+                    dialog.setMessage("Are you sure you want to remove this location type ?"); //$NON-NLS-1$
+                else dialog.setMessage("Are you sure you want to remove this location ?"); //$NON-NLS-1$
 
                 /* setting the confirm button text and action to be executed if it has been chosen */
                 dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         Intent intent = new Intent();
-                        intent.putExtra(SOURCE_ADJUSTEDMAP, resources[0]);
-                        setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE, intent);
+                        if (isKind) {
+                            intent.putExtra(SOURCE_SPECIFICMAP_KIND, resources[1]);
+                            setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE_FOR_KIND, intent);
+                        }
+                        else {
+                            intent.putExtra(SOURCE_ADJUSTEDMAP, resources[0]);
+                            setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE, intent);
+                        }
                         Focaccia.this.finish();
                     }
                 });
@@ -104,8 +123,21 @@ public class Focaccia extends Activity {
                 });
                 dialog.show();
             }
-        });
+        };
+        if (isKind) {
+            removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
+            removeButton.setOnClickListener(buttonListener);
+        }
+        else {
+            if (resources[5].equals("0") == true) { //$NON-NLS-1$
+                removeButton.setClickable(false);
+                removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
+            }
+            if (resources[5].equals("1") == true) { //$NON-NLS-1$
+                removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
+                removeButton.setOnClickListener(buttonListener);
 
+            }
         }
     }
 

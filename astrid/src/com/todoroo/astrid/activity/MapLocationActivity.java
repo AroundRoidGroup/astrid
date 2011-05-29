@@ -74,10 +74,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
         mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
-        if (myService.getLastUserLocation() != null){
+      //TODO USERLOCATION
+//        if (true)
+//            return;
+        DPoint d = new DPoint(40.714867,-74.006009);
 
             /* Centralizing the map to the current (to be more accurate, the last) location of the device */
-            mapController.setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+            mapController.setCenter(Misc.degToGeo(d));
 
             /* enable zoom option */
             mapView.setBuiltInZoomControls(true);
@@ -85,7 +88,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             String[] specificLocations = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
 
             /* converting from location written as string to DPoint*/
-            //TODO remove this conversion. set the locationService to return DPoint array
             DPoint[] points = new DPoint[specificLocations.length];
             for (int i = 0 ; i < specificLocations.length ; i++)
                 points[i] = new DPoint(specificLocations[i]);
@@ -103,7 +105,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             else if (sum == 0)
                 Toast.makeText(this, "Failed to add types!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             else Toast.makeText(this, "Only some types have been added!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-        }
+
+
+
         /* showing to the user how many location were found */
         TextView tv = (TextView)findViewById(R.id.searchResults);
         if (kindTitleToPresent)

@@ -40,6 +40,11 @@
   <!-- default random reminder setting (in hours) -->
   <string name="p_rmd_default_random_hours">notif_default_reminder</string>
   
+    <!-- default car radius setting (in ***) -->
+  <string name="p_rmd_default_car_radius_key">car_radius</string>
+  
+    <!-- default foot radius setting (in ***) -->
+  <string name="p_rmd_default_foot_radius_key">foot_radius</string>
   <string-array name="TEA_reminder_random_hours">
     <!-- values (in hours) associated with items above. -->
     <item>1</item>
@@ -66,6 +71,18 @@
     <item>336</item>
     <item>730</item>
     <item>1460</item>
+  </string-array>
+    <string-array name="EPr_car_radius_defult_value">
+    <!-- values (in meter) . -->
+    <item>1000</item>
+    <item>2000</item>
+    <item>5000</item>
+  </string-array>
+     <string-array name="EPr_foot_radius_defult_value">
+    <!-- values (in meter) . -->
+    <item>50</item>
+    <item>200</item>
+    <item>500</item>
   </string-array>
   
   <string-array name="EPr_quiet_hours_start_values">

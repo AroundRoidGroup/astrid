@@ -58,8 +58,12 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
     public void readFromTask(Task task) {
         taskID = task.getId();
         String[] allSpecific =  locationService.getLocationsBySpecificAsArray(task.getId());
-        for (String s : allSpecific)
+        mainLoop: for (String s : allSpecific) {
+            for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
+                if (s.equalsIgnoreCase(pair.getKey().toString()))
+                    continue mainLoop;
             pointsAndAddresses.put(new DPoint(s), null);
+        }
     }
 
     @Override

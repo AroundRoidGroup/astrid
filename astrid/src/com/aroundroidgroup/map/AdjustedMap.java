@@ -26,7 +26,6 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.ContextManager;
-import com.todoroo.astrid.activity.myService;
 
 public class AdjustedMap extends MapView {
 
@@ -70,9 +69,14 @@ public class AdjustedMap extends MapView {
 
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
+          //TODO USERLOCATION
+//            if (true)
+//                return;
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
-            GeoPoint lastDeviceLocation = Misc.locToGeo(myService.getLastUserLocation());
+
+            DPoint d = new DPoint(40.714867,-74.006009);
+            GeoPoint lastDeviceLocation = Misc.degToGeo(d);
             addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
         }
     }
@@ -139,7 +143,11 @@ public class AdjustedMap extends MapView {
         mapOverlays = getOverlays();
         showDeviceLocation();
         getController().setZoom(18);
-        getController().setCenter(Misc.locToGeo(myService.getLastUserLocation()));
+        //TODO USERLOCATION
+//        if (true)
+//            return;
+        DPoint d = new DPoint(40.714867,-74.006009);
+        getController().setCenter(Misc.degToGeo(d));
     }
 
     /* calling this function will automatically add an overlay for specific locations */
@@ -157,6 +165,16 @@ public class AdjustedMap extends MapView {
     public void removeTappedLocation(int index) {
         removePoint(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, index);
     }
+
+    public void removeTypeLocation(String type) {
+        MapItemizedOverlay typeOverlay = overlays.get(KIND_OVERLAY_UNIQUE_NAME);
+        for (int i = 0 ; i < typeOverlay.size() ; i++)
+            if (typeOverlay.getItem(i).getSnippet().equals(type))
+                typeOverlay.removeOverlay(i);
+        mapOverlays.add(typeOverlay);
+        invalidate();
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (addByTap) {
@@ -200,6 +218,8 @@ public class AdjustedMap extends MapView {
                                 for (int i = 0 ; i < allSpecific.length ; i++)
                                     la.add(allSpecific[i]);
                                 la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
+
+                                //TODO consider remove this line because when this close, all points are saved
                                 x.syncLocationsBySpecific(currentTastID, la);
                                 addItemToOverlay(Misc.degToGeo(lastPointedLocation), "Specific Location", address, address, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER); //$NON-NLS-1$
                                 refresh();
@@ -233,6 +253,7 @@ public class AdjustedMap extends MapView {
         if (identifier == null)
             return;
         overlays.get(identifier).removeOverlay(index);
+        invalidate();
     }
 
     public String[] getAllByIDAsAddress(String identifier) {
@@ -268,7 +289,7 @@ public class AdjustedMap extends MapView {
         DPoint[] allPoints = new DPoint[getAllPointsCount()];
         for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
             MapItemizedOverlay overlay = pair.getValue();
-            for (int i = 0 ; i < allPoints.length ; i++)
+            for (int i = 0 ; i < overlay.size() ; i++)
                 allPoints[count + i] = Misc.geoToDeg(overlay.getItem(i).getPoint());
             count += overlay.size();
         }
@@ -280,7 +301,7 @@ public class AdjustedMap extends MapView {
         String[] AllAddresses = new String[getAllPointsCount()];
         for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
             MapItemizedOverlay overlay = pair.getValue();
-            for (int i = 0 ; i < AllAddresses.length ; i++)
+            for (int i = 0 ; i < overlay.size() ; i++)
                 AllAddresses[count + i] = overlay.getItem(i).getAddress();
             count += overlay.size();
         }
@@ -339,15 +360,14 @@ public class AdjustedMap extends MapView {
         }
 
         public void addOverlay(AdjustedOverlayItem overlay) {
-            Toast.makeText(context, "hosafa", Toast.LENGTH_LONG).show();
             mOverlays.add(overlay);
             populate();
         }
 
         public void removeOverlay(int index) {
             //TODO check if index is not out of borders
-//            mOverlays.remove(createItem(index));
-            mOverlays.clear();
+            mOverlays.remove(createItem(index));
+//            mOverlays.clear();
             populate();
         }
 
