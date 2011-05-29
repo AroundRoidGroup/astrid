@@ -36,7 +36,7 @@ public class AroundroidDbAdapter {
 
     private final Context mCtx;
 
-    //TODO fix stuff that are passed as strings
+    //TODO consider change in the table of astrid that mails will be saved as row numbers in the database?
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 

@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
@@ -43,6 +44,8 @@ public class SpecificMapLocation extends MapActivity {
     public static final int FOCACCIA_RESULT_CODE = 1;
     public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 2;
     public static final int FOCACCIA_RESULT_CODE_FOR_KIND = 3;
+    public static final int CONTACTS_REQUEST_CODE = 0;
+
 
     private static final int MENU_SPECIFIC_GROUP = 1;
     private static final int MENU_KIND_GROUP = 65536;
@@ -208,6 +211,15 @@ public class SpecificMapLocation extends MapActivity {
         }
 
 
+        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ContextManager.getContext(),ConnectedContactsActivity.class);
+                startActivityForResult(intent,CONTACTS_REQUEST_CODE);
+            }
+        });
+
         /* getting the task by the taskID that has been extracted from the Intent */
         //        TaskService taskService = new TaskService();
         //        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.TITLE).
@@ -300,6 +312,16 @@ public class SpecificMapLocation extends MapActivity {
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode==CONTACTS_REQUEST_CODE){
+            if (resultCode==RESULT_OK){
+                //TODO a contact was picked! add it to control set
+                Bundle bundle = data.getExtras();
+                bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL);
+            }
+        }
+
+        //TODO fix moti's request and result codes
         if (resultCode == FOCACCIA_RESULT_CODE) {
             Bundle bundle = data.getExtras();
             //            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$

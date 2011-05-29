@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,6 +43,9 @@ public class ConnectedContactsActivity extends ListActivity {
 
     //TODO on on resume fill data
 
+    public static final int ADD_PEOPLE_RESULT_CODE = 1;
+    public static final String FRIEND_MAIL = "mail";
+
     public static final int SCAN_ID = Menu.FIRST;
 
     private AroundroidDbAdapter mDbHelper;
@@ -62,15 +66,21 @@ public class ConnectedContactsActivity extends ListActivity {
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
 
+        setResult(RESULT_CANCELED);
+
         lv.setOnItemClickListener(new OnItemClickListener() {
           public void onItemClick(AdapterView<?> parent, View view,
               int position, long id) {
+            //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
             // When clicked, show a toast with the TextView text
-            Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
+            CharSequence name = ((TextView) view).getText();
+            Toast.makeText(getApplicationContext(), name,
                 Toast.LENGTH_SHORT).show();
-            idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
-            Toast.makeText(getApplicationContext(), idnm.id,
-                    Toast.LENGTH_SHORT).show();
+            //idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
+            Intent intent = new Intent();
+            intent.putExtra(FRIEND_MAIL, name);
+            setResult(RESULT_OK, intent);
+            finish();
           }
         });
     }
@@ -118,11 +128,16 @@ public class ConnectedContactsActivity extends ListActivity {
 
         setListAdapter(lastAdapter);
 
+        if (idnmList.size()==0){
+            Toast.makeText(getApplicationContext(), "No Friends were found!", Toast.LENGTH_SHORT).show();
+        }
+
 
 
     }
 
     private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
+
 
         //assuming prs is connected
         private boolean scanContacts() {
@@ -136,7 +151,7 @@ public class ConnectedContactsActivity extends ListActivity {
             //TODO - send and update only the ones that does not aleady exists
             //the list is sorted!
             List<FriendProps> lfp =  prs.getPeopleLocations(peopleArr, null);
-            if (lfp!=null && lfp.size()>0){
+            if (lfp!=null && lfp.size()>0 ){
                 FriendProps exampleProps = new FriendProps();
                 for (idNameMail idnm : chINM){
                     exampleProps.setMail(idnm.mail);
@@ -157,11 +172,10 @@ public class ConnectedContactsActivity extends ListActivity {
 
                     }
                 }
-                return true;
             }
-            else{
-                return false;
-            }
+
+            return lfp!=null;
+
         }
 
 
