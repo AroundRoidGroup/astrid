@@ -15,13 +15,11 @@ public class CronUserManagerServlet extends HttpServlet {
 
 	private Date requestDate;
 
-	//TODO - make long time no see messages to be sent only ONCE!!
-
 	private final long almostDeadUser = 1000 * 60 * 60 * 24 * 15;
 	private final long deadUser = almostDeadUser + 1000 * 60 * 60 * 24 * 15;
 
-	//private final long almostDeadUser = 1000 * 120;
-	//private final long deadUser = almostDeadUser + 1000 * 120;
+	//private final long almostDeadUser = 1000 * 60;
+	//private final long deadUser = almostDeadUser + 1000 * 181;
 	//for debug with these, set cron timer to 1 minute!
 
 
@@ -30,7 +28,7 @@ public class CronUserManagerServlet extends HttpServlet {
 	}
 	
 	private static String getAllTimedUsersUnnotified(long minTime,long maxTime){
-		return ("select from "+ GPSProps.class.getName()+" where ((reminded==false) &&(timeStamp > "+maxTime+") && (timeStamp < "+minTime+"))");
+		return ("select from "+ GPSProps.class.getName()+" where ((timeStamp > "+maxTime+") && (timeStamp < "+minTime+") && (reminded==false))");
 	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp){
@@ -47,9 +45,8 @@ public class CronUserManagerServlet extends HttpServlet {
 			String mailQuery = getAllTimedUsersUnnotified(requestDate.getTime()-almostDeadUser,requestDate.getTime()-deadUser);
 
 			List<GPSProps> gpses  = (List<GPSProps>) pm.newQuery(mailQuery).execute();
+
 			//mail them reminder
-			pm.deletePersistentAll(gpses);
-			pm.makePersistentAll(gpses);
 
 			for (GPSProps gpsP : gpses){
 				try {
@@ -61,6 +58,7 @@ public class CronUserManagerServlet extends HttpServlet {
 				}
 			}
 			//update 'reminded'
+
 			pm.makePersistentAll(gpses);
 
 			//mail them death
@@ -72,15 +70,17 @@ public class CronUserManagerServlet extends HttpServlet {
 					e.printStackTrace();
 				}
 			}
-			//delete them
-			pm.deletePersistentAll(gpses2);
+
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally{
-			pm.close();
-
 		}
+		
+		//delete them
+		pm.deletePersistentAll(gpses2);
+		
+		pm.close();
+
 
 	}
 
