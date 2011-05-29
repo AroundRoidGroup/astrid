@@ -38,6 +38,26 @@ public class Misc {
         "synagogue", "taxi stand", "train station", "travel agency", "university", "veterinary care", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
         "zoo"};     //$NON-NLS-1$
 
+    public static final String locationsDelimiter = "@@@"; //$NON-NLS-1$
+
+    public static int startTypeIndex(String [] data) {
+        for (int i = 0 ; i < data.length ; i++)
+            if (data[i].equals(locationsDelimiter))
+                return i;
+        return -1;
+    }
+
+    public static int startPeopleIndex(String [] data) {
+        boolean flag = false;
+        for (int i = 0 ; i < data.length ; i++) {
+            if (flag == true && data[i].equals(locationsDelimiter))
+                return i;
+            if (flag == false && data[i].equals(locationsDelimiter))
+                flag = true;
+        }
+        return -1;
+    }
+
     public static boolean isType(String type) {
         for (String s : types)
             if (s.equalsIgnoreCase(type))

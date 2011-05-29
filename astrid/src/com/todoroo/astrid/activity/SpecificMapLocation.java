@@ -2,7 +2,6 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.json.JSONException;
@@ -23,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
@@ -57,8 +57,11 @@ public class SpecificMapLocation extends MapActivity {
 
     private LocationService locationService;
     private List<String> types = null;
+    private List<String> people = null;
     private Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
+
+    private final AroundroidDbAdapter mdba = new AroundroidDbAdapter(this);
 
     private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
 
@@ -99,6 +102,8 @@ public class SpecificMapLocation extends MapActivity {
             menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
         for (int i = 0 ; i < types.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
+        for (int i = 0 ; i < people.size() ; i++)
+            menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + i, Menu.NONE, people.get(i));
     }
 
     @Override
@@ -134,12 +139,24 @@ public class SpecificMapLocation extends MapActivity {
         }
     }
 
+//    @Override
+//    protected void onDestroy() {
+//        mdba.close();
+//        super.onDestroy();
+//    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.specific_map);
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
+
+//        mdba.open();
+//
+//        if (mdba.specialUserToDPoint()!=null){
+//            //has user coords
+//        }
 
         /* allowing adding of location by tapping on the map */
         mapView.enableAddByTap();
@@ -204,6 +221,22 @@ public class SpecificMapLocation extends MapActivity {
         String[] existedTypes = locationService.getLocationsByTypeAsArray(taskID);
         for (String s : existedTypes)
             types.add(s);
+        int[] returnValues = mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, existedTypes, 500.0);
+        int sum = 0;
+        for (int i : returnValues)
+            sum += i;
+        if (sum == returnValues.length)
+            Toast.makeText(this, "All types have been added successfully!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+        else if (sum == 0)
+            Toast.makeText(this, "Failed to add types!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+        else Toast.makeText(this, "Only some types have been added!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+
+        locationService = new LocationService();
+        people = new ArrayList<String>();
+        /* adding the existed business types */
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
+        for (String s : existedPeople)
+            people.add(s);
 
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
@@ -211,8 +244,6 @@ public class SpecificMapLocation extends MapActivity {
             viewAll.setOnClickListener(nothingToShowClickListener);
             viewAll.setOnLongClickListener(nothingToShowLongClickListener);
         }
-
-
 
         ((Button)findViewById(R.id.addPeople)).setOnClickListener(new OnClickListener() {
 
@@ -317,11 +348,11 @@ public class SpecificMapLocation extends MapActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode==CONTACTS_REQUEST_CODE){
-            if (resultCode==RESULT_OK){
+        if (requestCode == CONTACTS_REQUEST_CODE){
+            if (resultCode == RESULT_OK){
                 //TODO a contact was picked! add it to control set
                 Bundle bundle = data.getExtras();
-                bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL);
+                String contact = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL).toString();
             }
         }
 
@@ -367,27 +398,62 @@ public class SpecificMapLocation extends MapActivity {
          *                    reversed geocoded. location at position k in the array has its address
          *                    at position 2k in the array. */
         Intent intent = new Intent();
-        int tappedCount = mapView.getTappedPointsCount();
-        int specificCount = mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        String[] classOvelrays = new String[(tappedCount + specificCount) * 2];
+//        int tappedCount = mapView.getTappedPointsCount();
+//        int specificCount = mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+//        String[] classOvelrays = new String[(tappedCount + specificCount) * 2];
+//
+//        DPoint[] tappedPoints = mapView.getTappedCoords();
+//        for (int i = 0 ; i < tappedCount ; i++)
+//            classOvelrays[i] = tappedPoints[i].toString();
+//        DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+//        for (int i = 0 ; i < specificCount ; i++)
+//            classOvelrays[tappedCount + i] = specificPoints[i].toString();
+//
+//        String[] tappedAddresses = mapView.getTappedAddress();
+//        for (int i = 0 ; i < tappedCount ; i++)
+//            classOvelrays[tappedCount + specificCount + i] = tappedAddresses[i];
+//        String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+//        for (int i = 0 ; i < specificCount ; i++)
+//            classOvelrays[2 * tappedCount + specificCount + i] = specificAddresses[i].toString();
 
-        DPoint[] tappedPoints = mapView.getTappedCoords();
-        for (int i = 0 ; i < tappedCount ; i++)
-            classOvelrays[i] = tappedPoints[i].toString();
-        DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < specificCount ; i++)
-            classOvelrays[tappedCount + i] = specificPoints[i].toString();
+        List<String> dataToSendBack = new ArrayList<String>();
 
-        String[] tappedAddresses = mapView.getTappedAddress();
-        for (int i = 0 ; i < tappedCount ; i++)
-            classOvelrays[tappedCount + specificCount + i] = tappedAddresses[i];
-        String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < specificCount ; i++)
-            classOvelrays[2 * tappedCount + specificCount + i] = specificAddresses[i].toString();
+        /* adding the points coordinates */
+        DPoint[] points = mapView.getTappedCoords();
+        for (DPoint p : points)
+            dataToSendBack.add(p.toString());
+        points = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (DPoint p : points)
+            dataToSendBack.add(p.toString());
 
-        intent.putExtra(SPECIFIC_POINTS_SECOND, classOvelrays);
+        /* adding the points addresses */
+        String[] addresses = mapView.getTappedAddress();
+        for (String s : addresses)
+            dataToSendBack.add(s);
+        addresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (String s : addresses)
+            dataToSendBack.add(s);
+
+        /* adding delimiter separating specificPoints and types */
+        dataToSendBack.add(Misc.locationsDelimiter);
+
+        /* adding the types */
+        for (String t : types)
+            dataToSendBack.add(t);
+
+        /* adding delimiter separating types and people */
+        dataToSendBack.add(Misc.locationsDelimiter);
+
+        /* adding the people */
+        for (String p : people)
+            dataToSendBack.add(p);
+
+        String[] dataToSendBackAsArray = new String[dataToSendBack.size()];
+        for (int i = 0 ; i < dataToSendBackAsArray.length ; i++)
+            dataToSendBackAsArray[i] = dataToSendBack.get(i);
+
+        intent.putExtra(SPECIFIC_POINTS_SECOND, dataToSendBackAsArray);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
-        locationService.syncLocationsByType(taskID, new LinkedHashSet<String>(types));
         SpecificMapLocation.this.finish();
     }
 

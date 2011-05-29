@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.aroundroidgroup.map.DPoint;
+
 public class AroundroidDbAdapter {
 
     public static final String KEY_MAIL = "mail";
@@ -241,6 +243,10 @@ public class AroundroidDbAdapter {
                 return this.fetchPeople(rowID);
             }
         }
+    }
+
+    public DPoint specialUserToDPoint(){
+        return null;
     }
 
 
