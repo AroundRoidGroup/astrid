@@ -22,6 +22,8 @@
    	<string name="specificAddressButtonText">Add</string>
    	<string name="EPr_people_base_remainder">People Base Reminder</string>
    	<string name="EPr_connect">Connect...</string>
+   	
+   <string name="OK">OK!</string>
 
    	<!-- in Focaccia activity -->
    	<string name="specificLocation">Specific Location</string>
