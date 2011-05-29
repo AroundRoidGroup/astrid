@@ -131,7 +131,10 @@ public class AdjustedMap extends MapView {
     public int getOverlaySize(String identifier) {
         if (identifier == null)
             return -1;
-        return overlays.get(identifier).size();
+        MapItemizedOverlay iOver = overlays.get(identifier);
+        if (iOver == null)
+            return 0;
+        return iOver.size();
     }
 
     public void associateMapWithTask(long taskID) {

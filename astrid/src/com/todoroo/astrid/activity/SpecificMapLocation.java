@@ -146,24 +146,25 @@ public class SpecificMapLocation extends MapActivity {
 
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
 
+        /* adding the auto-complete mechanism */
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-                adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-                textView.setAdapter(adapter);
+        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
+        textView.setAdapter(adapter);
 
-                textView.setOnKeyListener(new View.OnKeyListener() {
+        textView.setOnKeyListener(new View.OnKeyListener() {
 
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        if (previousThread != null) {
-                            if (previousThread.isAlive())
-                                previousThread.destroy();
-                            previousThread = null;
-                        }
-                        previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-                        previousThread.run();
-                        return false;
-                    }
-                });
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (previousThread != null) {
+                    if (previousThread.isAlive())
+                        previousThread.destroy();
+                    previousThread = null;
+                }
+                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
+                previousThread.run();
+                return false;
+            }
+        });
 
 
 
@@ -234,70 +235,70 @@ public class SpecificMapLocation extends MapActivity {
 
 
 
-//        if (false){
-            DPoint d = new DPoint(40.714867,-74.006009);
-            /* Centralizing the map to the last known location of the device */
-            mapView.getController().setCenter(Misc.degToGeo(d));
+        //        if (false){
+        DPoint d = new DPoint(40.714867,-74.006009);
+        /* Centralizing the map to the last known location of the device */
+        mapView.getController().setCenter(Misc.degToGeo(d));
 
-//        }
-//        else {
+        //        }
+        //        else {
 
-            final EditText address = (EditText)findViewById(R.id.specificAddress);
+        final EditText address = (EditText)findViewById(R.id.specificAddress);
 
-            Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
-            addressButton.setOnClickListener(new View.OnClickListener() {
+        Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
+        addressButton.setOnClickListener(new View.OnClickListener() {
 
-                @Override
-                public void onClick(View v) {
-                    DPoint d = null;
-                    String text = address.getText().toString();
+            @Override
+            public void onClick(View v) {
+                DPoint d = null;
+                String text = address.getText().toString();
 
-                    if (Misc.isType(text)) {
-                        String[] type = new String[1];
-                        type[0] = text.replace(' ', '_');
-                        mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
-                        mapView.invalidate();
-                        types.add(text);
-                        viewAll.setOnClickListener(null);
-                        viewAll.setOnLongClickListener(null);
+                if (Misc.isType(text)) {
+                    String[] type = new String[1];
+                    type[0] = text.replace(' ', '_');
+                    mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
+                    mapView.invalidate();
+                    types.add(text);
+                    viewAll.setOnClickListener(null);
+                    viewAll.setOnLongClickListener(null);
+                }
+                else {
+                    try {
+                        d = Geocoding.geocoding(text);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    else {
+                    if (d != null) {
+                        String address = null;
                         try {
-                            d = Geocoding.geocoding(text);
+                            address = Geocoding.reverseGeocoding(d);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if (d != null) {
-                            String address = null;
-                            try {
-                                address = Geocoding.reverseGeocoding(d);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            if (address == null)
-                                address = new String("Specific Location"); //$NON-NLS-1$
+                        if (address == null)
+                            address = new String("Specific Location"); //$NON-NLS-1$
                             mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
                             mapView.invalidate();
-                        }
-                        else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
                     }
-                }
-            });
+                    else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
-            address.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    address.setText(""); //$NON-NLS-1$
-                    address.setOnClickListener(null);
                 }
-            });
-//        }
+            }
+        });
+
+        address.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                address.setText(""); //$NON-NLS-1$
+                address.setOnClickListener(null);
+            }
+        });
+        //        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

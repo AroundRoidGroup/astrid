@@ -74,28 +74,30 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
         mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
-      //TODO USERLOCATION
-//        if (true)
-//            return;
+        //TODO USERLOCATION
+        //        if (true)
+        //            return;
         DPoint d = new DPoint(40.714867,-74.006009);
 
-            /* Centralizing the map to the current (to be more accurate, the last) location of the device */
-            mapController.setCenter(Misc.degToGeo(d));
+        /* Centralizing the map to the current (to be more accurate, the last) location of the device */
+        mapController.setCenter(Misc.degToGeo(d));
 
-            /* enable zoom option */
-            mapView.setBuiltInZoomControls(true);
+        /* enable zoom option */
+        mapView.setBuiltInZoomControls(true);
 
-            String[] specificLocations = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
+        String[] specificLocations = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
 
-            /* converting from location written as string to DPoint*/
-            DPoint[] points = new DPoint[specificLocations.length];
-            for (int i = 0 ; i < specificLocations.length ; i++)
-                points[i] = new DPoint(specificLocations[i]);
+        /* converting from location written as string to DPoint*/
+        DPoint[] points = new DPoint[specificLocations.length];
+        for (int i = 0 ; i < specificLocations.length ; i++)
+            points[i] = new DPoint(specificLocations[i]);
 
-            mapFunctions.addLocationSetToMap(mapView, AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, points, "Specific Location"); //$NON-NLS-1$
+        mapFunctions.addLocationSetToMap(mapView, AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, points, "Specific Location"); //$NON-NLS-1$
 
-            /* if the task is location-based, the following code will add the locations to the map */
-            locationTags = locationService.getLocationsByTypeAsArray(mCurrentTask.getId());
+        /* if the task is location-based, the following code will add the locations to the map */
+        locationTags = locationService.getLocationsByTypeAsArray(mCurrentTask.getId());
+        if (locationTags.length == 0) {
+            Toast.makeText(this, "size = " + locationTags.length + ". first is " + locationTags[0], Toast.LENGTH_LONG).show();
             int[] returnValues = mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, locationTags, 500.0);
             int sum = 0;
             for (int i : returnValues)
@@ -105,7 +107,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             else if (sum == 0)
                 Toast.makeText(this, "Failed to add types!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             else Toast.makeText(this, "Only some types have been added!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
+        }
 
 
         /* showing to the user how many location were found */
