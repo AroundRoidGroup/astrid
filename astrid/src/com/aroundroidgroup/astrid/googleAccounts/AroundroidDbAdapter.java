@@ -228,21 +228,32 @@ public class AroundroidDbAdapter {
         mDbHelper.kill(mDb);
     }
 
+    public long createSpecialUser(){
+        long rowID = this.createPeople("me", -1L);
+        //begining of time!
+        if (rowID==-1){
+            return -1;
+        }
+        this.updatePeople(rowID, 0.0, 0.0, 21600L);
+        return rowID;
+    }
+
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
-        Cursor c = fetchByMail("me");
-        if (c!=null && c.moveToFirst()){
-            return c;
-        }
-        else{
-            long rowID = this.createPeople("me", -1L);
-            //begining of time!
-            this.updatePeople(rowID, 0.0, 0.0, 21600L);
-            if (rowID==-1){
-                return null;
+        Cursor c = null;
+        try{
+            c= fetchByMail("me");
+            if (c!=null && c.moveToFirst()){
+                return c;
             }
             else{
+                long rowID = createSpecialUser();
                 return this.fetchPeople(rowID);
+            }
+        }
+        finally{
+            if (c!=null){
+                c.close();
             }
         }
     }
@@ -255,16 +266,24 @@ public class AroundroidDbAdapter {
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
-        Cursor cur  = createAndfetchSpecialUser();
-        if (cur==null || !cur.moveToFirst()){
+        Cursor cur = null;
+        try{
+            cur = createAndfetchSpecialUser();
+            if (cur==null || !cur.moveToFirst()){
+                return null;
+            }
+
+            if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
+                return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
+            }
+
             return null;
         }
-
-        if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
-            return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
+        finally{
+            if (cur!=null){
+                cur.close();
+            }
         }
-
-        return null;
     }
 
 
