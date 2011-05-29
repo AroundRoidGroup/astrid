@@ -19,6 +19,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -49,6 +50,8 @@ public class AdjustedMap extends MapView {
     public static final String PEOPLE_OVERLAY_UNIQUE_NAME = "people"; //$NON-NLS-1$
     private static final String DEVICE_LOCATION_OVERLAY_UNIQUE_NAME = "deviceLocation"; //$NON-NLS-1$
 
+    private AroundroidDbAdapter db;
+
     public AdjustedMap(Context context, String apiKey) {
         super(context, apiKey);
         this.context = context;
@@ -75,10 +78,16 @@ public class AdjustedMap extends MapView {
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
 
-            DPoint d = new DPoint(40.714867,-74.006009);
-            GeoPoint lastDeviceLocation = Misc.degToGeo(d);
-            addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+//            DPoint d = new DPoint(40.714867,-74.006009);
+            if (db.specialUserToDPoint() != null) {
+            GeoPoint lastDeviceLocation = Misc.degToGeo(db.specialUserToDPoint());
+            addItemToOverlay(lastDeviceLocation, "Your Location", db.specialUserToDPoint().toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+            }
         }
+    }
+
+    public DPoint getDeviceLocation() {
+        return db.specialUserToDPoint();
     }
 
     public void removeDeviceLocation() {
@@ -142,6 +151,9 @@ public class AdjustedMap extends MapView {
     }
 
     private void init() {
+        db = new AroundroidDbAdapter(context);
+        //TODO close db
+        db.open();
         overlays = new HashMap<String, MapItemizedOverlay>();
         mapOverlays = getOverlays();
         showDeviceLocation();
@@ -349,7 +361,7 @@ public class AdjustedMap extends MapView {
                 sentData[5] = "0"; // can't be removed //$NON-NLS-1$
             }
             else if (overlays.get(PEOPLE_OVERLAY_UNIQUE_NAME) == this) {
-                sentData[5] = "0"; // can't be removed //$NON-NLS-1$
+                sentData[5] = "1"; // can't be removed //$NON-NLS-1$
             }
             else if (overlays.get(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME) == this) {
                 sentData[5] = "0"; // can't be removed //$NON-NLS-1$

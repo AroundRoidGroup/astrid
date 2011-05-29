@@ -2,11 +2,14 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -57,7 +60,7 @@ public class SpecificMapLocation extends MapActivity {
 
     private LocationService locationService;
     private List<String> types = null;
-    private List<String> people = null;
+    private Map<String, DPoint> people = null;
     private Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
 
@@ -102,8 +105,10 @@ public class SpecificMapLocation extends MapActivity {
             menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
         for (int i = 0 ; i < types.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
-        for (int i = 0 ; i < people.size() ; i++)
-            menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + i, Menu.NONE, people.get(i));
+        int i = 0;
+        for (Map.Entry<String, DPoint> p : people.entrySet()) {
+            menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + i++, Menu.NONE, p.getKey());
+        }
     }
 
     @Override
@@ -152,17 +157,15 @@ public class SpecificMapLocation extends MapActivity {
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
-//        mdba.open();
-//
-//        if (mdba.specialUserToDPoint()!=null){
-//            //has user coords
-//        }
+        mdba.open();
+
+        DPoint deviceLocation = mapView.getDeviceLocation();
 
         /* allowing adding of location by tapping on the map */
         mapView.enableAddByTap();
 
-        /* disabling the feature that shows the device location on the map */
-        mapView.removeDeviceLocation();
+//        /* disabling the feature that shows the device location on the map */
+//        mapView.removeDeviceLocation();
 
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
 
@@ -232,11 +235,11 @@ public class SpecificMapLocation extends MapActivity {
         else Toast.makeText(this, "Only some types have been added!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
         locationService = new LocationService();
-        people = new ArrayList<String>();
+        people = new HashMap<String, DPoint>();
         /* adding the existed business types */
         String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
         for (String s : existedPeople)
-            people.add(s);
+            people.put(s, null);
 
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
@@ -281,9 +284,9 @@ public class SpecificMapLocation extends MapActivity {
 
 
         //        if (false){
-        DPoint d = new DPoint(40.714867,-74.006009);
+
         /* Centralizing the map to the last known location of the device */
-        mapView.getController().setCenter(Misc.degToGeo(d));
+        mapView.getController().setCenter(Misc.degToGeo(deviceLocation));
 
         //        }
         //        else {
@@ -353,6 +356,14 @@ public class SpecificMapLocation extends MapActivity {
                 //TODO a contact was picked! add it to control set
                 Bundle bundle = data.getExtras();
                 String contact = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL).toString();
+                Cursor x = mdba.fetchByMail(contact);
+                //TODO tomer change this to a better implementation
+                if (x!=null && x.moveToFirst()){
+                    //LAT AND THEN LON
+                    //DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
+                    DPoint dp = new DPoint(40.716558,-74.00013);
+                    people.put(contact, dp);
+                }
             }
         }
 
@@ -445,8 +456,8 @@ public class SpecificMapLocation extends MapActivity {
         dataToSendBack.add(Misc.locationsDelimiter);
 
         /* adding the people */
-        for (String p : people)
-            dataToSendBack.add(p);
+        for (Map.Entry<String, DPoint> pair : people.entrySet())
+            dataToSendBack.add(pair.getKey());
 
         String[] dataToSendBackAsArray = new String[dataToSendBack.size()];
         for (int i = 0 ; i < dataToSendBackAsArray.length ; i++)

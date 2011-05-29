@@ -150,6 +150,10 @@ public class GPSService extends Service{
         }
     }
 
+    public DPoint getNew() {
+        return new DPoint(50.0, 50.0);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()

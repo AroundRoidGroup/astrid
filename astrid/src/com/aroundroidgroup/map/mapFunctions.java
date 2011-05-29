@@ -14,17 +14,15 @@ public class mapFunctions {
     public static final int TITLE_TASK_NAME = 4;
 
     public static int[] addTagsToMap(AdjustedMap map, String overlayUniqueName, String[] locationTypes, double radius) {
-        //TODO USERLOCATION
-//        if (true)
-//        {
-//            return new int[locationTypes.length];
-//        }
-        DPoint d = new DPoint(40.714867,-74.006009);
+        DPoint deviceLocation = map.getDeviceLocation();
+        if (deviceLocation == null)
+            return new int[locationTypes.length];
+
         int i = 0;
         int[] feedback = new int[locationTypes.length];
         for (String type : locationTypes) {
             try {
-                Map<String, DPoint> kindLocations = Misc.googlePlacesQuery(type, d, radius);
+                Map<String, DPoint> kindLocations = Misc.googlePlacesQuery(type, deviceLocation, radius);
                 if (!kindLocations.isEmpty())
                     feedback[i] = 1;
                 /* running on all the tags (bank, post-office, ATM, etc...) */

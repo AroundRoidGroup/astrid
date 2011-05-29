@@ -50,7 +50,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         boolean kindTitleToPresent = false;
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
-        mapView.removeDeviceLocation();
+        DPoint deviceLocation = mapView.getDeviceLocation();
 
         mapController = mapView.getController();
         mapController.setZoom(18);
@@ -74,13 +74,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
         mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
-        //TODO USERLOCATION
-        //        if (true)
-        //            return;
-        DPoint d = new DPoint(40.714867,-74.006009);
-
         /* Centralizing the map to the current (to be more accurate, the last) location of the device */
-        mapController.setCenter(Misc.degToGeo(d));
+        mapController.setCenter(Misc.degToGeo(deviceLocation));
 
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);

@@ -255,16 +255,20 @@ public class AroundroidDbAdapter {
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
-        Cursor cur  = createAndfetchSpecialUser();
-        if (cur==null || !cur.moveToFirst()){
-            return null;
-        }
 
-        if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
-            return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
-        }
-
-        return null;
+        //return new DPoint(32.113522,34.80635);
+        return new DPoint(40.714997,-74.00588);
+//
+//        Cursor cur  = createAndfetchSpecialUser();
+//        if (cur==null || !cur.moveToFirst()){
+//            return null;
+//        }
+//
+//        if (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME)))){
+//            return new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
+//        }
+//
+//        return null;
     }
 
 
