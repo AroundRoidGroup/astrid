@@ -30,7 +30,7 @@ public class PeopleRequest {
     private static List<NameValuePair> createPostData(WPSLocation currentLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (currentLocation!=null){
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude()))); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
             //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
             //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));

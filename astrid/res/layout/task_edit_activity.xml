@@ -33,24 +33,6 @@
         android:autoText="true"
         android:text=""
         android:capitalize="sentences" />
-        
-        
-       <!-- location -->
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/TEA_location_label"
-        style="@style/TextAppearance.GEN_EditLabel" />
-      <com.todoroo.astrid.ui.ErrorCatchingEditText
-        android:id="@+id/location"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/TEA_location_hint"
-        android:autoText="true"
-        android:text=""
-        android:capitalize="sentences" />
-        
-        
           
       <!-- importance -->
       <TextView
@@ -93,42 +75,28 @@
         android:entries="@array/TEA_loading"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
-           
 
-      <!-- location by type-->
-      <TextView
+     <!-- location -->
+     
+     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/TEA_locations_by_type_label"
+        android:text="@string/TEA_location_label"
         style="@style/TextAppearance.GEN_EditLabel" />
-      <LinearLayout
-        android:id="@+id/locations_by_type_container"
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-      <Spinner
-        android:id="@+id/locations_by_type_dropdown"
-        android:paddingBottom="5dip"
-        android:entries="@array/TEA_loading"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-         
-             
-     <!-- location by specific-->
     <LinearLayout
-        android:id="@+id/location_by_specific"
+        android:id="@+id/location"
         android:layout_width="fill_parent" 
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="horizontal">
         
         <Button 
-        	android:id="@+id/location_by_specific_button"
+        	android:id="@+id/location_button"
         	android:layout_width="fill_parent" 
       		android:layout_height="wrap_content"
    		    android:layout_weight="1"
         	
-        	android:text="@string/text_specific_button"
+        	android:text="@string/text_location_button"
         	/>
         
     </LinearLayout>  
@@ -283,27 +251,7 @@
       <LinearLayout android:id="@+id/tab_extra_addons"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" />
-        
-        <!-- location by people-->
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="notify when near a friend"
-        style="@style/TextAppearance.GEN_EditLabel" />
-      <LinearLayout
-        android:id="@+id/locations_by_people_container"
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-      <Spinner
-        android:id="@+id/locations_by_people_dropdown"
-        android:paddingBottom="5dip"
-        android:entries="@array/TEA_loading"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-              
-        
+        android:orientation="vertical" />   
         
       <!-- buttons -->
       <LinearLayout

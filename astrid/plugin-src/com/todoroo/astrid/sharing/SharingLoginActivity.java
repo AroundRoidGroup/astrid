@@ -93,19 +93,19 @@ public class SharingLoginActivity extends Activity implements AuthListener {
     // --- facebook handler
 
     public void onFBAuthSucceed() {
-        System.err.println("GOTCHA SUCCESS! " + facebook.getAccessToken());
+        System.err.println("GOTCHA SUCCESS! " + facebook.getAccessToken()); //$NON-NLS-1$
         errors.setVisibility(View.VISIBLE);
     }
 
     public void onFBAuthFail(String error) {
-        System.err.println("GOTCHA ERROR: " + error);
+        System.err.println("GOTCHA ERROR: " + error); //$NON-NLS-1$
         DialogUtilities.okDialog(this, getString(R.string.sharing_SLA_title),
                 android.R.drawable.ic_dialog_alert, error, null);
     }
 
     @Override
     public void onFBAuthCancel() {
-        System.err.println("GOTCHA CANCEL");
+        System.err.println("GOTCHA CANCEL"); //$NON-NLS-1$
         // do nothing
     }
 
