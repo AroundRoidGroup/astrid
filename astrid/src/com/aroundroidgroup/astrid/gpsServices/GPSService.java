@@ -15,6 +15,7 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
+import com.aroundroidgroup.map.DPoint;
 import com.skyhookwireless.wps.IPLocation;
 import com.skyhookwireless.wps.IPLocationCallback;
 import com.skyhookwireless.wps.WPSAuthentication;
@@ -114,13 +115,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("done");
+            toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
        }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("handleError");
+            toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
                 return WPSContinuation.WPS_CONTINUE;
@@ -129,14 +130,14 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("handleIPLocation");
+            toastMe("WPS handleIPLocation");
 
         }
 
         public void handleWPSLocation(WPSLocation location)
         {
             // send a message to display the location
-            toastMe("handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
+            //toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
             makeUseOfNewLocation(location);
         }
 
@@ -165,6 +166,7 @@ public class GPSService extends Service{
 
     @Override
     public synchronized void onDestroy() {
+        this.aDba.close();
         // The service is no longer used and is being destroyed
         if (refreshData.isAlive()){
             refreshData.setExit();
@@ -258,6 +260,14 @@ public class GPSService extends Service{
                 else if (!reported){
                     reported = true;
                     toastMe("Connected! Hooray!"); //$NON-NLS-1$
+                }
+
+                DPoint dp = aDba.specialUserToDPoint();
+                if (dp!=null){
+                    toastMe("LAT :" + String.valueOf(dp.getX()) + ", LON :" + String.valueOf(dp.getY()) );
+                }
+                else{
+                    toastMe("NO LOCATION");
                 }
 
 
