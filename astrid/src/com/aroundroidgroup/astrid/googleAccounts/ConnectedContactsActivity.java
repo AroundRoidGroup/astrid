@@ -41,6 +41,8 @@ import com.timsu.astrid.R;
 public class ConnectedContactsActivity extends ListActivity {
 
 
+    //TODO check STALE DATA EXCEPTION WHEN ROTATING DEVICE!
+
     //TODO find out why when back is pressed all collapse
 
     //TODO fix UI problems
@@ -49,6 +51,7 @@ public class ConnectedContactsActivity extends ListActivity {
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         mDbHelper.close();
     }
 

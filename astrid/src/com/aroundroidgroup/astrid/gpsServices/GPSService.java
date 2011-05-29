@@ -1,6 +1,5 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.accounts.Account;
@@ -86,7 +85,7 @@ public class GPSService extends Service{
         refreshData = new DataRefresher();
         aDba.open();
         aDba.dropPeople();
-        aDba.createAndfetchSpecialUser();
+        aDba.createSpecialUser();
         skyhookSetup();
     }
 
@@ -198,7 +197,6 @@ public class GPSService extends Service{
         }
     };
 
-    private final List<UpdataeListener> listeners = new ArrayList<UpdataeListener>();
 
     private  synchronized void toastMe(String toastMsg){
         this.mToastMsg = toastMsg;
@@ -358,15 +356,7 @@ public class GPSService extends Service{
                     currMin,
                     _callback);
         }
-        for (UpdataeListener listener: listeners)
-            listener.onEvenet();
     }
 
-    public void addListener(UpdataeListener listener){
-        listeners.add(listener);
-    }
 
-    public void removeFromListener(UpdataeListener listener){
-        listeners.remove(listener);
-    }
 }

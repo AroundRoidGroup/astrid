@@ -450,7 +450,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
             @Override
             public boolean onLongClick(View v) {
                 Intent intent = new Intent(TaskListActivity.this, ConnectedContactsActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,1);
                 return true;
             }
         });

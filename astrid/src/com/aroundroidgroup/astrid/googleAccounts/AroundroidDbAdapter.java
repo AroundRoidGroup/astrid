@@ -228,22 +228,27 @@ public class AroundroidDbAdapter {
         mDbHelper.kill(mDb);
     }
 
+    public long createSpecialUser(){
+        long rowID = this.createPeople("me", -1L);
+        //begining of time!
+        if (rowID==-1){
+            return -1;
+        }
+        this.updatePeople(rowID, 0.0, 0.0, 21600L);
+        return rowID;
+    }
+
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
-        Cursor c = fetchByMail("me");
+        Cursor c = null;
+        c= fetchByMail("me");
         if (c!=null && c.moveToFirst()){
             return c;
         }
         else{
-            long rowID = this.createPeople("me", -1L);
-            //begining of time!
-            this.updatePeople(rowID, 0.0, 0.0, 21600L);
-            if (rowID==-1){
-                return null;
-            }
-            else{
-                return this.fetchPeople(rowID);
-            }
+            if (c!=null) c.close();
+            long rowID = createSpecialUser();
+            return this.fetchPeople(rowID);
         }
     }
 
@@ -255,6 +260,7 @@ public class AroundroidDbAdapter {
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
+
 
         //return new DPoint(32.113522,34.80635);
         return new DPoint(40.714997,-74.00588);
@@ -269,6 +275,8 @@ public class AroundroidDbAdapter {
 //        }
 //
 //        return null;
+
+
     }
 
 
