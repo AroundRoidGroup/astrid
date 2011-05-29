@@ -267,8 +267,8 @@ public class GPSService extends Service{
                 WPSLocation prevLocation = getUserLastLocation();
 
                 //TODO find out the date problem
-                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime()>locationInvalidateTime)){
-                    //setUserLastLocation(null);
+                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() <=locationInvalidateTime)){
+                    setUserLastLocation(null);
                 }
 
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
