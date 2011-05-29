@@ -164,6 +164,7 @@ public class AdjustedMap extends MapView {
             if (typeOverlay.getItem(i).getSnippet().equals(type))
                 typeOverlay.removeOverlay(i);
         mapOverlays.add(typeOverlay);
+        invalidate();
     }
 
     @Override
@@ -244,6 +245,7 @@ public class AdjustedMap extends MapView {
         if (identifier == null)
             return;
         overlays.get(identifier).removeOverlay(index);
+        invalidate();
     }
 
     public String[] getAllByIDAsAddress(String identifier) {
@@ -279,7 +281,7 @@ public class AdjustedMap extends MapView {
         DPoint[] allPoints = new DPoint[getAllPointsCount()];
         for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
             MapItemizedOverlay overlay = pair.getValue();
-            for (int i = 0 ; i < allPoints.length ; i++)
+            for (int i = 0 ; i < overlay.size() ; i++)
                 allPoints[count + i] = Misc.geoToDeg(overlay.getItem(i).getPoint());
             count += overlay.size();
         }
@@ -291,7 +293,7 @@ public class AdjustedMap extends MapView {
         String[] AllAddresses = new String[getAllPointsCount()];
         for (Map.Entry<String, MapItemizedOverlay> pair : overlays.entrySet()) {
             MapItemizedOverlay overlay = pair.getValue();
-            for (int i = 0 ; i < AllAddresses.length ; i++)
+            for (int i = 0 ; i < overlay.size() ; i++)
                 AllAddresses[count + i] = overlay.getItem(i).getAddress();
             count += overlay.size();
         }
@@ -350,15 +352,14 @@ public class AdjustedMap extends MapView {
         }
 
         public void addOverlay(AdjustedOverlayItem overlay) {
-            Toast.makeText(context, "hosafa", Toast.LENGTH_LONG).show();
             mOverlays.add(overlay);
             populate();
         }
 
         public void removeOverlay(int index) {
             //TODO check if index is not out of borders
-//            mOverlays.remove(createItem(index));
-            mOverlays.clear();
+            mOverlays.remove(createItem(index));
+//            mOverlays.clear();
             populate();
         }
 

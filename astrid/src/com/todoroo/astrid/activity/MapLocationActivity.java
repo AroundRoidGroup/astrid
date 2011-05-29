@@ -85,7 +85,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             String[] specificLocations = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
 
             /* converting from location written as string to DPoint*/
-            //TODO remove this conversion. set the locationService to return DPoint array
             DPoint[] points = new DPoint[specificLocations.length];
             for (int i = 0 ; i < specificLocations.length ; i++)
                 points[i] = new DPoint(specificLocations[i]);

@@ -147,7 +147,7 @@ public class SpecificMapLocation extends MapActivity {
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
 //        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
 //        textView.setAdapter(adapter);
-
+//
 //        textView.setOnKeyListener(new View.OnKeyListener() {
 //
 //            @Override
@@ -199,7 +199,7 @@ public class SpecificMapLocation extends MapActivity {
         for (String s : existedTypes)
             types.add(s);
 
-        Button viewAll = (Button)findViewById(R.id.viewAll);
+        final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
         if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
             viewAll.setOnClickListener(nothingToShowClickListener);
@@ -249,7 +249,10 @@ public class SpecificMapLocation extends MapActivity {
                     String[] type = new String[1];
                     type[0] = text.replace(' ', '_');
                     mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
+                    mapView.invalidate();
                     types.add(text);
+                    viewAll.setOnClickListener(null);
+                    viewAll.setOnLongClickListener(null);
                 }
                 else {
                     try {
@@ -293,18 +296,26 @@ public class SpecificMapLocation extends MapActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == FOCACCIA_RESULT_CODE) {
             Bundle bundle = data.getExtras();
-            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+//            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             mapView.removeTappedLocation(Integer.parseInt(bundle.getString(Focaccia.SOURCE_ADJUSTEDMAP)));
-            mapView.invalidate();
-            Toast.makeText(this, "after there are " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+//            Toast.makeText(this, "after there are " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
         if (resultCode == FOCACCIA_RESULT_CODE_FOR_KIND) {
             Bundle bundle = data.getExtras();
-            Toast.makeText(this, "going to remove the type: " + bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND), Toast.LENGTH_LONG).show();
-            mapView.removeTypeLocation(bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND));
-            Toast.makeText(this, "type: " + bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND) + " has been removed", Toast.LENGTH_LONG).show();
+            String type = bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND);
+            if (types.contains(type)) {
+//                Toast.makeText(this, "going to remove the type: " + type, Toast.LENGTH_LONG).show();
+                mapView.removeTypeLocation(type);
+//                Toast.makeText(this, "type: " + type + " has been removed", Toast.LENGTH_LONG).show();
+                types.remove(type);
+                if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+                    Button viewAll = (Button)findViewById(R.id.viewAll);
+                    viewAll.setOnClickListener(nothingToShowClickListener);
+                    viewAll.setOnLongClickListener(nothingToShowLongClickListener);
+                }
+            }
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
