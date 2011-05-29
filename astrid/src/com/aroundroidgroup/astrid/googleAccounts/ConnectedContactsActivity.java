@@ -51,6 +51,7 @@ public class ConnectedContactsActivity extends ListActivity {
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         mDbHelper.close();
     }
 
