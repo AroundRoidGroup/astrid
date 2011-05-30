@@ -414,6 +414,10 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
 
         //TODO : remove the on long click listener
 
+        //TODO remove the button
+
+        ((Button)findViewById(R.id.peopleBaseConnectButton)).setVisibility(View.GONE);
+
         ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnLongClickListener(new OnLongClickListener() {
 
 

@@ -71,7 +71,7 @@ public class AroundgpsServlet extends HttpServlet {
 		String timeStamp = req.getParameter(TIMESTAMP);
 		Long lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());
 
-		GPSProps gspP = new GPSProps(user,user.getEmail(), dLon, dLat,lTimeStamp);
+		GPSProps gspP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
