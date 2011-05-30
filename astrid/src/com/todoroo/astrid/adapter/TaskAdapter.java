@@ -341,9 +341,11 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         final Button mapButton = viewHolder.mapbutton; {
             if (!(new LocationService()).isLocationTask(task.getId())){
                 //mapButton.setVisibility(View.INVISIBLE);
+                mapButton.setEnabled(false);
                 mapButton.setBackgroundResource(R.drawable.google_gray_64);
             }
             else{
+                mapButton.setEnabled(true);
                 mapButton.setBackgroundResource(R.drawable.google_64);
                 //mapButton.setVisibility(View.VISIBLE);
             }
