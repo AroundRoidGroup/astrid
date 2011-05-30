@@ -113,19 +113,16 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
             LinkedHashSet<String> mashu = new LinkedHashSet<String>();
             for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
                 mashu.add(new String(pair.getKey().toString()));
-            locationService.syncLocationsBySpecific(task.getId(), mashu);
             if(locationService.syncLocationsBySpecific(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
             mashu.clear();
             mashu.addAll(types);
-            locationService.syncLocationsByType(task.getId(), mashu);
             if(locationService.syncLocationsByType(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
             mashu.clear();
             mashu.addAll(people);
-            locationService.syncLocationsByPeople(task.getId(), mashu);
             if(locationService.syncLocationsByPeople(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
         }

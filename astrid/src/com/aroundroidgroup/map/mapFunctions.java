@@ -45,30 +45,8 @@ public class mapFunctions {
             map.addItemToOverlay(Misc.degToGeo(d), title, d.toString(), null, overlayUniqueName);
     }
 
-    public static void addPeopleToMap(AdjustedMap map, String overlayUniqueName, String[] people) {
-        /*
-          try {
-              String cat = AroundRoidAppConstants.join(people, "::"); //$NON-NLS-1$
-              myService.httpLock.lock();
-              try{
-                  List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
-                  for (FriendProps f : fp) {
-                      //TODO replace the 4th parameter from null to address ????????
-                      map.addItemToOverlay(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))),
-                              "Person Name", f.getMail(), null, overlayUniqueName); //$NON-NLS-1$
-                  }
-              } finally {
-                  myService.httpLock.unlock();
-              }
-          } catch (ClientProtocolException e) {
-              e.printStackTrace();
-          } catch (IOException e) {
-              e.printStackTrace();
-          } catch (ParserConfigurationException e) {
-              e.printStackTrace();
-          } catch (SAXException e) {
-              e.printStackTrace();
-          }
-    */
+    public static void addPeopleToMap(AdjustedMap map, String overlayUniqueName, String[] people, DPoint[] locations) {
+        for (int i = 0 ; i < people.length ; i++)
+            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], overlayUniqueName);
     }
 }

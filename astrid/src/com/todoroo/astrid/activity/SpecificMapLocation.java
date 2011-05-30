@@ -101,9 +101,23 @@ public class SpecificMapLocation extends MapActivity {
         menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
         String[] specificAsAddress = mapView.getTappedAddress();
         DPoint[] specificAsCoords = mapView.getTappedCoords();
-        for (int i = 0 ; i < specificAsAddress.length ; i++)
-            menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
-        //mapView.getTappedItem(i).getAddress()
+        for (int i = 0 ; i < specificAsAddress.length ; i++) {
+            String address = null;
+            if (mapView.getTappedItem(i).getAddress() == null) {
+                try {
+                    address = Geocoding.reverseGeocoding(specificAsCoords[i]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (address != null)
+                    mapView.getOverlay(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME).getItem(i).setLocationAddress(address);
+                else address = specificAsCoords[i].toString();
+            }
+            else address = mapView.getTappedItem(i).getAddress();
+            menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, address);
+        }
         for (int i = 0 ; i < types.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
         int i = 0;
@@ -145,11 +159,6 @@ public class SpecificMapLocation extends MapActivity {
         }
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        mdba.close();
-//        super.onDestroy();
-//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -165,10 +174,11 @@ public class SpecificMapLocation extends MapActivity {
         /* allowing adding of location by tapping on the map */
         mapView.enableAddByTap();
 
-//        /* disabling the feature that shows the device location on the map */
-//        mapView.removeDeviceLocation();
+        //        /* disabling the feature that shows the device location on the map */
+        //        mapView.removeDeviceLocation();
 
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
+        mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
 
         /* adding the auto-complete mechanism */
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
@@ -330,8 +340,8 @@ public class SpecificMapLocation extends MapActivity {
                         }
                         if (address == null)
                             address = new String("Specific Location"); //$NON-NLS-1$
-                            mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
-                            mapView.invalidate();
+                        mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
+                        mapView.invalidate();
                     }
                     else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
@@ -364,14 +374,25 @@ public class SpecificMapLocation extends MapActivity {
                     //DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
                     DPoint dp = new DPoint(40.716558,-74.00013);
                     people.put(contact, dp);
+                    String[] person = new String[1];
+                    person[0] = contact;
+                    DPoint[] nekuda = new DPoint[1];
+                    nekuda[0] = dp;
+                    mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, person, nekuda);
+                }
+                if (x!=null){
                     x.close();
                 }
 
             }
         }
 
-        //TODO fix moti's request and result codes
-        if (resultCode == FOCACCIA_RESULT_CODE) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_OK) {
+            super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_REMOVE_TAP) {
             Bundle bundle = data.getExtras();
             //            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             mapView.removeTappedLocation(Integer.parseInt(bundle.getString(Focaccia.SOURCE_ADJUSTEDMAP)));
@@ -379,7 +400,7 @@ public class SpecificMapLocation extends MapActivity {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (resultCode == FOCACCIA_RESULT_CODE_FOR_KIND) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_REMOVE_TYPE) {
             Bundle bundle = data.getExtras();
             String type = bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND);
             if (types.contains(type)) {
@@ -396,7 +417,7 @@ public class SpecificMapLocation extends MapActivity {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (resultCode == FOCACCIA_RESULT_CODE_BACK_PRESSED) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_BACK_PRESSED) {
             Toast.makeText(this, "no deletion", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             String[] receivedData = data.getExtras().getStringArray(Focaccia.SOURCE_ADJUSTEDMAP);
             if (receivedData[1] != null)
@@ -412,23 +433,6 @@ public class SpecificMapLocation extends MapActivity {
          *                    reversed geocoded. location at position k in the array has its address
          *                    at position 2k in the array. */
         Intent intent = new Intent();
-//        int tappedCount = mapView.getTappedPointsCount();
-//        int specificCount = mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-//        String[] classOvelrays = new String[(tappedCount + specificCount) * 2];
-//
-//        DPoint[] tappedPoints = mapView.getTappedCoords();
-//        for (int i = 0 ; i < tappedCount ; i++)
-//            classOvelrays[i] = tappedPoints[i].toString();
-//        DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-//        for (int i = 0 ; i < specificCount ; i++)
-//            classOvelrays[tappedCount + i] = specificPoints[i].toString();
-//
-//        String[] tappedAddresses = mapView.getTappedAddress();
-//        for (int i = 0 ; i < tappedCount ; i++)
-//            classOvelrays[tappedCount + specificCount + i] = tappedAddresses[i];
-//        String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-//        for (int i = 0 ; i < specificCount ; i++)
-//            classOvelrays[2 * tappedCount + specificCount + i] = specificAddresses[i].toString();
 
         List<String> dataToSendBack = new ArrayList<String>();
 

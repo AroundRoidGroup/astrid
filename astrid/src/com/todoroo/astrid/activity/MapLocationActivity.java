@@ -72,7 +72,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         /* adding people that are related to the task */
         String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
-        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
+//        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
         /* Centralizing the map to the current (to be more accurate, the last) location of the device */
         mapController.setCenter(Misc.degToGeo(deviceLocation));

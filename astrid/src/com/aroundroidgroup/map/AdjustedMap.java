@@ -72,16 +72,12 @@ public class AdjustedMap extends MapView {
 
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
-          //TODO USERLOCATION
-//            if (true)
-//                return;
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
-
-//            DPoint d = new DPoint(40.714867,-74.006009);
-            if (db.specialUserToDPoint() != null) {
-            GeoPoint lastDeviceLocation = Misc.degToGeo(db.specialUserToDPoint());
-            addItemToOverlay(lastDeviceLocation, "Your Location", db.specialUserToDPoint().toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+            DPoint deviceLocation = db.specialUserToDPoint();
+            if (deviceLocation != null) {
+                GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
+                addItemToOverlay(lastDeviceLocation, "Your Location", deviceLocation.toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
             }
         }
     }
@@ -122,6 +118,7 @@ public class AdjustedMap extends MapView {
                 mapOverlays.add(overlay);
             }
         }
+        invalidate();
     }
 
     public int getAllPointsCount() {
@@ -159,8 +156,8 @@ public class AdjustedMap extends MapView {
         showDeviceLocation();
         getController().setZoom(18);
         //TODO USERLOCATION
-//        if (true)
-//            return;
+        //        if (true)
+        //            return;
         DPoint d = new DPoint(40.714867,-74.006009);
         getController().setCenter(Misc.degToGeo(d));
     }
@@ -183,7 +180,7 @@ public class AdjustedMap extends MapView {
 
     public void removeTypeLocation(String type) {
         MapItemizedOverlay typeOverlay = overlays.get(KIND_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < typeOverlay.size() ; i++)
+        for (int i = typeOverlay.size() - 1 ; i >= 0 ; i--)
             if (typeOverlay.getItem(i).getSnippet().equals(type))
                 typeOverlay.removeOverlay(i);
         mapOverlays.add(typeOverlay);
@@ -253,7 +250,8 @@ public class AdjustedMap extends MapView {
                 }
             }
         }
-        return super.dispatchTouchEvent(event);
+        boolean b = super.dispatchTouchEvent(event);
+        return b;
     }
 
     public void refresh() {
@@ -332,6 +330,7 @@ public class AdjustedMap extends MapView {
 
         public MapItemizedOverlay(Drawable defaultMarker) {
             super(boundCenterBottom(defaultMarker));
+            populate();
         }
 
         @Override
@@ -376,13 +375,15 @@ public class AdjustedMap extends MapView {
 
         public void addOverlay(AdjustedOverlayItem overlay) {
             mOverlays.add(overlay);
+            setLastFocusedIndex(-1);
             populate();
         }
 
         public void removeOverlay(int index) {
             //TODO check if index is not out of borders
             mOverlays.remove(createItem(index));
-//            mOverlays.clear();
+            //            mOverlays.clear();
+            setLastFocusedIndex(-1);
             populate();
         }
 

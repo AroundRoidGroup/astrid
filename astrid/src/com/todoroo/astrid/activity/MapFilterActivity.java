@@ -67,7 +67,7 @@ public class MapFilterActivity extends MapActivity {
         String[] people = locationService.getAllLocationsByPeople();
         if (people.length > 0) {
             mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
-            mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
+//            mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
         }
     }
 }
