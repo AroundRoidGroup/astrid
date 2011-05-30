@@ -7,6 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
@@ -27,6 +28,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private String[] locationTags;
     private final LocationService locationService = new LocationService();
     static URL u;
+
+    private final AroundroidDbAdapter db = new AroundroidDbAdapter(this);
+
     @Override
     protected boolean isRouteDisplayed() {
         return false;
@@ -43,6 +47,12 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_of_task);
@@ -50,6 +60,10 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         boolean kindTitleToPresent = false;
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
+
+        db.open();
+        mapView.setDB(db);
+
         DPoint deviceLocation = mapView.getDeviceLocation();
 
         mapController = mapView.getController();
@@ -72,10 +86,12 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         /* adding people that are related to the task */
         String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
-//        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
+        //        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
 
-        /* Centralizing the map to the current (to be more accurate, the last) location of the device */
-        mapController.setCenter(Misc.degToGeo(deviceLocation));
+        if (deviceLocation != null) {
+            /* Centralizing the map to the current (to be more accurate, the last) location of the device */
+            mapController.setCenter(Misc.degToGeo(deviceLocation));
+        }
 
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);

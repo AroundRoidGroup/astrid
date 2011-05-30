@@ -1,6 +1,7 @@
 package com.todoroo.astrid.activity;
 import android.os.Bundle;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
@@ -22,10 +23,22 @@ public class MapFilterActivity extends MapActivity {
     private static final int SPECIFIC = 2;
     private static final int PEOPLE = 3;
 
+    private final AroundroidDbAdapter db = new AroundroidDbAdapter(this);
+
     @Override
     protected boolean isRouteDisplayed() {
         return false;
     }
+
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +46,9 @@ public class MapFilterActivity extends MapActivity {
         setContentView(R.layout.map_filter_activity);
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
+
+        db.open();
+        mapView.setDB(db);
 
         DPoint deviceLocation = mapView.getDeviceLocation();
         if (deviceLocation != null)

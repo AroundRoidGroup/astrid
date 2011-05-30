@@ -73,6 +73,10 @@ public class AdjustedMap extends MapView {
         init();
     }
 
+    public void setDB(AroundroidDbAdapter db) {
+        this.db = db;
+    }
+
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
             showDeviceLocation = true;

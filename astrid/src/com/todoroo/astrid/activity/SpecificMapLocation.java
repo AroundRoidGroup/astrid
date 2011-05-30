@@ -64,7 +64,7 @@ public class SpecificMapLocation extends MapActivity {
     private Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
 
-    private final AroundroidDbAdapter mdba = new AroundroidDbAdapter(this);
+    private final AroundroidDbAdapter db = new AroundroidDbAdapter(this);
 
     private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
 
@@ -130,7 +130,15 @@ public class SpecificMapLocation extends MapActivity {
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getGroupId()) {
         case MENU_SPECIFIC_GROUP:
-            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            try {
+                mapView.getController().setCenter(Misc.degToGeo(new DPoint(Geocoding.geocoding(item.getTitle().toString()))));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
             AdjustedOverlayItem mItem = mapView.getTappedItem(item.getItemId() - MENU_SPECIFIC_GROUP);
             String[] sentData = new String[6];
@@ -178,9 +186,8 @@ public class SpecificMapLocation extends MapActivity {
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
-        mdba.open();
-
-
+        db.open();
+        mapView.setDB(db);
 
         DPoint deviceLocation = mapView.getDeviceLocation();
 
@@ -214,10 +221,6 @@ public class SpecificMapLocation extends MapActivity {
                 return false;
             }
         });
-
-
-
-
 
         /* getting the data from the calling activity. */
         /* this data contains the taskID as first object in the array and the points */
@@ -267,12 +270,12 @@ public class SpecificMapLocation extends MapActivity {
         for (String s : existedPeople)
             people.put(s, null);
 
-        String[] tomer = new String[1];
-        tomer[0] = "tomer.keshet@gmail.com";
-        DPoint[] coordTomer = new DPoint[1];
-        coordTomer[0] = new DPoint(40.710215,-74.009013);
-        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
-        people.put(tomer[0], coordTomer[0]);
+        //        String[] tomer = new String[1];
+        //        tomer[0] = "tomer.keshet@gmail.com";
+        //        DPoint[] coordTomer = new DPoint[1];
+        //        coordTomer[0] = new DPoint(40.710215,-74.009013);
+        //        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
+        //        people.put(tomer[0], coordTomer[0]);
 
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
@@ -291,23 +294,6 @@ public class SpecificMapLocation extends MapActivity {
         });
 
 
-        /* getting the task by the taskID that has been extracted from the Intent */
-        //        TaskService taskService = new TaskService();
-        //        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.TITLE).
-        //                where(MetadataCriteria.byTask(taskID)).
-        //                orderBy(SortHelper.defaultTaskOrder()).limit(100));
-        //        try {
-        //            Toast.makeText(this, cursor.getCount() + " results", Toast.LENGTH_LONG).show();
-        //            Task task = new Task();
-        //            cursor.moveToNext();
-        //            task.readFromCursor(cursor);
-        //        } finally {
-        //            cursor.close();
-        //        }
-
-        /* setting a headline with the task's title */
-        //        TextView title = (TextView)findViewById(R.id.takeTitle);
-
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
         mapView.getController().setZoom(13);
@@ -316,13 +302,10 @@ public class SpecificMapLocation extends MapActivity {
 
 
 
-        //        if (false){
-
-        /* Centralizing the map to the last known location of the device */
-        mapView.getController().setCenter(Misc.degToGeo(deviceLocation));
-
-        //        }
-        //        else {
+        if (deviceLocation != null) {
+            /* Centralizing the map to the last known location of the device */
+            mapView.getController().setCenter(Misc.degToGeo(deviceLocation));
+        }
 
         final EditText address = (EditText)findViewById(R.id.specificAddress);
 
@@ -389,12 +372,12 @@ public class SpecificMapLocation extends MapActivity {
                 //TODO a contact was picked! add it to control set
                 Bundle bundle = data.getExtras();
                 String contact = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL).toString();
-                Cursor x = mdba.fetchByMail(contact);
+                Cursor x = db.fetchByMail(contact);
                 //TODO tomer change this to a better implementation
                 if (x!=null && x.moveToFirst()){
                     //LAT AND THEN LON
-                    //DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
-                    DPoint dp = new DPoint(40.716558,-74.00013);
+                    DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
+                    //                    DPoint dp = new DPoint(40.716558,-74.00013);
                     people.put(contact, dp);
                     String[] person = new String[1];
                     person[0] = contact;
@@ -502,7 +485,7 @@ public class SpecificMapLocation extends MapActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mdba.close();
+        db.close();
     }
 
     @Override
