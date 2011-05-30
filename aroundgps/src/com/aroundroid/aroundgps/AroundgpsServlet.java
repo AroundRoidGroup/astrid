@@ -39,9 +39,9 @@ public class AroundgpsServlet extends HttpServlet {
 		StringBuffer query = new StringBuffer();
 		query.append("select from "+ GPSProps.class.getName()+" where (");
 		for (String user : usersArr){
-			query.append(" mail =='" + user + "' ||");
+			query.append(" mail =='" + user.toLowerCase() + "' ||");
 		}
-		query.append(" mail =='" + usersArr[0] + "')");
+		query.append(" mail =='" + usersArr[0].toLowerCase() + "')");
 		query.append(" && timeStamp > "+(requestDate.getTime() - gpsValidTime));
 		return query.toString();
 	}
@@ -67,6 +67,9 @@ public class AroundgpsServlet extends HttpServlet {
 
 		String users = req.getParameter(USERS);
 		String[] usersArr = users.split(DEL);
+		for(int i =0; i < usersArr.length ; i++){
+			usersArr[i] = usersArr[i].toLowerCase();
+		}
 
 		String timeStamp = req.getParameter(TIMESTAMP);
 		Long lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());

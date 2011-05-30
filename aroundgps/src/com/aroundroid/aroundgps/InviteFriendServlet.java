@@ -43,7 +43,7 @@ public class InviteFriendServlet extends HttpServlet {
 		
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		
-		List<GPSProps> gpses = (List<GPSProps>) pm.newQuery("select from "+ GPSProps.class.getName()+" where mail=='"+ friendMail +"'").execute();
+		List<GPSProps> gpses = (List<GPSProps>) pm.newQuery("select from "+ GPSProps.class.getName()+" where mail=='"+ friendMail.toLowerCase() +"'").execute();
 		if (gpses.size()==0){
 			//if cannot find friend registered to the service, sends mail
 			Mailer ml = new Mailer(user.getEmail(), user.getNickname());
