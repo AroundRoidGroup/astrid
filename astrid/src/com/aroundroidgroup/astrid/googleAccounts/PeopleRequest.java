@@ -30,7 +30,7 @@ public class PeopleRequest {
     private static List<NameValuePair> createPostData(WPSLocation currentLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (currentLocation!=null){
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude()))); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
             //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
             //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
@@ -71,6 +71,23 @@ public class PeopleRequest {
         //parsing complete!
         return fpl;
 
+    }
+
+    private static List<NameValuePair> createMailPostData(String mail){
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail));
+        return nameValuePairs;
+    }
+
+    //TODO CHANGE
+    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+        // sending current location and request for users
+        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
+        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
+        InputStream is  = requestToStream(http_post,arcm);
+        byte[] buf = new byte[20];
+        is.read(buf, 0, 4);
+        return buf[0]=='s';
     }
 
     private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {

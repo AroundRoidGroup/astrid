@@ -22,7 +22,7 @@ public class AccountList extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.creds_list);
         accountManager = AccountManager.get(getApplicationContext());
-        Account[] accounts = accountManager.getAccountsByType("com.google");
+        Account[] accounts = accountManager.getAccountsByType("com.google"); //$NON-NLS-1$
         AccountHolder[] accountHolders = AccountHolder.accountHoldersFromAccounts(accounts);
         if (accounts.length>0){
             this.setListAdapter(new ArrayAdapter<AccountHolder>(this, R.layout.creds_list_item, accountHolders));
@@ -55,7 +55,7 @@ public class AccountList extends ListActivity {
 
         @Override
         public String toString(){
-            return "Mail: " + acc.name;
+            return "Mail: " + acc.name; //$NON-NLS-1$
         }
 
         public static AccountHolder[] accountHoldersFromAccounts(Account[] accounts){

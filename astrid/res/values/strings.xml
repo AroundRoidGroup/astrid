@@ -28,6 +28,14 @@
    	<string name="specificLocation">Specific Location</string>
    	<string name="temp">address</string>
    	
+   	 <!-- =================================== Location  == -->
+  <!-- Location label -->
+  <string name="TEA_location_label">Locations</string>
+   <!-- Location button -->
+   	<string name="text_location_button">Add Location</string>
+   	
+   	
+   	
    	<!-- GOOGLE MAPS API KEY -->
    	<string name="GOOGLE_MAPS_API_KEY">0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w</string>
    	

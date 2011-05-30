@@ -53,8 +53,30 @@ public class PeopleRequestService {
 
     }
 
+
+    public boolean inviteFriend(String friend){
+        if (!isConnected()){
+            return false;
+        }
+        try {
+            boolean res = PeopleRequest.inviteMail(friend, arcm);
+            return res;
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.stop();
+        return false;
+    }
+
     //returns a sorted list!
     public List<FriendProps> getPeopleLocations(String[] peopleArr, WPSLocation currentLocation) {
+        if (!isConnected()){
+            return null;
+        }
         // TODO check if location l is null
         // TODO not good implementation, cancel PeopleRequest class!
         String peopleString = AroundRoidAppConstants.join(peopleArr

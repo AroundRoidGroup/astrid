@@ -29,7 +29,7 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
 
     public LocationBySpecificControlSet(Activity activity) {
         this.activity = activity;
-        Button b = (Button) activity.findViewById(R.id.location_by_specific_button);
+        Button b = (Button) activity.findViewById(R.id.location_button);
         b.setOnClickListener(new View.OnClickListener() {
 
             @Override

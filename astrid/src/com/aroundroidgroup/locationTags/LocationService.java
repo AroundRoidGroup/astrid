@@ -217,7 +217,7 @@ public class LocationService {
         StringProperty prop;
         String metadataKey;
         int defaultRadKey;
-        if (speed<25){
+        if (speed<25*1000/60/60){
             prop=LocationFields.footRadius;
             metadataKey = LocationFields.FOOT_RADIUS_METADATA_KEY;
             defaultRadKey = R.string.p_rmd_default_foot_radius_key;

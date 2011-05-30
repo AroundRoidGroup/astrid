@@ -29,10 +29,9 @@ public class RadiusControlSet implements TaskEditControlSet{
     private final LocationService locService= new LocationService();
     String defaultSettingCarRadius;
     String defaultSettingFootRadius;
-    private final Activity activity;
+
 
     public RadiusControlSet(final Activity activity, ViewGroup parent) {
-        this.activity = activity;
         DependencyInjectionService.getInstance().inject(this);
         LayoutInflater.from(activity).inflate(R.layout.radius_control, parent, true);
         enabled = (CheckBox) activity.findViewById(R.id.radiusEnabled);
