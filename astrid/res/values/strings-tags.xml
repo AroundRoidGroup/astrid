@@ -14,24 +14,8 @@
   
   <!-- Tags dropdown -->
   <string name="TEA_tag_dropdown">Select a tag</string>
-    
-  <!-- =================================== Location By Type Edit Controls == -->
+ 
 
-
-  <!-- Location by specific label -->
-   	<string name="text_specific_button">Add Specific Location</string>
-
-
-
-  <!-- Location by type label -->
-  <string name="TEA_locations_by_type_label">By locations:</string>
-  
-  <!-- Location by type hint -->
-  <string name="TEA_locations_by_type_hint">Kind of location</string>
-  
-  <!-- Location by type dropdown -->
-  <string name="TEA_locations_by_type_dropdown">Select a location</string>
-    
   <!-- ========================================================== Filters == -->
   
   <!-- filter header for tags -->

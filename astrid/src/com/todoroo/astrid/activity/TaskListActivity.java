@@ -223,39 +223,9 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         setUpUiComponents();
         onNewIntent(getIntent());
 
-        /*
-        Misc.gpsSetup(this);
-        Location l = Misc.getDeviceLocation();
-        if (l==null){
-            int x = 2;
-        }else{
-            int y = 2;
-        }
-
-        if (myService.isRunning()){
-            stopService(new Intent(this,myService.class));
-        }
-        */
-
 
         Intent serviceIntent = new Intent(this,GPSService.class);
         Toast.makeText(getApplicationContext(), "GPSService is on:"+(startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
-
-
-      //Intent serviceIntent = new Intent(this,myService.class);
-      //Toast.makeText(this, (startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show();
-
-  //      TaskService taskService = new TaskService();
-
-        //TodorooCursor<Task> cursor = taskService.fetchFiltered(sqlQueryTemplate.get(), null, TaskAdapter.PROPERTIES);
-
-
-//        startManagingCursor(cursor);
-
-
-       //Toast.makeText(this, cursor.get(Task.ID)+"", Toast.LENGTH_LONG).show();
-
-
 
 
         Eula.showEula(this);
