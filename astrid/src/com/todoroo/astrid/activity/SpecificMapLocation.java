@@ -2,12 +2,14 @@ package com.todoroo.astrid.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -23,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
@@ -57,8 +60,11 @@ public class SpecificMapLocation extends MapActivity {
 
     private LocationService locationService;
     private List<String> types = null;
+    private Map<String, DPoint> people = null;
     private Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
+
+    private final AroundroidDbAdapter db = new AroundroidDbAdapter(this);
 
     private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
 
@@ -95,17 +101,44 @@ public class SpecificMapLocation extends MapActivity {
         menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
         String[] specificAsAddress = mapView.getTappedAddress();
         DPoint[] specificAsCoords = mapView.getTappedCoords();
-        for (int i = 0 ; i < specificAsAddress.length ; i++)
-            menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specificAsCoords[i].toString());
+        for (int i = 0 ; i < specificAsAddress.length ; i++) {
+            String address = null;
+            if (mapView.getTappedItem(i).getAddress() == null) {
+                try {
+                    address = Geocoding.reverseGeocoding(specificAsCoords[i]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (address != null)
+                    mapView.getOverlay(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME).getItem(i).setLocationAddress(address);
+                else address = specificAsCoords[i].toString();
+            }
+            else address = mapView.getTappedItem(i).getAddress();
+            menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, address);
+        }
         for (int i = 0 ; i < types.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, types.get(i));
+        int i = 0;
+        for (Map.Entry<String, DPoint> p : people.entrySet()) {
+            menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + i++, Menu.NONE, p.getKey());
+        }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getGroupId()) {
         case MENU_SPECIFIC_GROUP:
-            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            try {
+                mapView.getController().setCenter(Misc.degToGeo(new DPoint(Geocoding.geocoding(item.getTitle().toString()))));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
             AdjustedOverlayItem mItem = mapView.getTappedItem(item.getItemId() - MENU_SPECIFIC_GROUP);
             String[] sentData = new String[6];
@@ -128,11 +161,23 @@ public class SpecificMapLocation extends MapActivity {
             this.startActivityForResult(intentKind, 1);
             return true;
         case MENU_PEOPLE_GROUP:
-            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            mapView.getController().setCenter(Misc.degToGeo(people.get(item.getTitle())));
+            Intent intentPeople = new Intent(ContextManager.getContext(), Focaccia.class);
+            AdjustedOverlayItem peopleItem = mapView.getOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME).getItem(item.getItemId() - MENU_PEOPLE_GROUP);
+            String[] sentDataPeople = new String[6];
+            sentDataPeople[0] = item.getItemId() - MENU_PEOPLE_GROUP + ""; //$NON-NLS-1$
+            sentDataPeople[1] = item.getTitle().toString();
+            sentDataPeople[2] = peopleItem.getTitle();
+            sentDataPeople[3] = peopleItem.getSnippet();
+            sentDataPeople[4] = peopleItem.getAddress();
+            sentDataPeople[5] = "1"; // can be removed //$NON-NLS-1$
+            intentPeople.putExtra(Focaccia.SOURCE_SPECIFICMAP, sentDataPeople);
+            this.startActivityForResult(intentPeople, 1);
             return true;
         default: return super.onContextItemSelected(item);
         }
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -141,36 +186,41 @@ public class SpecificMapLocation extends MapActivity {
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
+        db.open();
+        mapView.setDB(db);
+
+        DPoint deviceLocation = mapView.getDeviceLocation();
+
         /* allowing adding of location by tapping on the map */
         mapView.enableAddByTap();
 
-        /* disabling the feature that shows the device location on the map */
-        mapView.removeDeviceLocation();
+        //        /* disabling the feature that shows the device location on the map */
+        //        mapView.removeDeviceLocation();
 
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
+        mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
 
+
+
+        /* adding the auto-complete mechanism */
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-                adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-                textView.setAdapter(adapter);
+        adapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
+        textView.setAdapter(adapter);
 
-                textView.setOnKeyListener(new View.OnKeyListener() {
+        textView.setOnKeyListener(new View.OnKeyListener() {
 
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        if (previousThread != null) {
-                            if (previousThread.isAlive())
-                                previousThread.destroy();
-                            previousThread = null;
-                        }
-                        previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-                        previousThread.run();
-                        return false;
-                    }
-                });
-
-
-
-
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (previousThread != null) {
+                    if (previousThread.isAlive())
+                        previousThread.destroy();
+                    previousThread = null;
+                }
+                previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
+                previousThread.run();
+                return false;
+            }
+        });
 
         /* getting the data from the calling activity. */
         /* this data contains the taskID as first object in the array and the points */
@@ -203,15 +253,36 @@ public class SpecificMapLocation extends MapActivity {
         String[] existedTypes = locationService.getLocationsByTypeAsArray(taskID);
         for (String s : existedTypes)
             types.add(s);
+        int[] returnValues = mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, existedTypes, 500.0);
+        int sum = 0;
+        for (int i : returnValues)
+            sum += i;
+        if (sum == returnValues.length)
+            Toast.makeText(this, "All types have been added successfully!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+        else if (sum == 0)
+            Toast.makeText(this, "Failed to add types!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+        else Toast.makeText(this, "Only some types have been added!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+
+        locationService = new LocationService();
+        people = new HashMap<String, DPoint>();
+        /* adding the existed business types */
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
+        for (String s : existedPeople)
+            people.put(s, null);
+
+        //        String[] tomer = new String[1];
+        //        tomer[0] = "tomer.keshet@gmail.com";
+        //        DPoint[] coordTomer = new DPoint[1];
+        //        coordTomer[0] = new DPoint(40.710215,-74.009013);
+        //        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
+        //        people.put(tomer[0], coordTomer[0]);
 
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
-        if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+        if (mapView.getTappedPointsCount() == 0 && types.size() == 0 && people.size() == 0) {
             viewAll.setOnClickListener(nothingToShowClickListener);
             viewAll.setOnLongClickListener(nothingToShowLongClickListener);
         }
-
-
 
         ((Button)findViewById(R.id.addPeople)).setOnClickListener(new OnClickListener() {
 
@@ -223,23 +294,6 @@ public class SpecificMapLocation extends MapActivity {
         });
 
 
-        /* getting the task by the taskID that has been extracted from the Intent */
-        //        TaskService taskService = new TaskService();
-        //        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.TITLE).
-        //                where(MetadataCriteria.byTask(taskID)).
-        //                orderBy(SortHelper.defaultTaskOrder()).limit(100));
-        //        try {
-        //            Toast.makeText(this, cursor.getCount() + " results", Toast.LENGTH_LONG).show();
-        //            Task task = new Task();
-        //            cursor.moveToNext();
-        //            task.readFromCursor(cursor);
-        //        } finally {
-        //            cursor.close();
-        //        }
-
-        /* setting a headline with the task's title */
-        //        TextView title = (TextView)findViewById(R.id.takeTitle);
-
         /* enable zoom option */
         mapView.setBuiltInZoomControls(true);
         mapView.getController().setZoom(13);
@@ -248,84 +302,102 @@ public class SpecificMapLocation extends MapActivity {
 
 
 
-//        if (false){
-            DPoint d = new DPoint(40.714867,-74.006009);
+        if (deviceLocation != null) {
             /* Centralizing the map to the last known location of the device */
-            mapView.getController().setCenter(Misc.degToGeo(d));
+            mapView.getController().setCenter(Misc.degToGeo(deviceLocation));
+        }
 
-//        }
-//        else {
+        final EditText address = (EditText)findViewById(R.id.specificAddress);
 
-            final EditText address = (EditText)findViewById(R.id.specificAddress);
+        Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
+        addressButton.setOnClickListener(new View.OnClickListener() {
 
-            Button addressButton = (Button)findViewById(R.id.specificAddAddressButton);
-            addressButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DPoint d = null;
+                String text = address.getText().toString();
 
-                @Override
-                public void onClick(View v) {
-                    DPoint d = null;
-                    String text = address.getText().toString();
-
-                    if (Misc.isType(text)) {
-                        String[] type = new String[1];
-                        type[0] = text.replace(' ', '_');
-                        mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
-                        mapView.invalidate();
-                        types.add(text);
-                        viewAll.setOnClickListener(null);
-                        viewAll.setOnLongClickListener(null);
+                if (Misc.isType(text)) {
+                    String[] type = new String[1];
+                    type[0] = text.replace(' ', '_');
+                    mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, type, 500.0);
+                    mapView.invalidate();
+                    types.add(text);
+                    viewAll.setOnClickListener(null);
+                    viewAll.setOnLongClickListener(null);
+                }
+                else {
+                    try {
+                        d = Geocoding.geocoding(text);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    else {
+                    if (d != null) {
+                        String address = null;
                         try {
-                            d = Geocoding.geocoding(text);
+                            address = Geocoding.reverseGeocoding(d);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if (d != null) {
-                            String address = null;
-                            try {
-                                address = Geocoding.reverseGeocoding(d);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            if (address == null)
-                                address = new String("Specific Location"); //$NON-NLS-1$
-                            mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
-                            mapView.invalidate();
-                        }
-                        else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
+                        if (address == null)
+                            address = new String("Specific Location"); //$NON-NLS-1$
+                        mapView.addTappedLocation(Misc.degToGeo(d), "Specific Location", address); //$NON-NLS-1$
+                        mapView.invalidate();
                     }
-                }
-            });
+                    else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
-            address.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    address.setText(""); //$NON-NLS-1$
-                    address.setOnClickListener(null);
                 }
-            });
-//        }
+            }
+        });
+
+        address.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                address.setText(""); //$NON-NLS-1$
+                address.setOnClickListener(null);
+            }
+        });
+        //        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode==CONTACTS_REQUEST_CODE){
-            if (resultCode==RESULT_OK){
+        if (requestCode == CONTACTS_REQUEST_CODE){
+            if (resultCode == RESULT_OK){
                 //TODO a contact was picked! add it to control set
                 Bundle bundle = data.getExtras();
-                bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL);
+                String contact = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL).toString();
+                Cursor x = db.fetchByMail(contact);
+                //TODO tomer change this to a better implementation
+                if (x!=null && x.moveToFirst()){
+                    //LAT AND THEN LON
+                    DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
+                    //                    DPoint dp = new DPoint(40.716558,-74.00013);
+                    people.put(contact, dp);
+                    String[] person = new String[1];
+                    person[0] = contact;
+                    DPoint[] nekuda = new DPoint[1];
+                    nekuda[0] = dp;
+                    mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, person, nekuda);
+                }
+                if (x!=null){
+                    x.close();
+                }
+
             }
         }
 
-        //TODO fix moti's request and result codes
-        if (resultCode == FOCACCIA_RESULT_CODE) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_OK) {
+            super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_REMOVE_TAP) {
             Bundle bundle = data.getExtras();
             //            Toast.makeText(this, "before there were " + mapView.getAllPointsCount() + " points", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             mapView.removeTappedLocation(Integer.parseInt(bundle.getString(Focaccia.SOURCE_ADJUSTEDMAP)));
@@ -333,7 +405,7 @@ public class SpecificMapLocation extends MapActivity {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (resultCode == FOCACCIA_RESULT_CODE_FOR_KIND) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_REMOVE_TYPE) {
             Bundle bundle = data.getExtras();
             String type = bundle.getString(Focaccia.SOURCE_SPECIFICMAP_KIND);
             if (types.contains(type)) {
@@ -341,7 +413,7 @@ public class SpecificMapLocation extends MapActivity {
                 mapView.removeTypeLocation(type);
                 //                Toast.makeText(this, "type: " + type + " has been removed", Toast.LENGTH_LONG).show();
                 types.remove(type);
-                if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+                if (mapView.getTappedPointsCount() == 0 && types.size() == 0 && people.size() == 0) {
                     Button viewAll = (Button)findViewById(R.id.viewAll);
                     viewAll.setOnClickListener(nothingToShowClickListener);
                     viewAll.setOnLongClickListener(nothingToShowLongClickListener);
@@ -350,7 +422,7 @@ public class SpecificMapLocation extends MapActivity {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
-        if (resultCode == FOCACCIA_RESULT_CODE_BACK_PRESSED) {
+        if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_BACK_PRESSED) {
             Toast.makeText(this, "no deletion", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             String[] receivedData = data.getExtras().getStringArray(Focaccia.SOURCE_ADJUSTEDMAP);
             if (receivedData[1] != null)
@@ -366,28 +438,54 @@ public class SpecificMapLocation extends MapActivity {
          *                    reversed geocoded. location at position k in the array has its address
          *                    at position 2k in the array. */
         Intent intent = new Intent();
-        int tappedCount = mapView.getTappedPointsCount();
-        int specificCount = mapView.getOverlaySize(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        String[] classOvelrays = new String[(tappedCount + specificCount) * 2];
 
-        DPoint[] tappedPoints = mapView.getTappedCoords();
-        for (int i = 0 ; i < tappedCount ; i++)
-            classOvelrays[i] = tappedPoints[i].toString();
-        DPoint[] specificPoints = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < specificCount ; i++)
-            classOvelrays[tappedCount + i] = specificPoints[i].toString();
+        List<String> dataToSendBack = new ArrayList<String>();
 
-        String[] tappedAddresses = mapView.getTappedAddress();
-        for (int i = 0 ; i < tappedCount ; i++)
-            classOvelrays[tappedCount + specificCount + i] = tappedAddresses[i];
-        String[] specificAddresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < specificCount ; i++)
-            classOvelrays[2 * tappedCount + specificCount + i] = specificAddresses[i].toString();
+        /* adding the points coordinates */
+        DPoint[] points = mapView.getTappedCoords();
+        for (DPoint p : points)
+            dataToSendBack.add(p.toString());
+        points = mapView.getAllByIDAsCoords(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (DPoint p : points)
+            dataToSendBack.add(p.toString());
 
-        intent.putExtra(SPECIFIC_POINTS_SECOND, classOvelrays);
+        /* adding the points addresses */
+        String[] addresses = mapView.getTappedAddress();
+        for (String s : addresses)
+            dataToSendBack.add(s);
+        addresses = mapView.getAllByIDAsAddress(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME);
+        for (String s : addresses)
+            dataToSendBack.add(s);
+
+        /* adding delimiter separating specificPoints and types */
+        dataToSendBack.add(Misc.locationsDelimiter);
+
+        /* adding the types */
+        for (String t : types)
+            dataToSendBack.add(t);
+
+        /* adding delimiter separating types and people */
+        dataToSendBack.add(Misc.locationsDelimiter);
+
+        /* adding the people */
+        for (Map.Entry<String, DPoint> pair : people.entrySet())
+            dataToSendBack.add(pair.getKey());
+
+        String[] dataToSendBackAsArray = new String[dataToSendBack.size()];
+        for (int i = 0 ; i < dataToSendBackAsArray.length ; i++)
+            dataToSendBackAsArray[i] = dataToSendBack.get(i);
+
+        intent.putExtra(SPECIFIC_POINTS_SECOND, dataToSendBackAsArray);
         setResult(TaskEditActivity.SPECIFIC_LOCATION_MAP_RESULT_CODE, intent);
-        locationService.syncLocationsByType(taskID, new LinkedHashSet<String>(types));
         SpecificMapLocation.this.finish();
+    }
+
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
     }
 
     @Override

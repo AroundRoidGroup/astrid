@@ -1,7 +1,9 @@
 package com.aroundroidgroup.map;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
@@ -19,6 +21,8 @@ import com.todoroo.astrid.data.Task;
 
 public class LocationBySpecificControlSet implements TaskEditControlSet{
     private final Map<DPoint, String> pointsAndAddresses = new HashMap<DPoint, String>();
+    private final List<String> types = new ArrayList<String>();
+    private final List<String> people = new ArrayList<String>();
     private final LocationService locationService = new LocationService();
     private final Activity activity;
     private long taskID;
@@ -54,15 +58,52 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
         }
     }
 
+    public void updateTypes(String[] typesToUpdate) {
+        if (typesToUpdate != null) {
+            types.clear();
+            for (int i = 0 ; i < typesToUpdate.length ; i++)
+                types.add(typesToUpdate[i]);
+        }
+
+    }
+
+    public void updatePeople(String[] peopleToUpdate) {
+        if (peopleToUpdate != null) {
+            people.clear();
+            for (int i = 0 ; i < peopleToUpdate.length ; i++)
+                people.add(peopleToUpdate[i]);
+        }
+    }
+
     @Override
     public void readFromTask(Task task) {
         taskID = task.getId();
-        String[] allSpecific =  locationService.getLocationsBySpecificAsArray(task.getId());
-        mainLoop: for (String s : allSpecific) {
+
+        /* adding existed specific points */
+        String[] allSpecific =  locationService.getLocationsBySpecificAsArray(taskID);
+        firstLoop: for (String s : allSpecific) {
             for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
                 if (s.equalsIgnoreCase(pair.getKey().toString()))
-                    continue mainLoop;
+                    continue firstLoop;
             pointsAndAddresses.put(new DPoint(s), null);
+        }
+
+        /* adding existed types */
+        String[] allTypes = locationService.getLocationsByTypeAsArray(taskID);
+        secondLoop: for (String givenType : allTypes) {
+            for (String existedType : types)
+                if (givenType.equalsIgnoreCase(existedType))
+                    continue secondLoop;
+            types.add(givenType);
+        }
+
+        /* adding existed people */
+        String[] allPeople = locationService.getLocationsByPeopleAsArray(taskID);
+        thirdLoop: for (String givenPeople : allPeople) {
+            for (String existedPeople : people)
+                if (givenPeople.equalsIgnoreCase(existedPeople))
+                    continue thirdLoop;
+            people.add(givenPeople);
         }
     }
 
@@ -72,8 +113,17 @@ public class LocationBySpecificControlSet implements TaskEditControlSet{
             LinkedHashSet<String> mashu = new LinkedHashSet<String>();
             for (Map.Entry<DPoint, String> pair : pointsAndAddresses.entrySet())
                 mashu.add(new String(pair.getKey().toString()));
-            locationService.syncLocationsBySpecific(task.getId(), mashu);
+            if(locationService.syncLocationsBySpecific(task.getId(), mashu))
+                task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
+
+            mashu.clear();
+            mashu.addAll(types);
             if(locationService.syncLocationsByType(task.getId(), mashu))
+                task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
+
+            mashu.clear();
+            mashu.addAll(people);
+            if(locationService.syncLocationsByPeople(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
         }
         return null;

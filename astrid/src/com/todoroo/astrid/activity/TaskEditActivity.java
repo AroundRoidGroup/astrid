@@ -66,6 +66,7 @@ import android.widget.ToggleButton;
 
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.LocationBySpecificControlSet;
+import com.aroundroidgroup.map.Misc;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.service.Autowired;
@@ -650,17 +651,31 @@ public final class TaskEditActivity extends TabActivity {
             Bundle b = data.getExtras();
             DPoint[] allSpecific = null;
             String[] allAddresses = null;
+            String[] allTypes = null;
+            String[] allPeople = null;
             if (b != null) {
-               String[] sa = b.getStringArray(SpecificMapLocation.SPECIFIC_POINTS_SECOND);
-               int locationCount = sa.length / 2;
-               allSpecific = new DPoint[locationCount];
-               for (int i = 0 ; i < locationCount ; i++)
-                   allSpecific[i] = new DPoint(sa[i]);
-               allAddresses = new String[locationCount];
-               for (int i = 0 ; i < locationCount ; i++)
-                   allAddresses[i] = new String(sa[locationCount + i]);
+               String[] recvData = b.getStringArray(SpecificMapLocation.SPECIFIC_POINTS_SECOND);
+               int typesStart = Misc.startTypeIndex(recvData);
+               int peopleStart = Misc.startPeopleIndex(recvData);
+               int specificPointsCount = (typesStart - 1) / 2;
+               allSpecific = new DPoint[specificPointsCount];
+               for (int i = 0 ; i < specificPointsCount ; i++)
+                   allSpecific[i] = new DPoint(recvData[i]);
+               allAddresses = new String[specificPointsCount];
+               for (int i = 0 ; i < specificPointsCount ; i++)
+                   allAddresses[i] = recvData[specificPointsCount + i];
+               int typesCount = peopleStart - 1 - typesStart;
+               allTypes = new String[typesCount];
+               for (int i = 0 ; i < typesCount ; i++)
+                   allTypes[i] = recvData[typesStart + 1 + i];
+               int peopleCount = recvData.length - peopleStart - 1;
+               allPeople = new String[peopleCount];
+               for (int i = 0 ; i < peopleCount ; i++)
+                   allPeople[i] = recvData[peopleStart + 1 + i];
             }
             specificCS.updateSpecificPoints(allSpecific, allAddresses);
+            specificCS.updateTypes(allTypes);
+            specificCS.updatePeople(allPeople);
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }

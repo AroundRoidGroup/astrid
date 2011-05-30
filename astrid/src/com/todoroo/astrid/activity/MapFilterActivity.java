@@ -1,6 +1,7 @@
 package com.todoroo.astrid.activity;
 import android.os.Bundle;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
@@ -22,10 +23,22 @@ public class MapFilterActivity extends MapActivity {
     private static final int SPECIFIC = 2;
     private static final int PEOPLE = 3;
 
+    private final AroundroidDbAdapter db = new AroundroidDbAdapter(this);
+
     @Override
     protected boolean isRouteDisplayed() {
         return false;
     }
+
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,47 +47,44 @@ public class MapFilterActivity extends MapActivity {
 
         mapView = (AdjustedMap) findViewById(R.id.mapview);
 
-      //TODO USERLOCATION
-//        if (true)
-//            return;
-        DPoint d = new DPoint(40.714867,-74.006009);
+        db.open();
+        mapView.setDB(db);
 
+        DPoint deviceLocation = mapView.getDeviceLocation();
+        if (deviceLocation != null)
+            mapView.getController().setCenter(Misc.degToGeo(deviceLocation));
 
-            mapView.getController().setCenter(Misc.degToGeo(d));
-            /* enable zoom option */
-            mapView.setBuiltInZoomControls(true);
+        /* enable zoom option */
+        mapView.setBuiltInZoomControls(true);
 
+        mapView.getController().setZoom(13);
 
-            mapView.getController().setZoom(13);
+        /* adding the locations by SPECIFIC */
+        String[] specificLocations = locationService.getAllLocationsBySpecific();
+        if (specificLocations.length > 0) {
+            mapView.createOverlay(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_pp));
 
-            /* adding the people locations */
-            String[] people = locationService.getAllLocationsByPeople();
-            if (people.length > 0) {
-                mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
-                mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
-            }
-            /* adding the locations by KIND */
+            /* converting from location written as string to DPoint*/
+            DPoint[] points = new DPoint[specificLocations.length];
+            for (int i = 0 ; i < specificLocations.length ; i++)
+                points[i] = new DPoint(specificLocations[i]);
 
-            String[] tags = locationService.getAllLocationsByType();
-            if (tags.length > 0) {
-                mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
-                mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, tags, 10.0);
-            }
+            mapFunctions.addLocationSetToMap(mapView, AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, points, "Specific Location"); //$NON-NLS-1$
+        }
 
-            /* adding the locations by SPECIFIC */
+        /* adding the locations by KIND */
+        String[] tags = locationService.getAllLocationsByType();
+        if (tags.length > 0) {
+            mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
+            mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, tags, 500.0);
+        }
 
-            String[] specificLocations = locationService.getAllLocationsBySpecific();
-            if (specificLocations.length > 0) {
-                mapView.createOverlay(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_pp));
-
-                /* converting from location written as string to DPoint*/
-                DPoint[] points = new DPoint[specificLocations.length];
-                for (int i = 0 ; i < specificLocations.length ; i++)
-                    points[i] = new DPoint(specificLocations[i]);
-
-                mapFunctions.addLocationSetToMap(mapView, AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME, points, "Specific Location"); //$NON-NLS-1$
-            }
-
+        /* adding the people locations */
+        String[] people = locationService.getAllLocationsByPeople();
+        if (people.length > 0) {
+            mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
+//            mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, people);
+        }
     }
 }
 

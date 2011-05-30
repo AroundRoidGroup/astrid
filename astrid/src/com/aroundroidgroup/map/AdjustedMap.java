@@ -14,11 +14,15 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -49,6 +53,8 @@ public class AdjustedMap extends MapView {
     public static final String PEOPLE_OVERLAY_UNIQUE_NAME = "people"; //$NON-NLS-1$
     private static final String DEVICE_LOCATION_OVERLAY_UNIQUE_NAME = "deviceLocation"; //$NON-NLS-1$
 
+    private AroundroidDbAdapter db;
+
     public AdjustedMap(Context context, String apiKey) {
         super(context, apiKey);
         this.context = context;
@@ -67,18 +73,24 @@ public class AdjustedMap extends MapView {
         init();
     }
 
+    public void setDB(AroundroidDbAdapter db) {
+        this.db = db;
+    }
+
     public void showDeviceLocation() {
         if (showDeviceLocation == false) {
-          //TODO USERLOCATION
-//            if (true)
-//                return;
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
-
-            DPoint d = new DPoint(40.714867,-74.006009);
-            GeoPoint lastDeviceLocation = Misc.degToGeo(d);
-            addItemToOverlay(lastDeviceLocation, "Your Location", Misc.geoToDeg(lastDeviceLocation).toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+            DPoint deviceLocation = db.specialUserToDPoint();
+            if (deviceLocation != null) {
+                GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
+                addItemToOverlay(lastDeviceLocation, "Your Location", deviceLocation.toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
+            }
         }
+    }
+
+    public DPoint getDeviceLocation() {
+        return db.specialUserToDPoint();
     }
 
     public void removeDeviceLocation() {
@@ -113,6 +125,7 @@ public class AdjustedMap extends MapView {
                 mapOverlays.add(overlay);
             }
         }
+        invalidate();
     }
 
     public int getAllPointsCount() {
@@ -131,7 +144,10 @@ public class AdjustedMap extends MapView {
     public int getOverlaySize(String identifier) {
         if (identifier == null)
             return -1;
-        return overlays.get(identifier).size();
+        MapItemizedOverlay iOver = overlays.get(identifier);
+        if (iOver == null)
+            return 0;
+        return iOver.size();
     }
 
     public void associateMapWithTask(long taskID) {
@@ -139,13 +155,16 @@ public class AdjustedMap extends MapView {
     }
 
     private void init() {
+        db = new AroundroidDbAdapter(context);
+        //TODO close db
+        db.open();
         overlays = new HashMap<String, MapItemizedOverlay>();
         mapOverlays = getOverlays();
         showDeviceLocation();
         getController().setZoom(18);
         //TODO USERLOCATION
-//        if (true)
-//            return;
+        //        if (true)
+        //            return;
         DPoint d = new DPoint(40.714867,-74.006009);
         getController().setCenter(Misc.degToGeo(d));
     }
@@ -168,7 +187,7 @@ public class AdjustedMap extends MapView {
 
     public void removeTypeLocation(String type) {
         MapItemizedOverlay typeOverlay = overlays.get(KIND_OVERLAY_UNIQUE_NAME);
-        for (int i = 0 ; i < typeOverlay.size() ; i++)
+        for (int i = typeOverlay.size() - 1 ; i >= 0 ; i--)
             if (typeOverlay.getItem(i).getSnippet().equals(type))
                 typeOverlay.removeOverlay(i);
         mapOverlays.add(typeOverlay);
@@ -238,7 +257,8 @@ public class AdjustedMap extends MapView {
                 }
             }
         }
-        return super.dispatchTouchEvent(event);
+        boolean b = super.dispatchTouchEvent(event);
+        return b;
     }
 
     public void refresh() {
@@ -317,6 +337,7 @@ public class AdjustedMap extends MapView {
 
         public MapItemizedOverlay(Drawable defaultMarker) {
             super(boundCenterBottom(defaultMarker));
+            populate();
         }
 
         @Override
@@ -346,7 +367,26 @@ public class AdjustedMap extends MapView {
                 sentData[5] = "0"; // can't be removed //$NON-NLS-1$
             }
             else if (overlays.get(PEOPLE_OVERLAY_UNIQUE_NAME) == this) {
-                sentData[5] = "0"; // can't be removed //$NON-NLS-1$
+                sentData[5] = "1"; // can't be removed //$NON-NLS-1$
+                String email = item.getTitle();
+                long contactID = -2;
+                Cursor cur = db.fetchByMail(email);
+                if (cur!=null && cur.moveToFirst()){
+                    contactID = cur.getLong(cur.getColumnIndex(db.KEY_CONTACTID));
+                    if (contactID>=0){
+                        //it's ok
+                    }
+                }
+                if (cur!=null){
+                    cur.close();
+                }
+                if (contactID > 0) {
+                    Intent intent2 = new Intent(Intent.ACTION_VIEW);
+                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(contactID));
+                    intent2.setData(uri);
+                    context.startActivity(intent2);
+                }
+                return true;
             }
             else if (overlays.get(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME) == this) {
                 sentData[5] = "0"; // can't be removed //$NON-NLS-1$
@@ -361,13 +401,15 @@ public class AdjustedMap extends MapView {
 
         public void addOverlay(AdjustedOverlayItem overlay) {
             mOverlays.add(overlay);
+            setLastFocusedIndex(-1);
             populate();
         }
 
         public void removeOverlay(int index) {
             //TODO check if index is not out of borders
             mOverlays.remove(createItem(index));
-//            mOverlays.clear();
+            //            mOverlays.clear();
+            setLastFocusedIndex(-1);
             populate();
         }
 

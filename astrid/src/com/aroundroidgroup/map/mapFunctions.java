@@ -14,17 +14,15 @@ public class mapFunctions {
     public static final int TITLE_TASK_NAME = 4;
 
     public static int[] addTagsToMap(AdjustedMap map, String overlayUniqueName, String[] locationTypes, double radius) {
-        //TODO USERLOCATION
-//        if (true)
-//        {
-//            return new int[locationTypes.length];
-//        }
-        DPoint d = new DPoint(40.714867,-74.006009);
+        DPoint deviceLocation = map.getDeviceLocation();
+        if (deviceLocation == null)
+            return new int[locationTypes.length];
+
         int i = 0;
         int[] feedback = new int[locationTypes.length];
         for (String type : locationTypes) {
             try {
-                Map<String, DPoint> kindLocations = Misc.googlePlacesQuery(type, d, radius);
+                Map<String, DPoint> kindLocations = Misc.googlePlacesQuery(type, deviceLocation, radius);
                 if (!kindLocations.isEmpty())
                     feedback[i] = 1;
                 /* running on all the tags (bank, post-office, ATM, etc...) */
@@ -47,30 +45,8 @@ public class mapFunctions {
             map.addItemToOverlay(Misc.degToGeo(d), title, d.toString(), null, overlayUniqueName);
     }
 
-    public static void addPeopleToMap(AdjustedMap map, String overlayUniqueName, String[] people) {
-        /*
-          try {
-              String cat = AroundRoidAppConstants.join(people, "::"); //$NON-NLS-1$
-              myService.httpLock.lock();
-              try{
-                  List<FriendProps> fp = PeopleRequest.requestPeople(new Location(new String()), cat);
-                  for (FriendProps f : fp) {
-                      //TODO replace the 4th parameter from null to address ????????
-                      map.addItemToOverlay(Misc.degToGeo(new DPoint(Double.parseDouble(f.getLat()), Double.parseDouble(f.getLon()))),
-                              "Person Name", f.getMail(), null, overlayUniqueName); //$NON-NLS-1$
-                  }
-              } finally {
-                  myService.httpLock.unlock();
-              }
-          } catch (ClientProtocolException e) {
-              e.printStackTrace();
-          } catch (IOException e) {
-              e.printStackTrace();
-          } catch (ParserConfigurationException e) {
-              e.printStackTrace();
-          } catch (SAXException e) {
-              e.printStackTrace();
-          }
-    */
+    public static void addPeopleToMap(AdjustedMap map, String overlayUniqueName, String[] people, DPoint[] locations) {
+        for (int i = 0 ; i < people.length ; i++)
+            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], overlayUniqueName);
     }
 }

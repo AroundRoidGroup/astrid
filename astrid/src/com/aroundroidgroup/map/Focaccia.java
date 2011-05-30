@@ -17,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.timsu.astrid.R;
-import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
@@ -27,6 +26,10 @@ public class Focaccia extends Activity {
     public static final String SOURCE_ADJUSTEDMAP = "AdjustedMap"; //$NON-NLS-1$
     public static final String SOURCE_SPECIFICMAP = "SpecificMap"; //$NON-NLS-1$
     public static final String SOURCE_SPECIFICMAP_KIND = "SpecificMapKind"; //$NON-NLS-1$
+    public static final int FOCACCIA_RESULT_CODE_REMOVE_TAP = 1;
+    public static final int FOCACCIA_RESULT_CODE_REMOVE_TYPE = 2;
+    public static final int FOCACCIA_RESULT_CODE_OK = 3;
+    public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 4;
     private boolean isKind = false;
 
     @Override
@@ -79,7 +82,19 @@ public class Focaccia extends Activity {
         }
 
         ImageButton removeButton = (ImageButton)findViewById(R.id.removeOverlay);
-        OnClickListener buttonListener = new View.OnClickListener() {
+
+        OnClickListener okButtonListener = new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                setResult(FOCACCIA_RESULT_CODE_OK, intent);
+                Focaccia.this.finish();
+
+            }
+        };
+
+        OnClickListener deleteButtonListener = new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -104,11 +119,11 @@ public class Focaccia extends Activity {
                         Intent intent = new Intent();
                         if (isKind) {
                             intent.putExtra(SOURCE_SPECIFICMAP_KIND, resources[1]);
-                            setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE_FOR_KIND, intent);
+                            setResult(FOCACCIA_RESULT_CODE_REMOVE_TYPE, intent);
                         }
                         else {
                             intent.putExtra(SOURCE_ADJUSTEDMAP, resources[0]);
-                            setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE, intent);
+                            setResult(FOCACCIA_RESULT_CODE_REMOVE_TAP, intent);
                         }
                         Focaccia.this.finish();
                     }
@@ -126,16 +141,16 @@ public class Focaccia extends Activity {
         };
         if (isKind) {
             removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
-            removeButton.setOnClickListener(buttonListener);
+            removeButton.setOnClickListener(deleteButtonListener);
         }
         else {
             if (resources[5].equals("0") == true) { //$NON-NLS-1$
-                removeButton.setClickable(false);
                 removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
+                removeButton.setOnClickListener(okButtonListener);
             }
             if (resources[5].equals("1") == true) { //$NON-NLS-1$
                 removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
-                removeButton.setOnClickListener(buttonListener);
+                removeButton.setOnClickListener(deleteButtonListener);
 
             }
         }
@@ -152,7 +167,7 @@ public class Focaccia extends Activity {
             else dataToSend[1] = null;
             Intent intent = new Intent();
             intent.putExtra(SOURCE_ADJUSTEDMAP, dataToSend);
-            setResult(SpecificMapLocation.FOCACCIA_RESULT_CODE_BACK_PRESSED, intent);
+            setResult(FOCACCIA_RESULT_CODE_BACK_PRESSED, intent);
             Focaccia.this.finish();
             return true;
         }
