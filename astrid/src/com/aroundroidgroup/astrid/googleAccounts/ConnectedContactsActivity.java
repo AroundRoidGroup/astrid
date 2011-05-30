@@ -108,6 +108,7 @@ public class ConnectedContactsActivity extends ListActivity {
         connectFAIL.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
                 new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dg, int which) {
+                Toast.makeText(getApplicationContext(), "An invatation is being sent...", Toast.LENGTH_LONG).show();
                 new InviteFriendTask().execute(new String[]{cs.toString()});
                 connectFAIL.cancel();
             }
@@ -375,40 +376,17 @@ public class ConnectedContactsActivity extends ListActivity {
                 Toast.makeText(getApplicationContext(), "An invitation was sent to your friend!", Toast.LENGTH_LONG).show();
             }
             else{
-                //
+                Toast.makeText(getApplicationContext(), "Did not send an invatation.", Toast.LENGTH_LONG).show();
                 connectFAIL.show();
             }
         }
 
         @Override
         protected Boolean doInBackground(String... params) {
-            boolean returnVal = false;
-            Cursor cur  = mDbHelper.fetchByMail(params[0]);
-            if (cur!=null && cur.moveToFirst()){
-                returnVal = true;
-            }else{
-                List<FriendProps> lfp = prs.getPeopleLocations(params, null);
-                if (lfp==null){
-                    returnVal = false;
-                }
-                else
-                    if (lfp.size()==0){
-                        returnVal = false;
-                    }
-                    else{
-                        FriendProps fp = lfp.get(0);
 
-                        if (fp.getMail()==params[0]){
-                            returnVal = true;
-                        }
-                    }
-            }
+            boolean res = prs.inviteFriend(params[0]);
 
-            if (cur!=null){
-                cur.close();
-            }
-
-            return returnVal;
+            return res;
         }
     }
 
