@@ -12,8 +12,6 @@ import org.xml.sax.SAXException;
 import android.accounts.Account;
 import android.content.Context;
 
-import com.skyhookwireless.wps.WPSLocation;
-
 public class PeopleRequestService {
 
     private final AroundRoidConnectionManager arcm;
@@ -73,7 +71,7 @@ public class PeopleRequestService {
     }
 
     //returns a sorted list!
-    public List<FriendProps> getPeopleLocations(String[] peopleArr, WPSLocation currentLocation) {
+    public List<FriendProps> getPeopleLocations(String[] peopleArr, FriendProps currentLocation) {
         if (!isConnected()){
             return null;
         }

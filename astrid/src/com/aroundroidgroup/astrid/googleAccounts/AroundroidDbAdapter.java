@@ -274,5 +274,24 @@ public class AroundroidDbAdapter {
         return returnMe;
     }
 
+    public FriendProps specialUserToFP(){
+        FriendProps returnMe = null;
+        Cursor cur = null;
+        cur = createAndfetchSpecialUser();
+        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
+            returnMe = new FriendProps();
+            returnMe.setDlat(cur.getDouble(cur.getColumnIndex(KEY_LAT)));
+            returnMe.setDlon(cur.getDouble(cur.getColumnIndex(KEY_LON)));
+            returnMe.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
+
+        }
+
+        if (cur!=null){
+            cur.close();
+        }
+
+        return returnMe;
+    }
+
 
 }

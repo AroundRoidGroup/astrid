@@ -337,7 +337,7 @@ public class ConnectedContactsActivity extends ListActivity {
         @Override
         protected Boolean doInBackground(String... params) {
             boolean returnVal = false;
-            Cursor cur  = mDbHelper.fetchByMail(params[0]);
+            Cursor cur  = mDbHelper.fetchByMail(params[0].toLowerCase());
             if (cur!=null && cur.moveToFirst()){
                 returnVal = true;
             }else{
@@ -352,7 +352,7 @@ public class ConnectedContactsActivity extends ListActivity {
                     else{
                         FriendProps fp = lfp.get(0);
 
-                        if (fp.getMail()==params[0]){
+                        if (fp.getMail().equals(params[0].toLowerCase())){
                             returnVal = true;
                         }
                     }

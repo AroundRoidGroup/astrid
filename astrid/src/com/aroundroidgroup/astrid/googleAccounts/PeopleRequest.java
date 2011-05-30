@@ -22,16 +22,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.skyhookwireless.wps.WPSLocation;
 import com.todoroo.andlib.utility.DateUtilities;
 
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(WPSLocation currentLocation,String peopleString){
+    private static List<NameValuePair> createPostData(FriendProps currentLocation,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (currentLocation!=null){
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude()))); //$NON-NLS-1$
-            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getDlat()))); //$NON-NLS-1$
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getDlon())));
             //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
             //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
             //TODO : go bacj to userLastLocation
@@ -55,7 +54,7 @@ public class PeopleRequest {
         return is;
     }
 
-    public static List<FriendProps> requestPeople(WPSLocation currentLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(FriendProps currentLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(currentLocation,people)));

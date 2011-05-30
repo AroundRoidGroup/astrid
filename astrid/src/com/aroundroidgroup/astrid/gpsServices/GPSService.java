@@ -4,8 +4,14 @@ import java.util.List;
 
 import android.accounts.Account;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -15,15 +21,7 @@ import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
-import com.skyhookwireless.wps.IPLocation;
-import com.skyhookwireless.wps.IPLocationCallback;
-import com.skyhookwireless.wps.WPSAuthentication;
-import com.skyhookwireless.wps.WPSContinuation;
 import com.skyhookwireless.wps.WPSLocation;
-import com.skyhookwireless.wps.WPSLocationCallback;
-import com.skyhookwireless.wps.WPSPeriodicLocationCallback;
-import com.skyhookwireless.wps.WPSReturnCode;
-import com.skyhookwireless.wps.XPS;
 import com.todoroo.andlib.utility.DateUtilities;
 
 
@@ -86,9 +84,46 @@ public class GPSService extends Service{
         aDba.open();
         aDba.dropPeople();
         aDba.createSpecialUser();
-        skyhookSetup();
+        gpsSetup();//skyhookSetup();
     }
 
+    private void gpsSetup(){
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        String provider = locationManager.getBestProvider(criteria, true);
+        Location lastLoc = locationManager.getLastKnownLocation(provider);
+        if (lastLoc!=null){
+            makeUseOfNewLocation(lastLoc);
+        }
+        locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
+    }
+
+    private final LocationListener locationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            // Called when a new location is found by the network location provider.
+            makeUseOfNewLocation(location);
+
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            //TODO empty
+        }
+
+        public void onProviderEnabled(String provider) {
+            Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
+        }
+
+        public void onProviderDisabled(String provider) {
+            Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
+        }
+    };
+
+/*
     private static final int LOCATION_MESSAGE = 1;
     private static final int ERROR_MESSAGE = 2;
     private static final int DONE_MESSAGE = 3;
@@ -148,7 +183,7 @@ public class GPSService extends Service{
             return WPSContinuation.WPS_CONTINUE;
         }
     }
-
+*/
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()
@@ -272,12 +307,6 @@ public class GPSService extends Service{
                 //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
 
                 //make userLastLocation null if it is irrelevant because of time
-                WPSLocation prevLocation = getUserLastLocation();
-
-                //TODO find out the date problem
-                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() <=locationInvalidateTime)){
-                    setUserLastLocation(null);
-                }
 
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
                 //TODO for now the gps setup in OnCreate must be moved here
@@ -293,7 +322,8 @@ public class GPSService extends Service{
                 //locationManager.requestLocationUpdates(provider, minTime, minDistance, listener)
                 ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
 
-                WPSLocation currentLocation = getUserLastLocation();
+                FriendProps currentLocation = aDba.specialUserToFP();
+
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
@@ -303,6 +333,8 @@ public class GPSService extends Service{
                             aDba.createPeople(people);
                         }
                     }
+
+
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
                         for (FriendProps fp : lfp){
@@ -331,7 +363,7 @@ public class GPSService extends Service{
 
     }
 
-    protected void makeUseOfNewLocation(WPSLocation location) {
+    protected void makeUseOfNewLocation(Location location) {
        //TODO fetch by other id
         Cursor cur = aDba.createAndfetchSpecialUser();
         if (cur!=null && cur.moveToFirst()){
@@ -339,9 +371,8 @@ public class GPSService extends Service{
             cur.close();
             aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());
         }
-        setUserLastLocation(location);
         Notificator.handleByTypeAndBySpecificNotification(location);
-        int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
+        /*int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
             currMin = realMin;
             _xps.abort();
@@ -351,7 +382,7 @@ public class GPSService extends Service{
                     (int)(location.getSpeed()<0.5?5*60:currMin/speed),
                     currMin,
                     _callback);
-        }
+        }*/
     }
 
 
