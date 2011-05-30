@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -62,11 +64,64 @@ public class ConnectedContactsActivity extends ListActivity {
     public static final String FRIEND_MAIL = "mail";
 
     public static final int SCAN_ID = Menu.FIRST;
-
+    private CharSequence cs;
     private AroundroidDbAdapter mDbHelper;
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
     private ContactsHelper conHel;
 
+    private AlertDialog ConnectDialog;
+    private AlertDialog connectOK;
+    private AlertDialog connectFAIL;
+
+
+    private void initDialogs(){
+        connectOK = new AlertDialog.Builder(ConnectedContactsActivity.this).create();
+        connectFAIL = new AlertDialog.Builder(ConnectedContactsActivity.this).create();
+        /* popping up a connectOK so the user could confirm his location choice */
+        /* setting the dialog title */
+        connectOK.setTitle("Hooray!"); //$NON-NLS-1$
+
+        /* setting the dialog message */
+        connectOK.setMessage("Your friend is registered!" ); //$NON-NLS-1$
+
+        /* setting the confirm button text and action to be executed if it has been chosen */
+        connectOK.setButton(DialogInterface.BUTTON_POSITIVE, "OK", //$NON-NLS-1$
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dg, int which) {
+                Intent intent = new Intent();
+                intent.putExtra(FRIEND_MAIL, cs);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+
+        });
+
+
+        /* popping up a connectFAIL so the user could confirm his location choice */
+        /* setting the dialog title */
+        connectFAIL.setTitle("Friend not registered"); //$NON-NLS-1$
+
+        /* setting the dialog message */
+        connectFAIL.setMessage("It seems that a your friend is not registered to the service. Would you like to Invite him? (recommanded)" ); //$NON-NLS-1$
+
+        /* setting the confirm button text and action to be executed if it has been chosen */
+        connectFAIL.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dg, int which) {
+                new InviteFriendTask().execute(new String[]{cs.toString()});
+                connectFAIL.cancel();
+            }
+
+        });
+        connectFAIL.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dg, int which) {
+                connectFAIL.cancel();
+            }
+        });
+
+
+    }
 
     /** Called when the activity is first created. */
     @Override
@@ -80,16 +135,48 @@ public class ConnectedContactsActivity extends ListActivity {
         Toast.makeText(getApplicationContext(), "Hit scan button from menu to scan for friend in the contact list!", Toast.LENGTH_SHORT).show();
 
         Button submitBtn = (Button) findViewById(R.id.submitContactButton);
+
+        initDialogs();
+
+        ConnectDialog=  new AlertDialog.Builder(ConnectedContactsActivity.this).create();
+
+        /* popping up a ConnectDialog so the user could confirm his location choice */
+        /* setting the dialog title */
+        ConnectDialog.setTitle("Checking friend"); //$NON-NLS-1$
+
+        /* setting the dialog message */
+        ConnectDialog.setMessage("Please wait while Aroundroid finds out if your friend also uses Aroundroid!" ); //$NON-NLS-1$
+
+        /* setting the confirm button text and action to be executed if it has been chosen */
+        ConnectDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", //$NON-NLS-1$
+                new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dg, int which) {
+                /* exit */
+                ConnectDialog.cancel();
+            }
+
+        });
+
+
         submitBtn.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                CharSequence cs = ((EditText)findViewById(R.id.editTextFriendMail)).getText();
+                cs = ((EditText)findViewById(R.id.editTextFriendMail)).getText();
                 if (!cs.equals("")){
+                    if (prs.isConnected()){
+                        ConnectDialog.show();
+                        new ScanOneFriendTask().execute(new String[]{cs.toString()});
+                        /*
+                    Intent intent = new Intent();
                     intent.putExtra(FRIEND_MAIL, cs);
                     setResult(RESULT_OK, intent);
                     finish();
+                         */
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(), "NOT CONNECTED TO PEOPLE LOCATION SERVICE!", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
@@ -227,4 +314,102 @@ public class ConnectedContactsActivity extends ListActivity {
             return scanContacts();
         }
     }
+
+    private class ScanOneFriendTask extends AsyncTask<String, Void, Boolean> {
+
+
+
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            ConnectDialog.cancel();
+            if (result){
+                //active press ok
+                connectOK.show();
+            }
+            else{
+                //
+                connectFAIL.show();
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            boolean returnVal = false;
+            Cursor cur  = mDbHelper.fetchByMail(params[0]);
+            if (cur!=null && cur.moveToFirst()){
+                returnVal = true;
+            }else{
+                List<FriendProps> lfp = prs.getPeopleLocations(params, null);
+                if (lfp==null){
+                    returnVal = false;
+                }
+                else
+                    if (lfp.size()==0){
+                        returnVal = false;
+                    }
+                    else{
+                        FriendProps fp = lfp.get(0);
+
+                        if (fp.getMail()==params[0]){
+                            returnVal = true;
+                        }
+                    }
+            }
+
+            if (cur!=null){
+                cur.close();
+            }
+
+            return returnVal;
+        }
+    }
+
+
+    private class InviteFriendTask extends AsyncTask<String, Void, Boolean> {
+
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result){
+                Toast.makeText(getApplicationContext(), "An invitation was sent to your friend!", Toast.LENGTH_LONG).show();
+            }
+            else{
+                //
+                connectFAIL.show();
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            boolean returnVal = false;
+            Cursor cur  = mDbHelper.fetchByMail(params[0]);
+            if (cur!=null && cur.moveToFirst()){
+                returnVal = true;
+            }else{
+                List<FriendProps> lfp = prs.getPeopleLocations(params, null);
+                if (lfp==null){
+                    returnVal = false;
+                }
+                else
+                    if (lfp.size()==0){
+                        returnVal = false;
+                    }
+                    else{
+                        FriendProps fp = lfp.get(0);
+
+                        if (fp.getMail()==params[0]){
+                            returnVal = true;
+                        }
+                    }
+            }
+
+            if (cur!=null){
+                cur.close();
+            }
+
+            return returnVal;
+        }
+    }
+
 }

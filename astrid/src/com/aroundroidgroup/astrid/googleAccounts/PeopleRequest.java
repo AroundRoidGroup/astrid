@@ -73,6 +73,10 @@ public class PeopleRequest {
 
     }
 
+    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm){
+        return true;
+    }
+
     private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {
         List<String[]> lfp = new ArrayList<String[]>();
 
