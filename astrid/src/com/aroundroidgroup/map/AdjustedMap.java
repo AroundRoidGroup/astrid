@@ -14,7 +14,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -361,6 +364,25 @@ public class AdjustedMap extends MapView {
             }
             else if (overlays.get(PEOPLE_OVERLAY_UNIQUE_NAME) == this) {
                 sentData[5] = "1"; // can't be removed //$NON-NLS-1$
+                String email = item.getTitle();
+                long contactID = -2;
+                Cursor cur = db.fetchByMail(email);
+                if (cur!=null && cur.moveToFirst()){
+                    contactID = cur.getLong(cur.getColumnIndex(db.KEY_CONTACTID));
+                    if (contactID>=0){
+                        //it's ok
+                    }
+                }
+                if (cur!=null){
+                    cur.close();
+                }
+                if (contactID > 0) {
+                    Intent intent2 = new Intent(Intent.ACTION_VIEW);
+                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(contactID));
+                    intent2.setData(uri);
+                    context.startActivity(intent2);
+                }
+                return true;
             }
             else if (overlays.get(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME) == this) {
                 sentData[5] = "0"; // can't be removed //$NON-NLS-1$

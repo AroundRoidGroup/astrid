@@ -153,7 +153,18 @@ public class SpecificMapLocation extends MapActivity {
             this.startActivityForResult(intentKind, 1);
             return true;
         case MENU_PEOPLE_GROUP:
-            mapView.getController().setCenter(Misc.degToGeo(new DPoint(item.getTitle().toString())));
+            mapView.getController().setCenter(Misc.degToGeo(people.get(item.getTitle())));
+            Intent intentPeople = new Intent(ContextManager.getContext(), Focaccia.class);
+            AdjustedOverlayItem peopleItem = mapView.getOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME).getItem(item.getItemId() - MENU_PEOPLE_GROUP);
+            String[] sentDataPeople = new String[6];
+            sentDataPeople[0] = item.getItemId() - MENU_PEOPLE_GROUP + ""; //$NON-NLS-1$
+            sentDataPeople[1] = item.getTitle().toString();
+            sentDataPeople[2] = peopleItem.getTitle();
+            sentDataPeople[3] = peopleItem.getSnippet();
+            sentDataPeople[4] = peopleItem.getAddress();
+            sentDataPeople[5] = "1"; // can be removed //$NON-NLS-1$
+            intentPeople.putExtra(Focaccia.SOURCE_SPECIFICMAP, sentDataPeople);
+            this.startActivityForResult(intentPeople, 1);
             return true;
         default: return super.onContextItemSelected(item);
         }
@@ -169,6 +180,8 @@ public class SpecificMapLocation extends MapActivity {
 
         mdba.open();
 
+
+
         DPoint deviceLocation = mapView.getDeviceLocation();
 
         /* allowing adding of location by tapping on the map */
@@ -179,6 +192,8 @@ public class SpecificMapLocation extends MapActivity {
 
         mapView.createOverlay(AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_32));
         mapView.createOverlay(AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, this.getResources().getDrawable(R.drawable.icon_people));
+
+
 
         /* adding the auto-complete mechanism */
         final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
@@ -252,9 +267,16 @@ public class SpecificMapLocation extends MapActivity {
         for (String s : existedPeople)
             people.put(s, null);
 
+        String[] tomer = new String[1];
+        tomer[0] = "tomer.keshet@gmail.com";
+        DPoint[] coordTomer = new DPoint[1];
+        coordTomer[0] = new DPoint(40.710215,-74.009013);
+        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
+        people.put(tomer[0], coordTomer[0]);
+
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
-        if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+        if (mapView.getTappedPointsCount() == 0 && types.size() == 0 && people.size() == 0) {
             viewAll.setOnClickListener(nothingToShowClickListener);
             viewAll.setOnLongClickListener(nothingToShowLongClickListener);
         }
@@ -408,7 +430,7 @@ public class SpecificMapLocation extends MapActivity {
                 mapView.removeTypeLocation(type);
                 //                Toast.makeText(this, "type: " + type + " has been removed", Toast.LENGTH_LONG).show();
                 types.remove(type);
-                if (mapView.getTappedPointsCount() == 0 && types.size() == 0) {
+                if (mapView.getTappedPointsCount() == 0 && types.size() == 0 && people.size() == 0) {
                     Button viewAll = (Button)findViewById(R.id.viewAll);
                     viewAll.setOnClickListener(nothingToShowClickListener);
                     viewAll.setOnLongClickListener(nothingToShowLongClickListener);
