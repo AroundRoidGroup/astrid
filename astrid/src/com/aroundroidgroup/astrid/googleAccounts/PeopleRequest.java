@@ -73,8 +73,21 @@ public class PeopleRequest {
 
     }
 
-    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm){
-        return true;
+    private static List<NameValuePair> createMailPostData(String mail){
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail));
+        return nameValuePairs;
+    }
+
+    //TODO CHANGE
+    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+        // sending current location and request for users
+        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
+        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
+        InputStream is  = requestToStream(http_post,arcm);
+        byte[] buf = new byte[20];
+        is.read(buf, 0, 4);
+        return buf[0]=='s';
     }
 
     private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {

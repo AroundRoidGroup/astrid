@@ -58,7 +58,18 @@ public class PeopleRequestService {
         if (!isConnected()){
             return false;
         }
-        return true;
+        try {
+            boolean res = PeopleRequest.inviteMail(friend, arcm);
+            return res;
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.stop();
+        return false;
     }
 
     //returns a sorted list!
