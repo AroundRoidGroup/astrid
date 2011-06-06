@@ -101,10 +101,10 @@ public class GPSService extends Service{
         Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
 
         _xps.getXPSLocation(auth,
-                            // note we convert _period to seconds
-                            30,
-                            currMin,
-                            _callback);
+                // note we convert _period to seconds
+                10,
+                currMin,
+                _callback);
     }
 
     private class MyLocationCallback
@@ -116,14 +116,14 @@ public class GPSService extends Service{
         {
             toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
-       }
+        }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
             toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
-                return WPSContinuation.WPS_CONTINUE;
+            return WPSContinuation.WPS_CONTINUE;
         }
 
         public void handleIPLocation(IPLocation location)
@@ -283,20 +283,6 @@ public class GPSService extends Service{
                     setUserLastLocation(null);
                 }
 
-                ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
-                //TODO for now the gps setup in OnCreate must be moved here
-                //calculate minimal radius for businesses
-                int minBusiness = 0;
-                //calculate radius for friends
-                int minFriends = 0;
-                //calculate minimal radius for change.
-                @SuppressWarnings("unused")
-                int minTotal = Math.min(minBusiness, minFriends);
-                //register to radius if needed - will take care of business notifications, and userLastLocation!
-                //HEY !! - specific should by handled by addProximityAlert!?
-                //locationManager.requestLocationUpdates(provider, minTime, minDistance, listener)
-                ///////////////////////////////////RADDDDDDDDDDIIIIIIIIIIUUUUUUUUUUUUSSSSSSSSSSSSSSS
-
                 WPSLocation currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
                 if (currentLocation!=null &&  prs.isConnected()){
@@ -318,7 +304,7 @@ public class GPSService extends Service{
                             }
 
                         }
-                        //TODO doesnt notify!?
+                        //TODO doesn't notify!?
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
                     }
                 }
@@ -329,20 +315,17 @@ public class GPSService extends Service{
             okDestroy();
         }
 
-
-
-
-
     }
 
     protected void makeUseOfNewLocation(WPSLocation location) {
-       //TODO fetch by other id
+        //TODO fetch by other id
         Cursor cur = aDba.createAndfetchSpecialUser();
         if (cur!=null && cur.moveToFirst()){
             long l = cur.getLong(0);
             cur.close();
             aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());
         }
+
         setUserLastLocation(location);
         Notificator.handleByTypeAndBySpecificNotification(location);
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
@@ -357,6 +340,47 @@ public class GPSService extends Service{
                     _callback);
         }
     }
+
+    /*
+    private void gpsSetup(){
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        String provider = locationManager.getBestProvider(criteria, true);
+        Location lastLoc = locationManager.getLastKnownLocation(provider);
+        if (lastLoc!=null){
+            //TODO fill
+            //makeUseOfNewLocation(lastLoc);
+        }
+        locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
+    }
+
+    private final LocationListener locationListener = new LocationListener() {
+
+        public void onLocationChanged(Location location) {
+            // Called when a new location is found by the network location provider.
+            //TODO fill
+            //makeUseOfNewLocation(location);
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            //TODO empty
+        }
+
+        public void onProviderEnabled(String provider) {
+            Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
+        }
+        public void onProviderDisabled(String provider) {
+            Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
+
+        }
+    };
+    */
+
 
 
 }
