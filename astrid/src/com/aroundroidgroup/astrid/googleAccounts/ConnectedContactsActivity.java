@@ -167,7 +167,7 @@ public class ConnectedContactsActivity extends ListActivity {
                 if (!cs.equals("")){
                     if (prs.isConnected()){
                         ConnectDialog.show();
-                        new ScanOneFriendTask().execute(new String[]{cs.toString()});
+                        new ScanOneFriendTask().execute(new String[]{cs.toString().toLowerCase()});
                         /*
                     Intent intent = new Intent();
                     intent.putExtra(FRIEND_MAIL, cs);
@@ -334,6 +334,7 @@ public class ConnectedContactsActivity extends ListActivity {
             }
         }
 
+        //assuming mail in lower case
         @Override
         protected Boolean doInBackground(String... params) {
             boolean returnVal = false;
@@ -352,7 +353,7 @@ public class ConnectedContactsActivity extends ListActivity {
                     else{
                         FriendProps fp = lfp.get(0);
 
-                        if (fp.getMail()==params[0]){
+                        if (fp.getMail().compareTo(params[0])==0){
                             returnVal = true;
                         }
                     }

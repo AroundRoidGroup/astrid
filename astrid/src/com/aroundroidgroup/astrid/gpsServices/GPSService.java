@@ -142,7 +142,7 @@ public class GPSService extends Service{
 
         public WPSContinuation handleWPSPeriodicLocation(WPSLocation location)
         {
-            toastMe("handleWPSPeriodicLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
+            toastMe("handleWPSPeriodicLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             makeUseOfNewLocation(location);
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
