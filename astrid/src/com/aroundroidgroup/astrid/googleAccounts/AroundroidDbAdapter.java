@@ -108,9 +108,10 @@ public class AroundroidDbAdapter {
      *
      * @return rowId or -1 if failed
      */
+    //TODO remove lower case check
     public long createPeople(String mail , Long contactId) {
         ContentValues initialValues = new ContentValues();
-        initialValues.put(KEY_MAIL, mail);
+        initialValues.put(KEY_MAIL, mail.toLowerCase());
         if (contactId!=null){
             initialValues.put(KEY_CONTACTID, -2);
         }
@@ -166,10 +167,11 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchByMail(String mail) {
 
+        //TODO remove lower case
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + "'"+mail+"'", null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + "'"+mail.toLowerCase()+"'", null,
                     null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
@@ -260,19 +262,19 @@ public class AroundroidDbAdapter {
 
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
-        DPoint returnMe = null;
-        Cursor cur = null;
-        cur = createAndfetchSpecialUser();
-        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
-            returnMe = new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
-        }
-
-        if (cur!=null){
-            cur.close();
-        }
-
-        return returnMe;
-
+//        DPoint returnMe = null;
+//        Cursor cur = null;
+//        cur = createAndfetchSpecialUser();
+//        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
+//            returnMe = new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
+//        }
+//
+//        if (cur!=null){
+//            cur.close();
+//        }
+//
+//        return returnMe;
+        return new DPoint(40.717209,-74.00528);
     }
 
 

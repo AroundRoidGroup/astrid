@@ -108,7 +108,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         /* if the task is location-based, the following code will add the locations to the map */
         locationTags = locationService.getLocationsByTypeAsArray(mCurrentTask.getId());
         if (locationTags.length > 0) {
-            Toast.makeText(this, "size = " + locationTags.length + ". first is " + locationTags[0], Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+//            Toast.makeText(this, "size = " + locationTags.length + ". first is " + locationTags[0], Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
             int[] returnValues = mapFunctions.addTagsToMap(mapView, AdjustedMap.KIND_OVERLAY_UNIQUE_NAME, locationTags, 500.0);
             int sum = 0;
             for (int i : returnValues)

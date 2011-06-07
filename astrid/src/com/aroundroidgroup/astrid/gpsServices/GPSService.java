@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -74,13 +73,13 @@ public class GPSService extends Service{
 
         // TODO Auto-generated method stub
         super.onStart(intent, startId);
-        Toast.makeText(getApplicationContext(), "OnStart!?!", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "OnStart!?!", Toast.LENGTH_LONG).show();
 
     }
 
     @Override
     public void onCreate() {
-        Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
         aDba.open();
@@ -98,7 +97,7 @@ public class GPSService extends Service{
     int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
-        Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
 
         _xps.getXPSLocation(auth,
                 // note we convert _period to seconds
@@ -192,7 +191,7 @@ public class GPSService extends Service{
     private final Runnable mUpdateResults = new Runnable() {
         public void run() {
             if (mToastMsg!=null){
-                Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
+                //Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -273,7 +272,7 @@ public class GPSService extends Service{
                 }
 
 
-                //Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
+                ////Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
 
                 //make userLastLocation null if it is irrelevant because of time
                 WPSLocation prevLocation = getUserLastLocation();
@@ -372,10 +371,10 @@ public class GPSService extends Service{
         }
 
         public void onProviderEnabled(String provider) {
-            Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
         }
         public void onProviderDisabled(String provider) {
-            Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
 
         }
     };

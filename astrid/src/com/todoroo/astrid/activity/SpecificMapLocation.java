@@ -270,12 +270,12 @@ public class SpecificMapLocation extends MapActivity {
         for (String s : existedPeople)
             people.put(s, null);
 
-        //        String[] tomer = new String[1];
-        //        tomer[0] = "tomer.keshet@gmail.com";
-        //        DPoint[] coordTomer = new DPoint[1];
-        //        coordTomer[0] = new DPoint(40.710215,-74.009013);
-        //        mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
-        //        people.put(tomer[0], coordTomer[0]);
+//                String[] tomer = new String[1];
+//                tomer[0] = "tomer.keshet@gmail.com";
+//                DPoint[] coordTomer = new DPoint[1];
+//                coordTomer[0] = new DPoint(40.710215,-74.009013);
+//                mapFunctions.addPeopleToMap(mapView, AdjustedMap.PEOPLE_OVERLAY_UNIQUE_NAME, tomer, coordTomer);
+//                people.put(tomer[0], coordTomer[0]);
 
         final Button viewAll = (Button)findViewById(R.id.viewAll);
         registerForContextMenu(viewAll);
@@ -423,7 +423,7 @@ public class SpecificMapLocation extends MapActivity {
             return;
         }
         if (resultCode == Focaccia.FOCACCIA_RESULT_CODE_BACK_PRESSED) {
-            Toast.makeText(this, "no deletion", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+//            Toast.makeText(this, "no deletion", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             String[] receivedData = data.getExtras().getStringArray(Focaccia.SOURCE_ADJUSTEDMAP);
             if (receivedData[1] != null)
                 mapView.getOverlay(AdjustedMap.SPECIFIC_OVERLAY_UNIQUE_NAME).getItem(Integer.parseInt(receivedData[0])).setLocationAddress(receivedData[1]);
@@ -491,7 +491,7 @@ public class SpecificMapLocation extends MapActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Toast.makeText(this, "press back", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+//            Toast.makeText(this, "press back", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             saveAndQuit();
             return true;
         }

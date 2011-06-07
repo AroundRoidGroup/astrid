@@ -20,6 +20,30 @@ public class FriendProps{
 
     private String time;
 
+    private double dspeed;
+
+    private String speed;
+
+    //TODO use speed
+
+    public double getdspeed() {
+        return dspeed;
+    }
+
+    public String getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(String speed) {
+        this.speed = speed;
+        this.dspeed = (Double.parseDouble(speed));
+    }
+
+    public void setDspeed(double dspeed) {
+        this.dspeed = dspeed;
+        this.speed = String.valueOf(dspeed);
+    }
+
     public String getLat() {
         return lat;
     }

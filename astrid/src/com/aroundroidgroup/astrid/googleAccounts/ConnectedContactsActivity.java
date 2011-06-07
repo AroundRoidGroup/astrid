@@ -74,6 +74,7 @@ public class ConnectedContactsActivity extends ListActivity {
     private AlertDialog connectFAIL;
 
 
+
     private void initDialogs(){
         connectOK = new AlertDialog.Builder(ConnectedContactsActivity.this).create();
         connectFAIL = new AlertDialog.Builder(ConnectedContactsActivity.this).create();
@@ -163,7 +164,7 @@ public class ConnectedContactsActivity extends ListActivity {
 
             @Override
             public void onClick(View v) {
-                cs = ((EditText)findViewById(R.id.editTextFriendMail)).getText();
+                cs = ((EditText)findViewById(R.id.editTextFriendMail)).getText().toString().toLowerCase();
                 if (!cs.equals("")){
                     if (prs.isConnected()){
                         ConnectDialog.show();
@@ -285,6 +286,9 @@ public class ConnectedContactsActivity extends ListActivity {
                             mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
                         }
                         else{
+                            if (curMail!=null){
+                                curMail.close();
+                            }
                             //TODO change to one function
                             long rowId = mDbHelper.createPeople(idnm.mail, Long.parseLong(idnm.id));
                             mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp(), Long.parseLong(idnm.id));
@@ -354,6 +358,23 @@ public class ConnectedContactsActivity extends ListActivity {
                         FriendProps fp = lfp.get(0);
 
                         if (fp.getMail().compareTo(params[0])==0){
+                            FriendProps findMe = lfp.get(0);
+                            Cursor curMail = mDbHelper.fetchByMail(findMe.getMail());
+                            if (curMail!=null && curMail.moveToFirst()){
+                                long l = curMail.getLong(0);
+                                curMail.close();
+                                mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
+                            }
+                            else{
+                                if (curMail!=null){
+                                    curMail.close();
+                                }
+                                //TODO change to one function
+                                long rowId = mDbHelper.createPeople(findMe.getMail());
+                                mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
+                            }
+
+
                             returnVal = true;
                         }
                     }
