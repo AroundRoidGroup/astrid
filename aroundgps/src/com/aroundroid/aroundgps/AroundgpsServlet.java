@@ -42,7 +42,7 @@ public class AroundgpsServlet extends HttpServlet {
 			query.append(" mail =='" + user.toLowerCase() + "' ||");
 		}
 		query.append(" mail =='" + usersArr[0].toLowerCase() + "')");
-		query.append(" && timeStamp > "+(requestDate.getTime() - gpsValidTime));
+		//query.append(" && timeStamp > "+(requestDate.getTime() - gpsValidTime));
 		return query.toString();
 	}
 
@@ -52,7 +52,6 @@ public class AroundgpsServlet extends HttpServlet {
 		requestDate = new Date();
 		//TODO deal with error, make timestamp optional
 
-		//TODO find out why old records not deleted
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -91,7 +90,8 @@ public class AroundgpsServlet extends HttpServlet {
 
 
 		for(GPSProps gpsP : gpses){
-			out.append(GPSPropXML.gpsPropToFriend(false,gpsP));
+			if (gpsP.getTimeStamp() > (requestDate.getTime() - gpsValidTime))
+				out.append(GPSPropXML.gpsPropToFriend(false,gpsP));
 		}
 
 		String query2 = buildGetQuery(new String[]{user.getEmail()});
@@ -99,11 +99,12 @@ public class AroundgpsServlet extends HttpServlet {
 		List<GPSProps> gpses2  = (List<GPSProps>) pm.newQuery(query2).execute();
 
 		for (GPSProps gpsP : gpses2){
-			out.append(GPSPropXML.gpsPropToFriend(true, gpsP));
+			if (gpsP.getTimeStamp() > (requestDate.getTime() - gpsValidTime))
+				out.append(GPSPropXML.gpsPropToFriend(true, gpsP));
 		}
 
 		out.println("</Users>");
-		
+
 		try {
 			pm.deletePersistentAll(gpses2);
 			pm.makePersistent(gspP);
