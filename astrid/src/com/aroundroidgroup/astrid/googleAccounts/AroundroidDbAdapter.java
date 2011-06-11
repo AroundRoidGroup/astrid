@@ -17,7 +17,7 @@ public class AroundroidDbAdapter {
     public static final String KEY_LAT = "lat";
     public static final String KEY_LON= "lon";
     public static final String KEY_TIME= "time";
-    public static final String KEY_CONTACTID= "contact_id";
+    public static final String KEY_CONTACTID= "contactid";
 
     public static final String KEY_ROWID = "_id";
 
@@ -30,7 +30,7 @@ public class AroundroidDbAdapter {
      */
     private static final String DATABASE_CREATE =
         "create table peopleloc (_id integer primary key autoincrement, "
-        + "mail text not null, contact_id integer not null,"
+        + "mail text not null, contactid long not null,"
         + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
@@ -112,10 +112,17 @@ public class AroundroidDbAdapter {
     public long createPeople(String mail , Long contactId) {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_MAIL, mail.toLowerCase());
-        if (contactId!=null){
-            initialValues.put(KEY_CONTACTID, -2);
+        if (contactId==null){
+            initialValues.put(KEY_CONTACTID, -2L);
         }
-        return mDb.insert(DATABASE_TABLE, null, initialValues);
+        else{
+            initialValues.put(KEY_CONTACTID, contactId);
+        }
+        long l = mDb.insert(DATABASE_TABLE, null, initialValues);
+        if (l==-1L){
+            int x  = 5;
+        }
+        return l;
     }
 
     /**
@@ -215,7 +222,11 @@ public class AroundroidDbAdapter {
         }
 
 
-        return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
+        boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
+        if (!ef){
+            int z  =  2;
+        }
+        return ef;
     }
     /**
      * Update the people using the details provided.
