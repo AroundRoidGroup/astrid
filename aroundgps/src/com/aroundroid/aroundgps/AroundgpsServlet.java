@@ -26,7 +26,7 @@ public class AroundgpsServlet extends HttpServlet {
 
 	private Date requestDate;
 
-	
+
 
 	private final String GPSLat = "GPSLAT";
 	private final String GPSLon = "GPSLON";
@@ -54,7 +54,7 @@ public class AroundgpsServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 		requestDate = new Date();
-		//TODO deal with error, make timestamp optional
+		//TODO deal with error (missing parameter, etc.)
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -72,7 +72,7 @@ public class AroundgpsServlet extends HttpServlet {
 		for(int i =0; i < usersArr.length ; i++){
 			usersArr[i] = usersArr[i].toLowerCase();
 		}
-		
+
 		Arrays.sort(usersArr);
 
 		String timeStamp = req.getParameter(TIMESTAMP);
@@ -94,25 +94,33 @@ public class AroundgpsServlet extends HttpServlet {
 		Collections.sort(gpses, GPSProps.getMailComparator());
 
 		Iterator<GPSProps> iter =  gpses.iterator();
-		
-		for(int i =0 ;i<usersArr.length; i++){
-			
+
+		int  i = 0;
+
+		for(GPSProps gpsP : gpses){
+			for( ;i<usersArr.length; i++){
+				if (usersArr[i].compareTo(gpsP.getMail())==0){
+					out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,gpsP));
+					break;
+				}
+				else{
+					out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
+				}
+
+			}
+		}
+		for( ;i<usersArr.length; i++){
+			out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
 		}
 
-		/*
-		for(GPSProps gpsP : gpses){
-			if (gpsP.getTimeStamp() > (requestDate.getTime() - gpsValidTime))
-				out.append(GPSPropXML.gpsPropToFriend(false,gpsP));
-		}
-		*/
 
 		String query2 = buildGetQuery(new String[]{user.getEmail()});
 		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses2  = (List<GPSProps>) pm.newQuery(query2).execute();
 
+		/* this loop if for debugging purposes only*/
 		for (GPSProps gpsP : gpses2){
-			if (gpsP.getTimeStamp() > (requestDate.getTime() - AroundGPSConstants.gpsValidTime))
-				out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),true, gpsP));
+			out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),true, gpsP));
 		}
 
 		out.println("</Users>");
