@@ -10,7 +10,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-//mailer for one seesion
+//mailer for one session
 public class Mailer {
 	
 	private Properties props = new Properties();

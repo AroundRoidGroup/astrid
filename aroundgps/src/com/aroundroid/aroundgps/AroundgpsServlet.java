@@ -2,6 +2,9 @@ package com.aroundroid.aroundgps;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -14,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import java.util.Date;
 
@@ -22,7 +26,7 @@ public class AroundgpsServlet extends HttpServlet {
 
 	private Date requestDate;
 
-	private final long gpsValidTime = 1000 * 60 * 60 * 24;
+	
 
 	private final String GPSLat = "GPSLAT";
 	private final String GPSLon = "GPSLON";
@@ -52,7 +56,6 @@ public class AroundgpsServlet extends HttpServlet {
 		requestDate = new Date();
 		//TODO deal with error, make timestamp optional
 
-
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
 		if (user==null){
@@ -69,11 +72,11 @@ public class AroundgpsServlet extends HttpServlet {
 		for(int i =0; i < usersArr.length ; i++){
 			usersArr[i] = usersArr[i].toLowerCase();
 		}
+		
+		Arrays.sort(usersArr);
 
 		String timeStamp = req.getParameter(TIMESTAMP);
 		Long lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());
-
-		GPSProps gspP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
@@ -88,26 +91,40 @@ public class AroundgpsServlet extends HttpServlet {
 		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses  = (List<GPSProps>) pm.newQuery(query).execute();
 
+		Collections.sort(gpses, GPSProps.getMailComparator());
 
+		Iterator<GPSProps> iter =  gpses.iterator();
+		
+		for(int i =0 ;i<usersArr.length; i++){
+			
+		}
+
+		/*
 		for(GPSProps gpsP : gpses){
 			if (gpsP.getTimeStamp() > (requestDate.getTime() - gpsValidTime))
 				out.append(GPSPropXML.gpsPropToFriend(false,gpsP));
 		}
+		*/
 
 		String query2 = buildGetQuery(new String[]{user.getEmail()});
 		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses2  = (List<GPSProps>) pm.newQuery(query2).execute();
 
 		for (GPSProps gpsP : gpses2){
-			if (gpsP.getTimeStamp() > (requestDate.getTime() - gpsValidTime))
-				out.append(GPSPropXML.gpsPropToFriend(true, gpsP));
+			if (gpsP.getTimeStamp() > (requestDate.getTime() - AroundGPSConstants.gpsValidTime))
+				out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),true, gpsP));
 		}
 
 		out.println("</Users>");
 
+
+
 		try {
-			pm.deletePersistentAll(gpses2);
-			pm.makePersistent(gspP);
+			if (lTimeStamp>0){
+				GPSProps gspP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);
+				pm.deletePersistentAll(gpses2);
+				pm.makePersistent(gspP);
+			}
 		} finally {
 			pm.close();
 		}

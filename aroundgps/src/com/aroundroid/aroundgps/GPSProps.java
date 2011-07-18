@@ -1,13 +1,14 @@
 package com.aroundroid.aroundgps;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.users.User;
-
+import java.util.Comparator;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.users.User;
 
 @PersistenceCapable
 public class GPSProps {
@@ -93,4 +94,16 @@ public class GPSProps {
 	public boolean isReminded() {
 		return reminded;
 	}
+	
+	
+    private final static Comparator<GPSProps> mailComparator = new Comparator<GPSProps>(){
+        @Override
+        public int compare(GPSProps object1, GPSProps object2) {
+            return object1.getMail().compareTo(object2.getMail());
+        }
+    };
+
+    public static Comparator<GPSProps> getMailComparator(){
+        return mailComparator;
+    }
 }
