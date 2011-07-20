@@ -101,6 +101,7 @@ public class AroundgpsServlet extends HttpServlet {
 			for( ;i<usersArr.length; i++){
 				if (usersArr[i].compareTo(gpsP.getMail())==0){
 					out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,gpsP));
+					i++;
 					break;
 				}
 				else{

@@ -4,7 +4,7 @@ public final class GPSPropXML {
 
 
 	public static StringBuffer gpsPropToFriend(Long now,boolean isYou,GPSProps gpsP){
-		if ((now - gpsP.getTimeStamp()> AroundGPSConstants.gpsValidTime) || isYou){
+		if ((now - gpsP.getTimeStamp()< AroundGPSConstants.gpsValidTime) || isYou){
 			return gpsPropToFriend( isYou, gpsP, "Yes");
 		}
 		else{
