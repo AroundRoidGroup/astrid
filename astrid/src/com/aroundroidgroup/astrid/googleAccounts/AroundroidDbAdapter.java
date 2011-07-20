@@ -18,6 +18,7 @@ public class AroundroidDbAdapter {
     public static final String KEY_LON= "lon";
     public static final String KEY_TIME= "time";
     public static final String KEY_CONTACTID= "contactid";
+    public static final String KEY_VALIDS = "valids";
 
     public static final String KEY_ROWID = "_id";
 
@@ -30,7 +31,7 @@ public class AroundroidDbAdapter {
      */
     private static final String DATABASE_CREATE =
         "create table peopleloc (_id integer primary key autoincrement, "
-        + "mail text not null, contactid long not null,"
+        + "mail text not null, contactid long not null, valids text not null"
         + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
@@ -118,7 +119,9 @@ public class AroundroidDbAdapter {
         else{
             initialValues.put(KEY_CONTACTID, contactId);
         }
+        initialValues.put(KEY_VALIDS,"Unregistered");
         long l = mDb.insert(DATABASE_TABLE, null, initialValues);
+        //TODO remove debug
         if (l==-1L){
             int x  = 5;
         }
@@ -212,7 +215,7 @@ public class AroundroidDbAdapter {
 
      * @return true if the people was successfully updated, false otherwise
      */
-    public boolean updatePeople(long rowId ,double lat , double lon , long time, Long contactId) {
+    public boolean updatePeople(long rowId ,double lat , double lon , long time, Long contactId , String valids) {
         ContentValues args = new ContentValues();
         args.put(KEY_LAT, lat);
         args.put(KEY_LON, lon);
@@ -220,9 +223,13 @@ public class AroundroidDbAdapter {
         if (contactId!=null){
             args.put(KEY_CONTACTID, contactId);
         }
+        if (valids!=null){
+            args.put(KEY_VALIDS, valids);
+        }
 
 
         boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
+        //TODO remove debug
         if (!ef){
             int z  =  2;
         }
@@ -234,7 +241,7 @@ public class AroundroidDbAdapter {
      * @return true if the people was successfully updated, false otherwise
      */
     public boolean updatePeople(long rowId,double lat , double lon , long time) {
-        return updatePeople(rowId,lat, lon, time,null);
+        return updatePeople(rowId,lat, lon, time,null,null);
     }
 
     public void dropPeople(){
@@ -243,11 +250,11 @@ public class AroundroidDbAdapter {
 
     public long createSpecialUser(){
         long rowID = this.createPeople("me", -1L);
-        //begining of time!
         if (rowID==-1){
             return -1;
         }
-        this.updatePeople(rowID, 0.0, 0.0, 21600L);
+        //begining of time!
+        this.updatePeople(rowID, 0.0, 0.0, 21600L, null,"No");
         return rowID;
     }
 
@@ -266,11 +273,13 @@ public class AroundroidDbAdapter {
     }
 
 
+    //TODO check this
     private static final long validTime = 120 * 1000;
     private static boolean validTime(long time){
         return DateUtilities.now()-time <= validTime;
     }
 
+    //TODO fix
     //TODO change to a better way
     public DPoint specialUserToDPoint(){
 //        DPoint returnMe = null;
