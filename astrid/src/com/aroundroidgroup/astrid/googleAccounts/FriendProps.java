@@ -6,11 +6,14 @@ import java.util.List;
 
 public class FriendProps{
 
+
     public final static String root = "Friend"; //$NON-NLS-1$
 
-    public final static String[] props = new String[]{"Latitude","Longtitude","Mail","Timestamp"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    public final static String[] props = new String[]{"Latitude","Longtitude","Mail","Timestamp","Valid"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
     private String lat,lon;
+
+    private String valid;
 
     private double dlat,dlon;
 
@@ -20,6 +23,7 @@ public class FriendProps{
 
     private String time;
 
+    /*
     private double dspeed;
 
     private String speed;
@@ -43,6 +47,7 @@ public class FriendProps{
         this.dspeed = dspeed;
         this.speed = String.valueOf(dspeed);
     }
+    */
 
     public String getLat() {
         return lat;
@@ -87,7 +92,10 @@ public class FriendProps{
         setLon(arr[1]);
         setMail(arr[2]);
         setTime(arr[3]);
+        setValid(arr[4]);
     }
+
+
 
     public static List<FriendProps> fromArrList(List<String[]> arrLst){
         List<FriendProps> fpl = new ArrayList<FriendProps>(arrLst.size());
@@ -145,6 +153,14 @@ public class FriendProps{
 
     public String getTime() {
         return time;
+    }
+
+    public void setValid(String valid) {
+        this.valid = valid;
+    }
+
+    public String getValid() {
+        return valid;
     }
 
 }

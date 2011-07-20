@@ -23,7 +23,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.skyhookwireless.wps.WPSLocation;
-import com.todoroo.andlib.utility.DateUtilities;
 
 public class PeopleRequest {
 
@@ -32,18 +31,13 @@ public class PeopleRequest {
         if (currentLocation!=null){
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude()))); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
-            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
-            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
-            //TODO : go bacj to userLastLocation
+            //TODO : go back to userLastLocation
             nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(currentLocation.getTime())));
         }
         else{
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0)));
-            //nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf("32.0")));
-            //nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf("34.0")));
-            //TODO : go bacj to userLastLocation
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(DateUtilities.now())));
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0)));
         }
         nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
         return nameValuePairs;
@@ -90,6 +84,7 @@ public class PeopleRequest {
         return buf[0]=='s';
     }
 
+    //TODO IMPORTANT FUNCTION
     private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {
         List<String[]> lfp = new ArrayList<String[]>();
 
