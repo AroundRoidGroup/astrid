@@ -11,6 +11,7 @@ import org.xml.sax.SAXException;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.database.Cursor;
 
 import com.skyhookwireless.wps.WPSLocation;
 
@@ -72,8 +73,29 @@ public class PeopleRequestService {
         return false;
     }
 
+    private void propsToDatabase(FriendProps fp , AroundroidDbAdapter aDba){
+        Cursor cur = aDba.fetchByMail(fp.getMail());
+        long rowid;
+        if (cur==null){
+            //TODO what?
+            return;
+        }
+        if (!cur.moveToFirst()){
+            rowid = aDba.createPeople(fp.getMail());
+        }else{
+            rowid = cur.getLong(cur.getColumnIndex(aDba.KEY_ROWID));
+        }
+        if (rowid == -1L){
+            //TODO what?
+            return;
+        }
+        aDba.updatePeople(rowid, fp.getDlat(), fp.getDlon(), fp.getTimestamp(), null, fp.getValid());
+
+
+    }
+
     //returns a sorted list!
-    public List<FriendProps> getPeopleLocations(String[] peopleArr, WPSLocation currentLocation) {
+    public List<FriendProps> updatePeopleLocations(String[] peopleArr, WPSLocation currentLocation, AroundroidDbAdapter aDba) {
         if (!isConnected()){
             return null;
         }
@@ -84,6 +106,9 @@ public class PeopleRequestService {
         try {
             List<FriendProps> lfp = PeopleRequest.requestPeople(currentLocation,peopleString, arcm);
             Collections.sort(lfp, FriendProps.getMailComparator());
+            for (FriendProps fp : lfp){
+                propsToDatabase(fp, aDba);
+            }
             return lfp;
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block

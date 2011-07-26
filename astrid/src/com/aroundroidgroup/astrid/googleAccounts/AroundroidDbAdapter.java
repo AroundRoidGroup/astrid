@@ -8,9 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.aroundroidgroup.map.DPoint;
-import com.todoroo.andlib.utility.DateUtilities;
-
 public class AroundroidDbAdapter {
 
     public static final String KEY_MAIL = "mail";
@@ -272,29 +269,23 @@ public class AroundroidDbAdapter {
         }
     }
 
-
-    //TODO check this
-    private static final long validTime = 120 * 1000;
-    private static boolean validTime(long time){
-        return DateUtilities.now()-time <= validTime;
+    public FriendProps userToFP(long rowId){
+        //TODO deal with Timestamp
+        Cursor cur = fetchPeople(rowId);
+        if (cur==null || !cur.moveToFirst()){
+            return null;
+        }
+        return userToFP(cur);
     }
 
-    //TODO fix
-    //TODO change to a better way
-    public DPoint specialUserToDPoint(){
-//        DPoint returnMe = null;
-//        Cursor cur = null;
-//        cur = createAndfetchSpecialUser();
-//        if (cur!=null && cur.moveToFirst()  && (validTime(cur.getLong(cur.getColumnIndex(KEY_TIME))))){
-//            returnMe = new DPoint(cur.getDouble(cur.getColumnIndex(KEY_LAT)), cur.getDouble(cur.getColumnIndex(KEY_LON)));
-//        }
-//
-//        if (cur!=null){
-//            cur.close();
-//        }
-//
-//        return returnMe;
-        return new DPoint(40.717209,-74.00528);
+    public static FriendProps userToFP(Cursor cur){
+        FriendProps fp  = new FriendProps();
+        fp.setDlat(cur.getDouble(cur.getColumnIndex(KEY_LAT)));
+        fp.setDlon(cur.getDouble(cur.getColumnIndex(KEY_LON)));
+        fp.setMail(cur.getString(cur.getColumnIndex(KEY_MAIL)));
+        fp.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
+        fp.setValid(cur.getString(cur.getColumnIndex(KEY_VALIDS)));
+        return fp;
     }
 
 

@@ -27,20 +27,20 @@ import com.todoroo.astrid.service.TaskService;
 
 public class Notificator {
     static LocationService locationService = new LocationService();
-    public static void notifyAboutPeopleLocation(Task task,WPSLocation currentLocation, double lat, double lon) {
+    public static void notifyAboutPeopleLocation(Task task,double speed, double myLat, double myLon, double lat, double lon) {
         float[] arr = new float[3];
         //TODO : check array
 
         Location.distanceBetween(
-                currentLocation.getLatitude(),
-                currentLocation.getLongitude(),
+                myLat,
+                myLon,
                 lat,lon, arr);
         float dist = arr[0];
 
         //distance - 100 kilometers
         //TODO change 25 to an editable parameter
         int radius = 0;
-        if (currentLocation.getSpeed()>25)
+        if (speed>25)
             radius = locationService.getCarRadius(task.getId());
         else
             radius = locationService.getFootRadius(task.getId());
@@ -53,8 +53,12 @@ public class Notificator {
 
 
     //assuming lfp is sorted by mail
-    public static void notifyAllPeople(WPSLocation currentLocation,
+    //TODO this!
+    public static void notifyAllPeople(FriendProps myFp,double speed,
             List<FriendProps> lfp, LocationService ls) {
+        if (!myFp.isValid()){
+            return;
+        }
         //notify the tasks
         TodorooCursor<Task> cursor = AstridQueries.getDefaultCursor();
         Task task = new Task();
@@ -62,14 +66,15 @@ public class Notificator {
             FriendProps exampleProps = new FriendProps();
             cursor.moveToNext();
             task.readFromCursor(cursor);
-
             String[] mails = ls.getLocationsByPeopleAsArray(task.getId());
             for (String str : mails){
                 exampleProps.setMail(str);
                 int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
                 if (index>=0){
                     FriendProps findMe = lfp.get(index);
-                    Notificator.notifyAboutPeopleLocation(task, currentLocation,findMe.getDlat(),findMe.getDlon());
+                    if (findMe.isValid()){
+                        Notificator.notifyAboutPeopleLocation(task, myFp.getDlat(),myFp.getDlon(),speed,findMe.getDlat(),findMe.getDlon());
+                    }
                 }
             }
         }
@@ -129,7 +134,7 @@ public class Notificator {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        return false;
+            return false;
     }
 
     private static boolean notifyAboutSpecificLocationNeeded(Task task,

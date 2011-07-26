@@ -6,6 +6,8 @@ import java.util.List;
 
 public class FriendProps{
 
+    //it is 15 minutes
+    public final static long maximumValidTime = 1000 * 60 * 15;
 
     public final static String root = "Friend"; //$NON-NLS-1$
 
@@ -161,6 +163,13 @@ public class FriendProps{
 
     public String getValid() {
         return valid;
+    }
+
+    //does NOT relate to the valid parameter necessarily
+    //TODO consider removing timestamp check from here and move it
+    public boolean isValid(){
+        return (getValid()!=null && getValid().compareTo("Yes")==0 && getTimestamp()!=null
+                && now - getTimestamp() <= maximumValidTime);
     }
 
 }

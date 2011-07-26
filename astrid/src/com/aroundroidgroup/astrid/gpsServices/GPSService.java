@@ -37,30 +37,19 @@ public class GPSService extends Service{
 
     private final static LocationService threadLocationService = new LocationService();
 
-    private WPSLocation userLastLocation = null;
+    private final WPSLocation userLastLocation = null;
     private final Object userLocationLock = new Object();
 
     private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
+    private double mySpeed;
+
     //TODO find a better method for doing this
     public static Account account = null;
     public static int connectCount = 0;
 
-    public WPSLocation getUserLastLocation(){
-        synchronized (userLocationLock){
-            return userLastLocation;
-        }
-    }
-
-    private WPSLocation setUserLastLocation(WPSLocation location){
-        synchronized (userLocationLock){
-            WPSLocation temp = userLastLocation;
-            userLastLocation = location;
-            return temp;
-        }
-    }
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -263,46 +252,20 @@ public class GPSService extends Service{
                     toastMe("Connected! Hooray!"); //$NON-NLS-1$
                 }
 
-                DPoint dp = aDba.specialUserToDPoint();
-                if (dp!=null){
-                    toastMe("LAT :" + String.valueOf(dp.getX()) + ", LON :" + String.valueOf(dp.getY()) );
-                }
-                else{
-                    toastMe("NO LOCATION");
-                }
 
-
-                ////Toast.makeText(GPSService.this, "Looping!", Toast.LENGTH_LONG).show();
-
-                //make userLastLocation null if it is irrelevant because of time
-                WPSLocation prevLocation = getUserLastLocation();
+                FriendProps myFp = AroundroidDbAdapter.userToFP(aDba.createAndfetchSpecialUser());
 
                 //TODO find out the date problem
-                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() <=locationInvalidateTime)){
+                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() >locationInvalidateTime)){
                     setUserLastLocation(null);
                 }
 
                 WPSLocation currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
-                if (currentLocation!=null &&  prs.isConnected()){
+                if (prs.isConnected()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    for (String people : peopleArr){
-                        Cursor curMail  =aDba.fetchByMail(people);
-                        if (curMail==null || !curMail.moveToFirst()){
-                            aDba.createPeople(people);
-                        }
-                    }
                     if ( peopleArr.length>0){
-                        List<FriendProps> lfp = prs.getPeopleLocations(peopleArr,currentLocation);
-                        for (FriendProps fp : lfp){
-                            Cursor c = aDba.fetchByMail(fp.getMail());
-                            if (c!=null && c.moveToFirst()){
-                                long id = c.getLong(0);
-                                c.close();
-                                aDba.updatePeople(id,fp.getDlat(),fp.getDlon(),fp.getTimestamp());
-                            }
-
-                        }
+                        List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,currentLocation,aDba);
                         //TODO doesn't notify!?
                         Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
                     }
@@ -322,10 +285,9 @@ public class GPSService extends Service{
         if (cur!=null && cur.moveToFirst()){
             long l = cur.getLong(0);
             cur.close();
-            aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime());
+            aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
         }
-
-        setUserLastLocation(location);
+        this.mySpeed = location.getSpeed();
         Notificator.handleByTypeAndBySpecificNotification(location);
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
