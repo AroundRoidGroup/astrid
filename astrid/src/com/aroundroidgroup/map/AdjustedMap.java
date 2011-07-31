@@ -23,6 +23,7 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -81,7 +82,7 @@ public class AdjustedMap extends MapView {
         if (showDeviceLocation == false) {
             showDeviceLocation = true;
             createOverlay(DEVICE_LOCATION_OVERLAY_UNIQUE_NAME, getResources().getDrawable(R.drawable.device_location));
-            DPoint deviceLocation = db.specialUserToDPoint();
+            DPoint deviceLocation = getDeviceLocation();
             if (deviceLocation != null) {
                 GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
                 addItemToOverlay(lastDeviceLocation, "Your Location", deviceLocation.toString(), null, DEVICE_LOCATION_OVERLAY_UNIQUE_NAME); //$NON-NLS-1$
@@ -90,7 +91,11 @@ public class AdjustedMap extends MapView {
     }
 
     public DPoint getDeviceLocation() {
-        return db.specialUserToDPoint();
+        FriendProps fp = db.specialUserToFP();
+        if (fp.isValid())
+            return new DPoint(fp.getDlat(), fp.getDlon());
+        else
+            return null;
     }
 
     public void removeDeviceLocation() {
