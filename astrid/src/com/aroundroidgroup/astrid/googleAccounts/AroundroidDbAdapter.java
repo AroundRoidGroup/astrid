@@ -288,5 +288,13 @@ public class AroundroidDbAdapter {
         return fp;
     }
 
+    public FriendProps specialUserToFP(){
+        Cursor cur = createAndfetchSpecialUser();
+        if (cur==null){
+            return null;
+        }
+        return userToFP(cur);
+    }
+
 
 }

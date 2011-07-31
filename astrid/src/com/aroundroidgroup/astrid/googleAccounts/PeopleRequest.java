@@ -22,17 +22,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.skyhookwireless.wps.WPSLocation;
-
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(WPSLocation currentLocation,String peopleString){
+    private static List<NameValuePair> createPostData(FriendProps myFp,String peopleString){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-        if (currentLocation!=null){
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(currentLocation.getLatitude()))); //$NON-NLS-1$
-            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(currentLocation.getLongitude())));
+        if (myFp!=null && myFp.isValid()){
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", myFp.getLat())); //$NON-NLS-1$
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", myFp.getLon()));
             //TODO : go back to userLastLocation
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(currentLocation.getTime())));
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP",myFp.getTime()));
         }
         else{
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
@@ -49,10 +47,10 @@ public class PeopleRequest {
         return is;
     }
 
-    public static List<FriendProps> requestPeople(WPSLocation currentLocation,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(FriendProps myFp,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createPostData(currentLocation,people)));
+        http_post.setEntity(new UrlEncodedFormEntity(createPostData(myFp,people)));
         InputStream is  = requestToStream(http_post,arcm);
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

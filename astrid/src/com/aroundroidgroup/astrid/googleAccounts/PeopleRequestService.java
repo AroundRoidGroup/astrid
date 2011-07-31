@@ -13,8 +13,6 @@ import android.accounts.Account;
 import android.content.Context;
 import android.database.Cursor;
 
-import com.skyhookwireless.wps.WPSLocation;
-
 public class PeopleRequestService {
 
     private final AroundRoidConnectionManager arcm;
@@ -95,7 +93,7 @@ public class PeopleRequestService {
     }
 
     //returns a sorted list!
-    public List<FriendProps> updatePeopleLocations(String[] peopleArr, WPSLocation currentLocation, AroundroidDbAdapter aDba) {
+    public List<FriendProps> updatePeopleLocations(String[] peopleArr, FriendProps myFp, AroundroidDbAdapter aDba) {
         if (!isConnected()){
             return null;
         }
@@ -104,7 +102,7 @@ public class PeopleRequestService {
         String peopleString = AroundRoidAppConstants.join(peopleArr
                 ,AroundRoidAppConstants.usersDelimiter);
         try {
-            List<FriendProps> lfp = PeopleRequest.requestPeople(currentLocation,peopleString, arcm);
+            List<FriendProps> lfp = PeopleRequest.requestPeople(myFp,peopleString, arcm);
             Collections.sort(lfp, FriendProps.getMailComparator());
             for (FriendProps fp : lfp){
                 propsToDatabase(fp, aDba);

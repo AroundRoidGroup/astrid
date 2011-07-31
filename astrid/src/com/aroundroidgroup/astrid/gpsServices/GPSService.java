@@ -253,21 +253,15 @@ public class GPSService extends Service{
                 }
 
 
-                FriendProps myFp = AroundroidDbAdapter.userToFP(aDba.createAndfetchSpecialUser());
+                FriendProps myFp = aDba.specialUserToFP();
 
-                //TODO find out the date problem
-                if (prevLocation!=null && (DateUtilities.now()-prevLocation.getTime() >locationInvalidateTime)){
-                    setUserLastLocation(null);
-                }
-
-                WPSLocation currentLocation = getUserLastLocation();
                 //check if friends is enabled and connected and needed
-                if (prs.isConnected()){
+                if (prs.isConnected() && myFp!=null && myFp.isValid()){
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     if ( peopleArr.length>0){
-                        List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,currentLocation,aDba);
+                        List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
-                        Notificator.notifyAllPeople(currentLocation,lfp,threadLocationService);
+                        Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
                     }
                 }
 

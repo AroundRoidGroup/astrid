@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.todoroo.andlib.utility.DateUtilities;
+
 public class FriendProps{
 
     //it is 15 minutes
@@ -168,8 +170,8 @@ public class FriendProps{
     //does NOT relate to the valid parameter necessarily
     //TODO consider removing timestamp check from here and move it
     public boolean isValid(){
-        return (getValid()!=null && getValid().compareTo("Yes")==0 && getTimestamp()!=null
-                && now - getTimestamp() <= maximumValidTime);
+        return (getValid()!=null && getValid().compareTo("Yes")==0 && getTimestamp()!=0.0
+                && DateUtilities.now() - getTimestamp() <= maximumValidTime);
     }
 
 }
