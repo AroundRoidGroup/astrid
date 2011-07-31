@@ -92,6 +92,7 @@ public class PeopleRequestService {
 
     }
 
+    //TODO dont allow null myFp
     //returns a sorted list!
     public List<FriendProps> updatePeopleLocations(String[] peopleArr, FriendProps myFp, AroundroidDbAdapter aDba) {
         if (!isConnected()){

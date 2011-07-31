@@ -17,7 +17,6 @@ z * Copyright (C) 2008 Google Inc.
 package com.aroundroidgroup.astrid.googleAccounts;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -261,7 +260,9 @@ public class ConnectedContactsActivity extends ListActivity {
 
 
         //assuming prs is connected
+        //TODO fix
         private boolean scanContacts() {
+            /*
             List<idNameMail> chINM = conHel.friendsWithGoogle();
             String[] peopleArr = new String[chINM.size()];
             int i =0;
@@ -299,6 +300,8 @@ public class ConnectedContactsActivity extends ListActivity {
             }
 
             return lfp!=null;
+           */
+            return false;
 
         }
 
@@ -343,47 +346,24 @@ public class ConnectedContactsActivity extends ListActivity {
         protected Boolean doInBackground(String... params) {
             boolean returnVal = false;
             Cursor cur  = mDbHelper.fetchByMail(params[0]);
-            if (cur!=null && cur.moveToFirst()){
-                returnVal = true;
-            }else{
-                List<FriendProps> lfp = prs.getPeopleLocations(params, null);
-                if (lfp==null){
-                    returnVal = false;
-                }
-                else
-                    if (lfp.size()==0){
-                        returnVal = false;
-                    }
-                    else{
-                        FriendProps fp = lfp.get(0);
-
-                        if (fp.getMail().compareTo(params[0])==0){
-                            FriendProps findMe = lfp.get(0);
-                            Cursor curMail = mDbHelper.fetchByMail(findMe.getMail());
-                            if (curMail!=null && curMail.moveToFirst()){
-                                long l = curMail.getLong(0);
-                                curMail.close();
-                                mDbHelper.updatePeople(l, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
-                            }
-                            else{
-                                if (curMail!=null){
-                                    curMail.close();
-                                }
-                                //TODO change to one function
-                                long rowId = mDbHelper.createPeople(findMe.getMail());
-                                mDbHelper.updatePeople(rowId, findMe.getDlat(), findMe.getDlon(), findMe.getTimestamp());
-                            }
-
-
-                            returnVal = true;
-                        }
-                    }
+            if (cur ==null){
+                return false;
             }
-
-            if (cur!=null){
+            if (!cur.moveToFirst()){
                 cur.close();
+                //fetch
+                prs.updatePeopleLocations(params,null,mDbHelper);
+                cur = mDbHelper.fetchByMail(params[0]);
+                if (cur == null || !cur.moveToFirst()){
+                    return false;
+                }
             }
 
+            FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+            if (fp!=null && fp.isRegistered()){
+                returnVal = true;
+            }
+            cur.close();
             return returnVal;
         }
     }

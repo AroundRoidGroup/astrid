@@ -167,6 +167,11 @@ public class FriendProps{
         return valid;
     }
 
+    //TODO fix consts
+    public boolean isRegistered(){
+        return getValid()!=null && getValid().compareTo("Unregistered")!=0;
+    }
+
     //does NOT relate to the valid parameter necessarily
     //TODO consider removing timestamp check from here and move it
     public boolean isValid(){

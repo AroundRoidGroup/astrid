@@ -275,7 +275,9 @@ public class AroundroidDbAdapter {
         if (cur==null || !cur.moveToFirst()){
             return null;
         }
-        return userToFP(cur);
+        FriendProps fp = userToFP(cur);
+        cur.close();
+        return fp;
     }
 
     public static FriendProps userToFP(Cursor cur){
@@ -293,7 +295,9 @@ public class AroundroidDbAdapter {
         if (cur==null){
             return null;
         }
-        return userToFP(cur);
+        FriendProps fp =  userToFP(cur);
+        cur.close();
+        return fp;
     }
 
 
