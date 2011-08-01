@@ -374,6 +374,7 @@ public class SpecificMapLocation extends MapActivity {
                 String contact = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL).toString();
                 Cursor x = db.fetchByMail(contact);
                 //TODO tomer change this to a better implementation
+                //TODO check if user is valid
                 if (x!=null && x.moveToFirst()){
                     //LAT AND THEN LON
                     DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));

@@ -28,7 +28,7 @@ public class AroundroidDbAdapter {
      */
     private static final String DATABASE_CREATE =
         "create table peopleloc (_id integer primary key autoincrement, "
-        + "mail text not null, contactid long not null, valids text not null"
+        + "mail text not null, contactid long not null, valids text not null, "
         + "lon double , lat double , time long "+");";
 
     private static final String DATABASE_NAME = "aroundroiddata";
@@ -154,7 +154,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeople() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID}, null, null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID, KEY_VALIDS}, null, null, null, null, null);
     }
 
     /**
@@ -164,7 +164,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeopleWContact() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID}, KEY_CONTACTID + ">=0", null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, KEY_CONTACTID + ">=0", null, null, null, null);
     }
 
     /**
@@ -178,7 +178,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_MAIL + "=" + "'"+mail.toLowerCase()+"'", null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID, KEY_VALIDS}, KEY_MAIL + "=" + "'"+mail.toLowerCase()+"'", null,
                     null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
@@ -198,7 +198,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID}, KEY_ROWID + "=" + rowId, null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID , KEY_VALIDS}, KEY_ROWID + "=" + rowId, null,
                     null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
