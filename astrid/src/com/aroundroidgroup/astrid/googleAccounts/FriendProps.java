@@ -113,7 +113,7 @@ public class FriendProps{
 
     public void setDlat(double dlat) {
         this.dlat = dlat;
-        this.lon = String.valueOf(dlat);
+        this.lat = String.valueOf(dlat);
     }
 
     public double getDlat() {

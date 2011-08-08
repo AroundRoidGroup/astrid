@@ -81,8 +81,9 @@ public class PeopleRequestService {
         if (!cur.moveToFirst()){
             rowid = aDba.createPeople(fp.getMail());
         }else{
-            rowid = cur.getLong(cur.getColumnIndex(aDba.KEY_ROWID));
+            rowid = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
         }
+        cur.close();
         if (rowid == -1L){
             //TODO what?
             return;

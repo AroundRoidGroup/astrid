@@ -200,7 +200,7 @@ public class GPSService extends Service{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 1000 * 20;
+        private final int defaultSleepTime = 1000 * 1;
         private final int defaultLocationInvalidateTime = 1000 * 120;
 
         private final int sleepTime = defaultSleepTime;
@@ -253,6 +253,7 @@ public class GPSService extends Service{
                 }
 
 
+                //TODO move inside of prs.isconnected
                 FriendProps myFp = aDba.specialUserToFP();
 
                 //check if friends is enabled and connected and needed
@@ -261,7 +262,10 @@ public class GPSService extends Service{
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
+                        //////////////////////////////////////////////
+                        /// PROBLEM IS HERRREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
                         Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+                        //////////////////////////////////////////////
                     }
                 }
 
@@ -276,11 +280,15 @@ public class GPSService extends Service{
     protected void makeUseOfNewLocation(WPSLocation location) {
         //TODO fetch by other id
         Cursor cur = aDba.createAndfetchSpecialUser();
-        if (cur!=null && cur.moveToFirst()){
-            long l = cur.getLong(0);
+        if (cur!=null){
+            if (cur.moveToFirst()){
+                long l = cur.getLong(0);
+                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
+            }
             cur.close();
-            aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
         }
+
+
         this.mySpeed = location.getSpeed();
         Notificator.handleByTypeAndBySpecificNotification(location);
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
@@ -334,7 +342,7 @@ public class GPSService extends Service{
 
         }
     };
-    */
+     */
 
 
 

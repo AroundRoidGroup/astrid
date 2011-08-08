@@ -273,6 +273,7 @@ public class AroundroidDbAdapter {
         //TODO deal with Timestamp
         Cursor cur = fetchPeople(rowId);
         if (cur==null || !cur.moveToFirst()){
+            if (cur!=null) cur.close();
             return null;
         }
         FriendProps fp = userToFP(cur);

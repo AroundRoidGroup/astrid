@@ -375,6 +375,7 @@ public class SpecificMapLocation extends MapActivity {
                 Cursor x = db.fetchByMail(contact);
                 //TODO tomer change this to a better implementation
                 //TODO check if user is valid
+                //TODO SQL ERROR
                 if (x!=null && x.moveToFirst()){
                     //LAT AND THEN LON
                     DPoint dp = new DPoint(x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),x.getDouble(x.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
