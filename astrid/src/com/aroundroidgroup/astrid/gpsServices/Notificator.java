@@ -78,6 +78,7 @@ public class Notificator {
                 }
             }
         }
+        cursor.close();
     }
 
     public static void handleByTypeAndBySpecificNotification(WPSLocation location) {
