@@ -262,10 +262,7 @@ public class GPSService extends Service{
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
-                        //////////////////////////////////////////////
-                        /// PROBLEM IS HERRREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
                         Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
-                        //////////////////////////////////////////////
                     }
                 }
 

@@ -565,6 +565,7 @@
     <service android:name="com.aroundroidgroup.astrid.gpsServices.GPSService"></service>
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity"></activity>
     <activity android:name="com.aroundroidgroup.map.Focaccia" android:theme="@style/Theme.Dialog"></activity>
+    <activity android:name="com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity"></activity>
 
 
   </application>
