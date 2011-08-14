@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
+import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
@@ -288,7 +289,7 @@ public class SpecificMapLocation extends MapActivity {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ContextManager.getContext(),ConnectedContactsActivity.class);
+                Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
                 startActivityForResult(intent,CONTACTS_REQUEST_CODE);
             }
         });
