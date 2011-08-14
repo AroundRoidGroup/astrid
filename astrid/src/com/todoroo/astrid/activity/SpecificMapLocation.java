@@ -290,6 +290,7 @@ public class SpecificMapLocation extends MapActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
+                intent.putExtra(ManageContactsActivity.taskIDSTR, taskID);
                 startActivityForResult(intent,CONTACTS_REQUEST_CODE);
             }
         });

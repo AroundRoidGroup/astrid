@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 
@@ -15,7 +16,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private Long taskID;
 
-    private final static String taskIDSTR = "taskID"; //$NON-NLS-1$
+    public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
 
     private String[] originalPeople;
 
@@ -51,11 +52,12 @@ public class ManageContactsActivity extends ListActivity{
 
         // Create an array of Strings, that will be put to our ListActivity
         ArrayAdapter<FriendProps> adapter = new FriendAdapter(this,
-                getProps(originalPeople));
+                getProps(peopleList));
         setListAdapter(adapter);
     }
 
-    private List<FriendProps> getProps(String[] names) {
+    private List<FriendProps> getProps(List<String> names) {
+
         //TODO deal with error
         List<FriendProps> list = new ArrayList<FriendProps>();
         for (String mail : names){
@@ -65,7 +67,16 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private FriendProps get(String s) {
-        return AroundroidDbAdapter.userToFP(mDbHelper.fetchByMail(s));
+        Cursor cur = mDbHelper.fetchByMail(s);
+        if (!cur.moveToFirst()){
+            cur.close();
+            long rowId = mDbHelper.createPeople(s);
+            //TODO assming create succesful
+            cur = mDbHelper.fetchPeople(rowId);
+        }
+        FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+        cur.close();
+        return fp;
     }
 
 
