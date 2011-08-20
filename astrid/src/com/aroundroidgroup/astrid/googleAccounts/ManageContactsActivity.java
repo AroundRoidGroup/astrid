@@ -6,11 +6,16 @@ import java.util.List;
 import android.app.ListActivity;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 
 import com.aroundroidgroup.locationTags.LocationService;
+import com.timsu.astrid.R;
 
 public class ManageContactsActivity extends ListActivity{
+
+    public static final int INSERT_ID = Menu.FIRST;
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -28,6 +33,24 @@ public class ManageContactsActivity extends ListActivity{
     protected void onDestroy() {
         super.onDestroy();
         mDbHelper.close();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //TODO xml and Inflate menu instead of creating it here
+        boolean result = super.onCreateOptionsMenu(menu);
+        menu.add(0, INSERT_ID, 0, R.string.menu_add_friend);
+        return result;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case INSERT_ID:
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /** Called when the activity is first created. */

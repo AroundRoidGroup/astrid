@@ -218,6 +218,8 @@ public class GPSService extends Service{
 
         @Override
         public void run() {
+            //TODO CRASHES WHEN NOT CONNECTED TO SYNC FOR USER (NAAMAKESHET@GMAIL.com RED EXCAMATION MARK)
+
             //TODO consider making userLastLocation a database entry
 
             //TODO if isConnecting for to long, force close
@@ -257,12 +259,15 @@ public class GPSService extends Service{
                 FriendProps myFp = aDba.specialUserToFP();
 
                 //check if friends is enabled and connected and needed
-                if (prs.isConnected() && myFp!=null && myFp.isValid()){
+                if (prs.isConnected()){
+                    //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     if ( peopleArr.length>0){
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
-                        Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+                        if (myFp!=null && myFp.isValid()){
+                            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+                        }
                     }
                 }
 

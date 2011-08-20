@@ -45,5 +45,8 @@
    	<!-- SPECIFIC MAP -->
    	<string name="addPeopleButton">Add People</string>
    	<string name="viewAllButton">View All</string>
+   	
+   	<!-- MANGE CONTACTS ACTIVITY -->
+   	<string name="menu_add_friend">Add Friend</string>
 
 </resources>
