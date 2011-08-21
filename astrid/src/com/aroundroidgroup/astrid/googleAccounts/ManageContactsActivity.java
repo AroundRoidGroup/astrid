@@ -49,6 +49,9 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_ALREADY_FOUND = 6;
 
 
+    //TODO doesnt scan agian for people in list because they are not in locationService.getAllLocationByPeople
+
+
     private AroundroidDbAdapter mDbHelper;
 
     private Long taskID;
