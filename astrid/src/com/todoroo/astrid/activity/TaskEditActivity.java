@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.TabActivity;
@@ -64,9 +66,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.aroundroidgroup.map.DPoint;
-import com.aroundroidgroup.map.LocationBySpecificControlSet;
-import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.LocationControlSet;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.service.Autowired;
@@ -125,6 +125,8 @@ public final class TaskEditActivity extends TabActivity {
 
     // --- request codes
 
+    public static final int REQUEST_CODE_SpecificMapLocation = 394431;
+
     @SuppressWarnings("unused")
     private static final int REQUEST_CODE_OPERATION = 0;
 
@@ -142,7 +144,7 @@ public final class TaskEditActivity extends TabActivity {
     public static final int SPECIFIC_LOCATION_MAP_RESULT_CODE = 1234; // specific map location result code
     // --- services
 
-    private LocationBySpecificControlSet specificCS;
+    private LocationControlSet specificCS;
 
     @Autowired
     private ExceptionService exceptionService;
@@ -256,7 +258,7 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        specificCS = new LocationBySpecificControlSet(TaskEditActivity.this);
+        specificCS = new LocationControlSet(TaskEditActivity.this);
         controls.add(specificCS);
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
@@ -646,37 +648,42 @@ public final class TaskEditActivity extends TabActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (resultCode == SPECIFIC_LOCATION_MAP_RESULT_CODE) {
+        if (requestCode == REQUEST_CODE_SpecificMapLocation) {
+            if (data == null)
+                return;
             Bundle b = data.getExtras();
-            DPoint[] allSpecific = null;
-            String[] allAddresses = null;
-            String[] allTypes = null;
-            String[] allPeople = null;
             if (b != null) {
-               String[] recvData = b.getStringArray(SpecificMapLocation.SPECIFIC_POINTS_SECOND);
-               int typesStart = Misc.startTypeIndex(recvData);
-               int peopleStart = Misc.startPeopleIndex(recvData);
-               int specificPointsCount = (typesStart - 1) / 2;
-               allSpecific = new DPoint[specificPointsCount];
-               for (int i = 0 ; i < specificPointsCount ; i++)
-                   allSpecific[i] = new DPoint(recvData[i]);
-               allAddresses = new String[specificPointsCount];
-               for (int i = 0 ; i < specificPointsCount ; i++)
-                   allAddresses[i] = recvData[specificPointsCount + i];
-               int typesCount = peopleStart - 1 - typesStart;
-               allTypes = new String[typesCount];
-               for (int i = 0 ; i < typesCount ; i++)
-                   allTypes[i] = recvData[typesStart + 1 + i];
-               int peopleCount = recvData.length - peopleStart - 1;
-               allPeople = new String[peopleCount];
-               for (int i = 0 ; i < peopleCount ; i++)
-                   allPeople[i] = recvData[peopleStart + 1 + i];
+                String[] recvSpec = b.getStringArray(SpecificMapLocation.SPECIFIC_TO_SEND);
+                int len = recvSpec.length / 2;
+                String[] allSpecific = new String[len];
+                String[] allAddresses = new String[len];
+                for (int i = 0 ; i < len ; i++) {
+                    allSpecific[i] = new String(recvSpec[i]);
+                    allAddresses[i] = recvSpec[len + i];
+                }
+
+                String[] typeData = b.getStringArray(SpecificMapLocation.TYPE_TO_SEND);
+                Map<String, List<String>> parsedTypes = new HashMap<String, List<String>>();
+                if (typeData != null) {
+                    for (String str : typeData) {
+                        String type = str.substring(0, str.indexOf("$$"));
+                        String rest = str.substring(str.indexOf("$$") + "$$".length());
+                        List<String> lst = new ArrayList<String>();
+                        while (true) {
+                            int del = rest.indexOf('%');
+                            if (del == -1)
+                                break;
+                            String g = rest.substring(0, del);
+                            lst.add(g);
+                            rest = rest.substring(del + 1);
+                        }
+                        parsedTypes.put(type, lst);
+                    }
+                }
+                specificCS.updateSpecificPoints(allSpecific, allAddresses);
+                specificCS.updateTypes(parsedTypes);
+                specificCS.updatePeople(b.getStringArray(SpecificMapLocation.PEOPLE_TO_SEND));
             }
-            specificCS.updateSpecificPoints(allSpecific, allAddresses);
-            specificCS.updateTypes(allTypes);
-            specificCS.updatePeople(allPeople);
-            super.onActivityResult(requestCode, resultCode, data);
             return;
         }
 
