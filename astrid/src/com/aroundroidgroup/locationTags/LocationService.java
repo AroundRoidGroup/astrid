@@ -2,6 +2,7 @@ package com.aroundroidgroup.locationTags;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -19,6 +20,8 @@ import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.service.MetadataService;
 
 public class LocationService {
+
+    private static final String MOTI_DIVIDOR = "@";
 
     //TODO : check synchronized??
 
@@ -96,7 +99,6 @@ public class LocationService {
         return getLocations(taskId, LocationFields.peopleLocations,
                 LocationFields.METADATA_KEY_BY_PEOPLE);
     }
-
     private TodorooCursor<Metadata> getLocations(long taskId, StringProperty prop, String KEY) {
         Query query = Query.select(prop).where(Criterion.
                 and(MetadataCriteria.withKey(KEY),
@@ -245,5 +247,65 @@ public class LocationService {
             cursor.close();
         }
     }
+
+
+
+//////////////////////////////////////TODO:make it all better
+
+
+    public List<String> getLocationsByTypeSpecial(long taskId,String key){//TODO: be more percise
+        return getLocationsListByType(getLocationPropertyAsArray(taskId,LocationFields.motiLocations,
+                LocationFields.MOTI_METADATA_KEY),key);
+    }
+    /* returns the string array mapped to the String key inside the DP represented in the parameter strings */
+    private List<String> getLocationsListByType(
+            String[] strings, String key) {
+        for (String str : strings){
+            int dividor = str.indexOf(MOTI_DIVIDOR);
+            if (key.compareTo(str.substring(0, dividor))==0)
+                return parseLocations(str.substring(dividor+1));
+        }
+        return new ArrayList<String>();
+    }
+
+    private List<String> parseLocations(String str) {
+        int index = 0;
+        ArrayList<String> arr = new ArrayList<String>();
+        while(index!=-1){
+            index = str.indexOf(MOTI_DIVIDOR);
+            if (index==-1)
+                arr.add(str);
+            else{
+                arr.add(str.substring(0,index));
+                str = str.substring(index+1);
+            }
+        }
+
+        return arr;
+    }
+
+    public boolean syncLocationsByTypeSpecial(long taskID, String key, String[] arr){
+        String[] strings = getLocationPropertyAsArray(taskID,LocationFields.motiLocations,
+                LocationFields.MOTI_METADATA_KEY);
+
+        LinkedHashSet<String> set = new LinkedHashSet<String>();
+        String newStr = key;
+
+        for (String str : strings){
+            int dividor = str.indexOf(MOTI_DIVIDOR);
+            if (key.compareTo(str.substring(0, dividor-1))!=0)
+                set.add(str);
+        }
+
+        for(String place: arr){
+            newStr=newStr+MOTI_DIVIDOR+place;
+        }
+        set.add(newStr);
+        return syncLocations(taskID, set, LocationFields.motiLocations,
+                LocationFields.MOTI_METADATA_KEY);
+
+
+    }
+
 
 }
