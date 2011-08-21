@@ -16,6 +16,7 @@ import com.timsu.astrid.R;
 public class FriendAdapter extends ArrayAdapter<FriendProps> {
         private final Activity context;
         private final List<FriendProps> props;
+        //TODO change from friendProps to a better thing that includes contact id
 
         public FriendAdapter(Activity context, List<FriendProps> props) {
             super(context, R.layout.friendrowlayout, props);
@@ -30,6 +31,12 @@ public class FriendAdapter extends ArrayAdapter<FriendProps> {
             public TextView textView;
             //TODO add the secondary text view
             public TextView secondaryTextView;
+        }
+
+        @Override
+        public FriendProps getItem(int position) {
+        // TODO Auto-generated method stub
+        return super.getItem(position);
         }
 
         @Override

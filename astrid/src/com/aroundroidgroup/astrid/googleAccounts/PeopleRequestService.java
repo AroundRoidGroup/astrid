@@ -115,7 +115,8 @@ public class PeopleRequestService {
             e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            //TODO invalid SSL pointer exception - I think that this happens when cookie expaires!
+            //TODO null SSL pointer exception - I think that this happens when cookie expaires!
+            //TODO or null SLL pointer is due frequent use (like parallel)
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block

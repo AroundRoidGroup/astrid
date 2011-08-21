@@ -21,9 +21,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
@@ -40,6 +44,7 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_ADD_ANYWAY = 4;
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
+    private static final int DIALOG_DELETE = 7;
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -71,6 +76,9 @@ public class ManageContactsActivity extends ListActivity{
         return result;
     }
 
+    //TODO remove this
+    private int counter = 0;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -85,12 +93,16 @@ public class ManageContactsActivity extends ListActivity{
             }
             break;
         case INSERT2_ID:
+            //TODO remove this
+            peopleList.add(String.valueOf(counter++));
+            fillData();
             if (!prs.isConnected()){
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
             }
             else{
                 showDialog(DIALOG_CONTACT_METHOD);
+
             }
             break;
         }
@@ -283,6 +295,14 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
+    private void fillData(){
+        // Create a list of FriendProps, that will be put to our ListActivity.
+        // Refreshing the list
+        ArrayAdapter<FriendProps> adapter = new FriendAdapter(this,
+                getProps(peopleList));
+        setListAdapter(adapter);
+    }
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle icicle) {
@@ -303,10 +323,25 @@ public class ManageContactsActivity extends ListActivity{
                 peopleList.add(s);
         }
 
-        // Create an array of Strings, that will be put to our ListActivity
-        ArrayAdapter<FriendProps> adapter = new FriendAdapter(this,
-                getProps(peopleList));
-        setListAdapter(adapter);
+        fillData();
+        ListView list = getListView();
+        list.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+                FriendProps mailChosen = (FriendProps)parent.getAdapter().getItem(position);
+                Toast.makeText(ManageContactsActivity.this,
+                        "Item in position " + position + " clicked " + mailChosen.getMail(),
+                        Toast.LENGTH_LONG).show();
+                //TODO delete this
+                peopleList.remove(position);
+                fillData();
+                // Return true to consume the click event. In this case the
+                // onListItemClick listener is not called anymore.
+                return true;
+            }
+        });
     }
 
     private List<FriendProps> getProps(List<String> names) {
@@ -381,6 +416,7 @@ public class ManageContactsActivity extends ListActivity{
                     if (!friendInList(fp.getMail())){
                         //TODO add this check to the onResult function too.
                         peopleList.add(fp.getMail());
+                        fillData();
                     }
                 }
             }
