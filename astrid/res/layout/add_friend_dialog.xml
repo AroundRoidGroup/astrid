@@ -4,7 +4,7 @@ android:orientation="vertical" android:layout_width="fill_parent"
 android:layout_height="fill_parent" android:paddingLeft="10dip" 
 android:paddingRight="10dip"> 
 	<TextView android:layout_width="fill_parent" 
-	android:layout_height="wrap_content" android:text="Number" /> 
+	android:layout_height="wrap_content" android:text="E-mail Adrress" /> 
 	<EditText android:id="@+id/uname_id" android:layout_width="250dip" 
 	android:layout_height="wrap_content"
 	android:inputType="textEmailAddress" /> 

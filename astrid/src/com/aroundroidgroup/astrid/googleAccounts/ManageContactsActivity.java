@@ -26,8 +26,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
@@ -41,9 +44,10 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_CONTACT_METHOD = 1;
     private static final int DIALOG_WAIT_FRIEND = 2;
     private static final int DIALOG_HURRAY = 3;
-    private static final int DIALOG_ADD_ANYWAY = 4;
+    private static final int DIALOG_HURRAY2 = 4;
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
+
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -56,6 +60,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private String[] originalPeople;
 
+    //TODO make list parallel
     private final ArrayList<String> peopleList = new ArrayList<String>();
 
     private final LocationService myLocationService = new LocationService();
@@ -174,6 +179,19 @@ public class ManageContactsActivity extends ListActivity{
         return alert;
     }
 
+    private Dialog createHurray2Dialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Hurray!");
+        builder.setMessage("Your friend was added to your tracking list.");
+        builder.setNeutralButton("Ok",  new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //do nothing
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
+    }
+
     private Dialog createAlreadyAddedDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Already in the List!");
@@ -228,14 +246,14 @@ public class ManageContactsActivity extends ListActivity{
         case DIALOG_WAIT_FRIEND:
             dialog = createWaitDialog();
             break;
-        case DIALOG_ADD_ANYWAY:
-            dialog = createAddAnywayDialog();
-            break;
         case DIALOG_NOT_CONNECTED:
             dialog = createNotConnectedDialog();
             break;
         case DIALOG_ALREADY_FOUND:
             dialog = createAlreadyAddedDialog();
+            break;
+        case DIALOG_HURRAY2:
+            dialog = createHurray2Dialog();
             break;
         default:
             dialog = null;
@@ -243,9 +261,74 @@ public class ManageContactsActivity extends ListActivity{
         return dialog;
     }
 
-    private Dialog createAddAnywayDialog() {
-        // TODO Auto-generated method stub
-        return null;
+    private Dialog createAddAnywayDialog(final String friendMail) {
+        final Dialog loginDialog = new Dialog(this);
+        loginDialog.getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+                WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+        loginDialog.setTitle("Friend not registered");
+
+        LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View dialogView = li.inflate(R.layout.add_anyway_dialog, null);
+        loginDialog.setContentView(dialogView);
+
+        TextView tv = (TextView) dialogView.findViewById(R.id.mail_not_using);
+        tv.setText("It seems that your friend ( "+friendMail+" ) is not using Aroundroid. Would you like to add him anyway?");
+
+        Button addButton = (Button) dialogView.findViewById(R.id.add_anyway_button);
+        Button cancelButton = (Button) dialogView
+        .findViewById(R.id.cancel_anyway_button);
+        final CheckBox cb = (CheckBox) dialogView
+        .findViewById(R.id.mail_checkbox);
+
+        cb.setChecked(true);
+
+        addButton.setOnClickListener(new OnClickListener() {
+            // @Override
+            public void onClick(View v) {
+                if (!friendInList(friendMail)){
+                    peopleList.add(friendMail);
+                    fillListSmart();
+                    if (cb.isChecked()){
+                        // send mail
+                        new InviteFriendTask().execute(new String[]{friendMail});
+                    }
+                }
+                loginDialog.dismiss();
+                showDialog(DIALOG_HURRAY2);
+            }
+        });
+
+        cancelButton.setOnClickListener(new OnClickListener() {
+            // @Override
+            public void onClick(View v) {
+                loginDialog.cancel();
+            }
+        });
+
+        return loginDialog;
+    }
+
+    private class InviteFriendTask extends AsyncTask<String, Void, Boolean> {
+
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result){
+                Toast.makeText(getApplicationContext(), "An invitation was sent to your friend!", Toast.LENGTH_LONG).show();
+            }
+            else{
+                Toast.makeText(getApplicationContext(), "Did not send an invatation.", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+
+            boolean res = prs.inviteFriend(params[0]);
+
+            return res;
+        }
     }
 
     private Dialog createAddDialog() {
@@ -285,7 +368,7 @@ public class ManageContactsActivity extends ListActivity{
         cancelButton.setOnClickListener(new OnClickListener() {
             // @Override
             public void onClick(View v) {
-                loginDialog.dismiss();
+                loginDialog.cancel();
             }
         });
 
@@ -418,6 +501,8 @@ public class ManageContactsActivity extends ListActivity{
 
         private boolean error = false;
 
+        private String friend;
+
         @Override
         protected void onPostExecute(Boolean result) {
             //TODO check this:
@@ -432,7 +517,7 @@ public class ManageContactsActivity extends ListActivity{
                 }
                 else{
                     //friend is not using Aroundroid
-                    showDialog(DIALOG_ADD_ANYWAY);
+                    createAddAnywayDialog(friend).show();
                 }
             }else{
 
@@ -444,7 +529,8 @@ public class ManageContactsActivity extends ListActivity{
         @Override
         protected Boolean doInBackground(String... params) {
             boolean returnVal = false;
-            Cursor cur  = mDbHelper.fetchByMail(params[0]);
+            friend = params[0];
+            Cursor cur  = mDbHelper.fetchByMail(friend);
             if (cur ==null){
                 return false;
             }
