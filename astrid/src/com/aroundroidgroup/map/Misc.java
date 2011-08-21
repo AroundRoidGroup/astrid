@@ -300,11 +300,32 @@ public class Misc {
         return new DPoint((double)gp.getLatitudeE6() / 1000000, (double)gp.getLongitudeE6() / 1000000);
     }
 
+    public static boolean similarDegs(DPoint d1, DPoint d2) {
+        double deltaX = Math.abs(d1.getX() - d2.getX());
+        double deltaY = Math.abs(d1.getY() - d2.getY());
+        return (deltaX <= 0.000001 || deltaY <= 0.000001);
+    }
+
     public static double distance(DPoint p1, DPoint p2) {
         double latDelta = Math.toRadians(p2.getX() - p1.getX());
         double lngDelta = Math.toRadians(p2.getY() - p1.getY());
         double a = Math.pow(Math.sin(latDelta / 2), 2) + Math.cos(Math.toRadians(p1.getY())) * Math.cos(Math.toRadians(p2.getY())) * Math.pow(Math.sin(lngDelta / 2), 2);
         double b = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return b * 6371;
+    }
+
+    public static String[] extractType(String text) {
+        for (int i = 0 ; i < text.length() ; i++)
+            if (Character.isDigit(text.charAt(i)))
+                return new String[] { text.substring(0, i), text.substring(i) };
+        return new String[] { text, text.substring(text.length()) };
+    }
+
+    public static String[] ListToArray(List<String> lst) {
+        String[] arr = new String[lst.size()];
+        int i = 0;
+        for (String s : lst)
+            arr[i++] = s;
+        return arr;
     }
 }

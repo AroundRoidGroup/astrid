@@ -1,96 +1,83 @@
 package com.aroundroidgroup.map;
 
-import java.io.IOException;
-
-import org.json.JSONException;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.Html;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.timsu.astrid.R;
+import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
-    private String[] resources;
-    private String addressText = null;
-    private boolean neededToReverseGecode = false;
-    public static final String SOURCE_ADJUSTEDMAP = "AdjustedMap"; //$NON-NLS-1$
-    public static final String SOURCE_SPECIFICMAP = "SpecificMap"; //$NON-NLS-1$
-    public static final String SOURCE_SPECIFICMAP_KIND = "SpecificMapKind"; //$NON-NLS-1$
-    public static final int FOCACCIA_RESULT_CODE_REMOVE_TAP = 1;
-    public static final int FOCACCIA_RESULT_CODE_REMOVE_TYPE = 2;
-    public static final int FOCACCIA_RESULT_CODE_OK = 3;
-    public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 4;
-    private boolean isKind = false;
+    private final String addressText = null;
+    private final boolean neededToReverseGecode = false;
+//    public static final int FOCACCIA_RESULT_CODE_REMOVE_TAP = 1;
+//    public static final int FOCACCIA_RESULT_CODE_REMOVE_TYPE = 2;
+//    public static final int FOCACCIA_RESULT_CODE_OK = 3;
+//    public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 4;
+    public static final int DELETE = 1;
+    public static final int DELETE_ALL = 2;
+
+    private TextView mType;
+    private TextView mSnippet;
+    private TextView mName;
+    private TextView mAddress;
+    private ImageButton okButton;
+    private ImageButton removeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.focaccia_activity);
 
         /* getting the data that was sent from the SpecificLocationMap activity  */
-        /* this data contains the tapped overlay's index as the first element    */
-        /* and the coordinates that the tapped overlay represent                 */
+        /* or AdjustedMap class */
         Bundle bundle = getIntent().getExtras();
-        resources = bundle.getStringArray(SOURCE_ADJUSTEDMAP);
-        if (resources == null)
-            resources = bundle.getStringArray(SOURCE_SPECIFICMAP);
-        if (resources == null) {
-            resources = bundle.getStringArray(SOURCE_SPECIFICMAP_KIND);
-            isKind = true;
-        }
-        TextView tv = (TextView)findViewById(R.id.locationType);
+        if (bundle == null) /* no extras implies bad access to this class, hence quitting */
+            return;
 
-        if (isKind)
-            tv.setText(resources[1]);
-        else tv.setText(resources[2]);
+        /* setting the title of the activity to be the task name */
+        String tNameSML = bundle.getString(SpecificMapLocation.TASK_NAME);
+        String tNameAM = bundle.getString(AdjustedMap.TASK_NAME);
+        setTitle((tNameSML == null) ? tNameAM : tNameSML);
 
-        TextView addressTV = (TextView)findViewById(R.id.locationAddress);
+        String nameAM = bundle.getString(AdjustedMap.SHOW_NAME);
+        final String addressAM = bundle.getString(AdjustedMap.SHOW_ADDRESS);
+        final String snippetAM = bundle.getString(AdjustedMap.SHOW_SNIPPET);
+        final String amountAM = bundle.getString(AdjustedMap.SHOW_AMOUNT_BY_EXTRAS);
+        final String titleAM = bundle.getString(AdjustedMap.SHOW_TITLE);
+        final String deleteAM = bundle.getString(AdjustedMap.DELETE);
+        final String noDeleteAM = bundle.getString(AdjustedMap.READ_ONLY);
 
-        if (isKind) {
-            addressTV.setText(resources[0] + " locations."); //$NON-NLS-1$
-        }
-        else {
-            try {
-                /* getting the address by the coordinates only if the location never been reversed gecoded */
-                if (resources[4] == null) {
-                    neededToReverseGecode = true;
-                    addressText = Geocoding.reverseGeocoding(new DPoint(resources[1]));
-                }
-                else addressText = resources[4];
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        final String extrasMEL = bundle.getString(SpecificMapLocation.CMENU_EXTRAS);
+        String nameMEL = bundle.getString(SpecificMapLocation.SHOW_NAME);
+        final String addressMEL = bundle.getString(SpecificMapLocation.SHOW_ADDRESS);
+        final String snippetMEL = bundle.getString(SpecificMapLocation.SHOW_SNIPPET);
+        final String amountMEL = bundle.getString(SpecificMapLocation.SHOW_AMOUNT_BY_EXTRAS);
+        final String titleMEL = bundle.getString(SpecificMapLocation.SHOW_TITLE);
+        final String deleteMEL = bundle.getString(SpecificMapLocation.DELETE);
+        final String deleteAllMEL = bundle.getString(SpecificMapLocation.DELETE_ALL);
+        final String noDeleteMEL = bundle.getString(SpecificMapLocation.READ_ONLY);
 
-            /* if gecoding process succeeded, the address is shown. otherwise the    */
-            /* coordinates are shown                                                 */
-            if (addressText != null)
-                addressTV.setText(addressText);
-            else addressTV.setText(resources[1]);
-        }
-
-        ImageButton removeButton = (ImageButton)findViewById(R.id.removeOverlay);
+        mType = (TextView)findViewById(R.id.locationType);
+        mSnippet = (TextView)findViewById(R.id.locationSnippet);
+        mAddress = (TextView)findViewById(R.id.locationAddress);
+        mName = (TextView)findViewById(R.id.locationName);
+        okButton = (ImageButton)findViewById(R.id.iOK);
+        removeButton = (ImageButton)findViewById(R.id.iRemove);
 
         OnClickListener okButtonListener = new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                setResult(FOCACCIA_RESULT_CODE_OK, intent);
-                Focaccia.this.finish();
-
+                setResult(RESULT_OK);
+                finish();
             }
         };
 
@@ -103,29 +90,22 @@ public class Focaccia extends Activity {
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
 
                 /* setting the dialog title */
-                if (isKind)
-                    dialog.setTitle("Confirm Remove Location Type"); //$NON-NLS-1$
-                else dialog.setTitle("Confirm Remove Location"); //$NON-NLS-1$
+                dialog.setTitle("Confirm Remove"); //$NON-NLS-1$
 
                 /* setting the dialog content message */
-                if (isKind)
-                    dialog.setMessage("Are you sure you want to remove this location type ?"); //$NON-NLS-1$
+                if (deleteAllMEL != null)
+                    dialog.setMessage("Are you sure you want to remove all locations ?"); //$NON-NLS-1$
                 else dialog.setMessage("Are you sure you want to remove this location ?"); //$NON-NLS-1$
 
                 /* setting the confirm button text and action to be executed if it has been chosen */
                 dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
-                        Intent intent = new Intent();
-                        if (isKind) {
-                            intent.putExtra(SOURCE_SPECIFICMAP_KIND, resources[1]);
-                            setResult(FOCACCIA_RESULT_CODE_REMOVE_TYPE, intent);
-                        }
-                        else {
-                            intent.putExtra(SOURCE_ADJUSTEDMAP, resources[0]);
-                            setResult(FOCACCIA_RESULT_CODE_REMOVE_TAP, intent);
-                        }
-                        Focaccia.this.finish();
+                        if (deleteAllMEL != null)
+                            setResult(DELETE_ALL);
+                        else
+                            setResult(DELETE);
+                        finish();
                     }
                 });
 
@@ -133,44 +113,41 @@ public class Focaccia extends Activity {
                 dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
+                        setResult(RESULT_CANCELED);
+                        finish();
                         return;
                     }
                 });
                 dialog.show();
             }
         };
-        if (isKind) {
+
+        /* adding the functionality to the removeButton because DELETE option is enabled */
+        if (deleteAM != null || deleteMEL != null || deleteAllMEL != null) {
             removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
             removeButton.setOnClickListener(deleteButtonListener);
         }
-        else {
-            if (resources[5].equals("0") == true) { //$NON-NLS-1$
-                removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
-                removeButton.setOnClickListener(okButtonListener);
-            }
-            if (resources[5].equals("1") == true) { //$NON-NLS-1$
-                removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
-                removeButton.setOnClickListener(deleteButtonListener);
+        else removeButton.setVisibility(View.GONE);
 
-            }
+        okButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
+        okButton.setOnClickListener(okButtonListener);
+        if (nameAM != null || nameMEL != null) {
+            if (amountAM != null)
+                nameAM += " (" + amountAM + " results)";  //$NON-NLS-1$//$NON-NLS-2$
+            if (amountMEL != null)
+                nameMEL += " (" + amountMEL + " results)";  //$NON-NLS-1$//$NON-NLS-2$
+            mType.setText(Html.fromHtml("<b>" + mType.getText() + "</b> " + ((nameAM != null) ? nameAM : nameMEL))); //$NON-NLS-1$ //$NON-NLS-2$
         }
+        else mType.setVisibility(View.GONE);
+        if (addressAM != null || addressMEL != null)
+            mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b> " + ((addressAM != null) ? addressAM : addressMEL))); //$NON-NLS-1$ //$NON-NLS-2$
+        else mAddress.setVisibility(View.GONE);
+        if (titleAM != null || titleMEL != null)
+            mName.setText(Html.fromHtml("<b>" + mName.getText() + "</b> " + ((titleAM != null) ? titleAM : titleMEL)));  //$NON-NLS-1$//$NON-NLS-2$
+        else mName.setVisibility(View.GONE);
+        if (snippetAM != null || snippetMEL != null)
+            mSnippet.setText(Html.fromHtml("<b>" + mSnippet.getText() + "</b> " + ((snippetAM != null) ? snippetAM : snippetMEL)));  //$NON-NLS-1$//$NON-NLS-2$
+        else mSnippet.setVisibility(View.GONE);
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Toast.makeText(this, "press back", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-            String[] dataToSend = new String[2];
-            dataToSend[0] = resources[0];
-            if (neededToReverseGecode)
-                dataToSend[1] = addressText;
-            else dataToSend[1] = null;
-            Intent intent = new Intent();
-            intent.putExtra(SOURCE_ADJUSTEDMAP, dataToSend);
-            setResult(FOCACCIA_RESULT_CODE_BACK_PRESSED, intent);
-            Focaccia.this.finish();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 }
