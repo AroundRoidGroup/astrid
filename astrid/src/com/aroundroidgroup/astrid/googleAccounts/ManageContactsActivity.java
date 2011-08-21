@@ -6,8 +6,10 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,7 +20,6 @@ import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
@@ -30,6 +31,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private static final int DIALOG_MAIL_METHOD = 0;
     private static final int DIALOG_CONTACT_METHOD = 1;
+    private static final int DIALOG_WAIT_FRIEND = 2;
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -73,6 +75,24 @@ public class ManageContactsActivity extends ListActivity{
         return super.onOptionsItemSelected(item);
     }
 
+    private Dialog createWaitDialog() {
+        ProgressDialog pdialog = ProgressDialog.show(ManageContactsActivity.this, "Checking Friend",
+                "Finding out if your friend is using Aroundroid. Please wait...", true);
+        pdialog.setCanceledOnTouchOutside(true);
+
+        pdialog.setOnDismissListener(new OnDismissListener() {
+
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                removeDialog(DIALOG_WAIT_FRIEND);
+
+            }
+        });
+
+        return pdialog;
+
+    }
+
     @Override
     protected Dialog onCreateDialog(int id) {
         Dialog dialog;
@@ -96,6 +116,9 @@ public class ManageContactsActivity extends ListActivity{
                    });
             AlertDialog alert = builder.create();
             dialog = alert;
+            break;
+        case DIALOG_WAIT_FRIEND:
+            dialog = createWaitDialog();
             break;
         default:
             dialog = null;
@@ -123,8 +146,10 @@ public class ManageContactsActivity extends ListActivity{
         // @Override
         public void onClick(View v) {
 
-        Toast.makeText(getBaseContext(), "Please enter email adress.",
-        Toast.LENGTH_LONG).show();
+        //Toast.makeText(getBaseContext(), "Please enter email address.",
+        //Toast.LENGTH_LONG).show();
+        showDialog(DIALOG_WAIT_FRIEND);
+        loginDialog.dismiss();
         }
         });
 
