@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -342,6 +343,23 @@ public class ManageContactsActivity extends ListActivity{
                 return true;
             }
         });
+
+
+
+    }
+
+    private final Handler mHan = new Handler();
+    final int mDelayMillis = 10 * 1000;
+    private final Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            fillData();
+            mHan.postDelayed(this, mDelayMillis);
+        }
+    };
+    private void setUITimer(){
+        mHan.removeCallbacks(mUpdateTimeTask);
+        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+
     }
 
     private List<FriendProps> getProps(List<String> names) {
@@ -424,6 +442,22 @@ public class ManageContactsActivity extends ListActivity{
             return returnVal;
         }
     }
+
+    @Override
+    protected void onPause() {
+        // TODO Auto-generated method stub
+        super.onPause();
+        mHan.removeCallbacks(mUpdateTimeTask);
+    }
+
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+        super.onResume();
+        setUITimer();
+    }
+
+
 
 
 }
