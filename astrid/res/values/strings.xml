@@ -25,8 +25,10 @@
 	<string name="locationFilterTitle">Places Nearby</string>
    <string name="OK">OK!</string>
    	<!-- in Focaccia activity -->
-   	<string name="specificLocation">Specific Location</string>
-   	<string name="temp">address</string>
+  <string name="fSnippet">Snippet:</string>
+  <string name="fType">Type:</string>
+  <string name="fName">Name:</string>
+  <string name="fAddress">Address:</string>
    	
    	 <!-- =================================== Location  == -->
   <!-- Location label -->
