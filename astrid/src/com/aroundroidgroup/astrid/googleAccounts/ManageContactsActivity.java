@@ -28,7 +28,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
@@ -45,7 +44,6 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_ADD_ANYWAY = 4;
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
-    private static final int DIALOG_DELETE = 7;
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -304,6 +302,27 @@ public class ManageContactsActivity extends ListActivity{
         setListAdapter(adapter);
     }
 
+    private Dialog createDeleteDialog(final String friendMail, final int pos) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure that you want to delete " + friendMail + " from your tracking friend list?")
+        .setTitle("Delete friend")
+        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                peopleList.remove(pos);
+                fillData();
+            }
+        })
+        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
+
+    }
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle icicle) {
@@ -332,12 +351,7 @@ public class ManageContactsActivity extends ListActivity{
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                     int position, long id) {
                 FriendProps mailChosen = (FriendProps)parent.getAdapter().getItem(position);
-                Toast.makeText(ManageContactsActivity.this,
-                        "Item in position " + position + " clicked " + mailChosen.getMail(),
-                        Toast.LENGTH_LONG).show();
-                //TODO delete this
-                peopleList.remove(position);
-                fillData();
+                createDeleteDialog(mailChosen.getMail(), position).show();
                 // Return true to consume the click event. In this case the
                 // onListItemClick listener is not called anymore.
                 return true;
@@ -385,7 +399,23 @@ public class ManageContactsActivity extends ListActivity{
         return fp;
     }
 
+    private final Handler mListFillHandler = new Handler();
+    private synchronized void fillListSmart(){
+        new Thread() {
+            @Override
+            public void run() {
+                mListFillHandler.post(new Runnable() {
+                    public void run() {
+                        fillData();
+                    }
+                });
+            }
+        }.start();
+    }
+
     private class ScanOneFriendTask extends AsyncTask<String, Void, Boolean> {
+
+        private boolean error = false;
 
         @Override
         protected void onPostExecute(Boolean result) {
@@ -393,14 +423,18 @@ public class ManageContactsActivity extends ListActivity{
             if (isFinishing() || wait_canceled){
                 return;
             }
-            dismissDialog(DIALOG_WAIT_FRIEND);
-            if (result){
-                //friend is using Aroundroid
-                showDialog(DIALOG_HURRAY);
-            }
-            else{
-                //friend is not using Aroundroid
-                showDialog(DIALOG_ADD_ANYWAY);
+            if (!error){
+                dismissDialog(DIALOG_WAIT_FRIEND);
+                if (result){
+                    //friend is using Aroundroid
+                    showDialog(DIALOG_HURRAY);
+                }
+                else{
+                    //friend is not using Aroundroid
+                    showDialog(DIALOG_ADD_ANYWAY);
+                }
+            }else{
+
             }
             //TODO check for error
         }
@@ -422,22 +456,29 @@ public class ManageContactsActivity extends ListActivity{
                     if (cur!=null){
                         cur.close();
                     }
+                    error = true;
                     return false;
                 }
             }
 
             FriendProps fp = AroundroidDbAdapter.userToFP(cur);
-            if (fp!=null && fp.isRegistered()){
-                returnVal = true;
-                //TODO check this:
-                if (!isFinishing()){
-                    if (!friendInList(fp.getMail())){
-                        //TODO add this check to the onResult function too.
-                        peopleList.add(fp.getMail());
-                        fillData();
+            if (fp!=null){
+                if (fp.isRegistered()){
+                    returnVal = true;
+                    //TODO check this:
+                    if (!isFinishing()){
+                        if (!friendInList(fp.getMail())){
+                            //TODO add this check to the onResult function too.
+                            peopleList.add(fp.getMail());
+                            fillListSmart();
+                        }
                     }
                 }
+            }else{
+                error = true;
             }
+
+
             cur.close();
             return returnVal;
         }
