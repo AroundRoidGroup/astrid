@@ -327,6 +327,7 @@ public class ManageContactsActivity extends ListActivity{
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        setContentView(R.layout.friend_list_layout);
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
         Bundle extras = getIntent().getExtras();
