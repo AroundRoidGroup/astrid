@@ -115,6 +115,7 @@ public class PeopleRequestService {
             e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            //TODO invalid SSL pointer exception - I think that this happens when cookie expaires!
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block

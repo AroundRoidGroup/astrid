@@ -41,6 +41,7 @@ public class AroundRoidConnectionManager {
     private String lastToken;
 
     public synchronized HttpResponse executeOnHttp(HttpUriRequest hur) {
+        //TODO maybe parallellaty cause probelms
         if (!isConnected()){
             return null;
         }
