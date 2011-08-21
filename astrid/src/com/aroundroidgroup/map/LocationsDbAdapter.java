@@ -11,6 +11,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.todoroo.andlib.utility.DateUtilities;
+
 public class LocationsDbAdapter {
 
     public static final String KEY_ROWID = "_id"; //$NON-NLS-1$
@@ -58,10 +60,10 @@ public class LocationsDbAdapter {
             db.execSQL(CREATE_TABLE_TRANSLATIONS);
             db.execSQL(CREATE_TABLE_TYPES);
             db.execSQL(
-            "create table " + "_bank" + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null, " //$NON-NLS-1$ //$NON-NLS-2$
-            + KEY_TYPE_ID + " text not null) ;" //$NON-NLS-1$
-        );
+                    "create table " + "_bank" + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null, " //$NON-NLS-1$ //$NON-NLS-2$
+                    + KEY_TYPE_ID + " text not null) ;" //$NON-NLS-1$
+            );
         }
 
         @Override
@@ -131,12 +133,12 @@ public class LocationsDbAdapter {
         initialValues.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
         String typeTableName = "_" + type; //$NON-NLS-1$
-//        String typeTableSQL =
-//            "create table " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-//            + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null) ;"; //$NON-NLS-1$ //$NON-NLS-2$
+        //        String typeTableSQL =
+        //            "create table " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        //            + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null) ;"; //$NON-NLS-1$ //$NON-NLS-2$
         if (data != null) {
             /* creating the table for the given type. the table contains business names and their coords */
-//            mDb.execSQL(typeTableSQL);
+            //            mDb.execSQL(typeTableSQL);
             for (Map.Entry<String, DPoint> p : data.entrySet()) {
                 ContentValues pair = new ContentValues();
                 pair.put(KEY_BUSINESS_NAME, p.getKey());
@@ -182,10 +184,13 @@ public class LocationsDbAdapter {
             mDb.query(true, "_" + type, new String[] {KEY_BUSINESS_NAME}, //$NON-NLS-1$
                     KEY_COORDINATES + " ='" + coordinate + "'", //$NON-NLS-1$ //$NON-NLS-2$
                     null, null, null, null, null);
-        if (mCursor != null && mCursor.moveToFirst()) {
-            String retValue = mCursor.getString(mCursor.getColumnIndex(KEY_BUSINESS_NAME));
+        if (mCursor != null) {
+            if (mCursor.moveToFirst()) {
+                String retValue = mCursor.getString(mCursor.getColumnIndex(KEY_BUSINESS_NAME));
+                mCursor.close();
+                return retValue;
+            }
             mCursor.close();
-            return retValue;
         }
         return null;
     }
@@ -201,7 +206,6 @@ public class LocationsDbAdapter {
                         mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
-            else mCursor = null;
         }
         return mCursor;
     }
@@ -209,9 +213,12 @@ public class LocationsDbAdapter {
     public String fetchByCoordinateAsString(String coordinate) throws SQLException {
         Cursor mCursor = fetchByCoordinate(coordinate);
         if (mCursor != null) {
-            String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
+            if (mCursor.moveToFirst()) {
+                String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
+                mCursor.close();
+                return data;
+            }
             mCursor.close();
-            return data;
         }
         return null;
     }
@@ -227,7 +234,6 @@ public class LocationsDbAdapter {
                         mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
-            else mCursor = null;
         }
         return mCursor;
     }
@@ -235,9 +241,12 @@ public class LocationsDbAdapter {
     public String fetchByAddressAsString(String address) throws SQLException {
         Cursor mCursor = fetchByAddress(address);
         if (mCursor != null) {
-            String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
+            if (mCursor.moveToFirst()) {
+                String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
+                mCursor.close();
+                return data;
+            }
             mCursor.close();
-            return data;
         }
         return null;
     }
@@ -259,7 +268,6 @@ public class LocationsDbAdapter {
                 updateTranslate(rowId, mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
-            else mCursor = null;
         }
         return mCursor;
 
@@ -279,12 +287,7 @@ public class LocationsDbAdapter {
                 mCursor.close();
                 mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_COORDINATES}, //$NON-NLS-1$
                         null, null, null, null, null);
-                if (mCursor != null) {
-                    if (!mCursor.moveToFirst())
-                        mCursor = null;
-                }
             }
-            else mCursor = null;
         }
         return mCursor;
     }
@@ -305,16 +308,6 @@ public class LocationsDbAdapter {
                 mCursor.close();
                 mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_COORDINATES}, //$NON-NLS-1$
                         null, null, null, null, null);
-                if (mCursor != null) {
-                    if (!mCursor.moveToFirst()) {
-                        mCursor.close();
-                        mCursor = null;
-                    }
-                }
-            }
-            else {
-                mCursor.close();
-                mCursor = null;
             }
         }
         return mCursor;
@@ -333,7 +326,6 @@ public class LocationsDbAdapter {
                         mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)));
             }
-            else mCursor = null;
         }
         return mCursor;
 
@@ -353,7 +345,7 @@ public class LocationsDbAdapter {
         ContentValues args = new ContentValues();
         args.put(KEY_COORDINATES, coordinate);
         args.put(KEY_ADDRESS, address);
-        args.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
+        args.put(KEY_LAST_USE_TIME, DateUtilities.now());
         return mDb.update(DATABASE_TABLE_TRANSLATIONS, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
