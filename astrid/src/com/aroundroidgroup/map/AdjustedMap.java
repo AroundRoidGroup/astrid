@@ -92,7 +92,7 @@ public class AdjustedMap extends MapView {
 
     public DPoint getDeviceLocation() {
         FriendProps fp = db.specialUserToFP();
-        if (fp.isValid())
+        if (fp!=null && fp.isValid())
             return new DPoint(fp.getDlat(), fp.getDlon());
         else
             return null;
