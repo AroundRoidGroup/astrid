@@ -3,6 +3,8 @@ package com.aroundroidgroup.astrid.googleAccounts;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,8 +12,6 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -33,6 +33,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
 
@@ -45,11 +46,12 @@ public class ManageContactsActivity extends ListActivity{
 
     private static final int DIALOG_MAIL_METHOD = 0;
     private static final int DIALOG_CONTACT_METHOD = 1;
-    private static final int DIALOG_WAIT_FRIEND = 2;
+    private static final int DIALOG_ALREADY_SCANNED = 2;
     private static final int DIALOG_HURRAY = 3;
     private static final int DIALOG_HURRAY2 = 4;
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
+    private static final int DIALOG_CONTACTS_LIST = 7;
 
 
     //TODO doesnt scan agian for people in list because they are not in locationService.getAllLocationByPeople
@@ -62,6 +64,10 @@ public class ManageContactsActivity extends ListActivity{
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
+
+    private static boolean alreadyScannedSometime = false;
+
+    private ContactsHelper conHel;
 
 
     private String[] originalPeople;
@@ -86,8 +92,6 @@ public class ManageContactsActivity extends ListActivity{
         return result;
     }
 
-    //TODO remove this
-    private int counter = 0;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -103,16 +107,14 @@ public class ManageContactsActivity extends ListActivity{
             }
             break;
         case INSERT2_ID:
-            //TODO remove this
-            peopleHashSet.add(String.valueOf(counter++));
-            fillData();
             if (!prs.isConnected()){
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
             }
-            else{
-                showDialog(DIALOG_CONTACT_METHOD);
-
+            else if (!alreadyScannedSometime){
+                new ScanContactsTask().execute(new Void[0]);
+            } else {
+                showDialog(DIALOG_ALREADY_SCANNED);
             }
             break;
         }
@@ -143,34 +145,7 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
-    private boolean wait_canceled;
-    private Dialog createWaitDialog() {
-        wait_canceled = false;
-        ProgressDialog pdialog = ProgressDialog.show(ManageContactsActivity.this, "Checking Friend",
-                "Finding out if your friend is using Aroundroid. Please wait...", true);
-        pdialog.setCanceledOnTouchOutside(true);
 
-        pdialog.setOnDismissListener(new OnDismissListener() {
-
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                removeDialog(DIALOG_WAIT_FRIEND);
-
-            }
-        });
-
-        pdialog.setOnCancelListener(new OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                wait_canceled = true;
-
-            }
-        });
-
-        return pdialog;
-
-    }
 
     private Dialog createHurrayDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -211,6 +186,68 @@ public class ManageContactsActivity extends ListActivity{
         return alert;
     }
 
+    private Dialog createContactsDialog(){
+        //TODO change to fetchAllPeopleWContactValids
+        Cursor cur = mDbHelper.fetchAllPeopleWContact();
+        final ArrayList<String> mailList = new ArrayList<String>(cur.getCount());
+        ArrayList<String> displayMailList = new ArrayList<String>(cur.getCount());
+        final boolean[] tickArray = new boolean[(cur.getCount())];
+        if (cur.moveToFirst()){
+            int i =0;
+            do{
+                String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                mailList.add(mail);
+                if (peopleHashSet.contains(mail)){
+                    tickArray[i] = true;
+                }
+                else{
+                    tickArray[i] = false;
+                }
+                i++;
+                Long contactID = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                String dispalyName = conHel.oneDisplayName(contactID);
+                displayMailList.add(dispalyName + "\n(" + mail + ")");
+            }while (cur.moveToNext());
+        }
+        cur.close();
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Pick contacts to track");
+        builder.setMultiChoiceItems(displayMailList.toArray(new String[0]), null, new DialogInterface.OnMultiChoiceClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                tickArray[which] = isChecked;
+
+            }
+        }).setPositiveButton("Add All", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                for (int i =0 ; i<tickArray.length ; i++){
+                    if (tickArray[i]){
+                        peopleHashSet.add(mailList.get(i));
+                    }
+                    else{
+                        peopleHashSet.remove(mailList.get(i));
+                    }
+                }
+                fillListSmart();
+
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
+    }
+
     private boolean friendInList(String friendMail){
         return peopleHashSet.contains(friendMail);
     }
@@ -242,9 +279,6 @@ public class ManageContactsActivity extends ListActivity{
             AlertDialog alert = builder.create();
             dialog = alert;
             break;
-        case DIALOG_WAIT_FRIEND:
-            dialog = createWaitDialog();
-            break;
         case DIALOG_NOT_CONNECTED:
             dialog = createNotConnectedDialog();
             break;
@@ -254,10 +288,34 @@ public class ManageContactsActivity extends ListActivity{
         case DIALOG_HURRAY2:
             dialog = createHurray2Dialog();
             break;
+        case DIALOG_CONTACTS_LIST:
+            dialog = createContactsDialog();
+            break;
+        case DIALOG_ALREADY_SCANNED:
+            dialog = createAlreadyScannedDialog();
+            break;
         default:
             dialog = null;
         }
         return dialog;
+    }
+
+    private Dialog createAlreadyScannedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("The contact list has been scanned already. Would you like to skip the scanning process?")
+        .setTitle("Contacts Aready Scanned!")
+        .setPositiveButton("Yes (recommanded)", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                showDialog(DIALOG_CONTACTS_LIST);
+            }
+        })
+        .setNegativeButton("No. I like scanning stuff.", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                new ScanContactsTask().execute(new Void[0]);
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
     }
 
     private Dialog createAddAnywayDialog(final String friendMail) {
@@ -357,7 +415,6 @@ public class ManageContactsActivity extends ListActivity{
                 if (friendInList(friendMail)){
                     showDialog(DIALOG_ALREADY_FOUND);
                 }else{
-                    showDialog(DIALOG_WAIT_FRIEND);
                     loginDialog.dismiss();
                     new ScanOneFriendTask().execute(new String[]{friendMail});
                 }
@@ -384,14 +441,14 @@ public class ManageContactsActivity extends ListActivity{
         setListAdapter(adapter);
     }
 
-    private Dialog createDeleteDialog(final String friendMail, final int pos) {
+    private Dialog createDeleteDialog(final String friendMail) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure that you want to delete " + friendMail + " from your tracking friend list?")
         .setTitle("Delete friend")
         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                peopleHashSet.remove(pos);
+                peopleHashSet.remove(friendMail);
                 fillData();
             }
         })
@@ -409,13 +466,14 @@ public class ManageContactsActivity extends ListActivity{
     private void saveNewPeople(){
         myLocationService.syncLocationsByPeople(taskID,peopleHashSet);
     }
-    */
+     */
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.friend_list_layout);
+        conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
         Bundle extras = getIntent().getExtras();
@@ -440,7 +498,7 @@ public class ManageContactsActivity extends ListActivity{
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                     int position, long id) {
                 FriendProps mailChosen = (FriendProps)parent.getAdapter().getItem(position);
-                createDeleteDialog(mailChosen.getMail(), position).show();
+                createDeleteDialog(mailChosen.getMail()).show();
                 // Return true to consume the click event. In this case the
                 // onListItemClick listener is not called anymore.
                 return true;
@@ -504,20 +562,117 @@ public class ManageContactsActivity extends ListActivity{
         }.start();
     }
 
+    private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (isFinishing()){
+                return;
+            }
+            _progressDialog.dismiss();
+            if (result){
+                showDialog(DIALOG_CONTACTS_LIST);
+            }
+            else{
+                //TODO dont know what to do here
+            }
+
+
+        }
+
+        private ProgressDialog _progressDialog;
+
+        @Override
+        protected void onPreExecute(){
+            _progressDialog = ProgressDialog.show(
+                    ManageContactsActivity.this,
+                    "Looking for contacts",
+                    "Scaning you Contact List to find friends that use AroundRoid. This may take a while...",
+                    true,
+                    true,
+                    new DialogInterface.OnCancelListener(){
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            ScanContactsTask.this.cancel(true);
+                        }
+                    }
+            );
+        }
+
+        //assuming mail in lower case
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Set<Entry<String, Long>> friendSet = conHel.friendsWithMail();
+            if (isCancelled()){
+                return false;
+            }
+            ArrayList<String> al = new ArrayList<String>();
+            for(Entry<String, Long> en : friendSet){
+                Cursor cur = mDbHelper.fetchByMail(en.getKey());
+                if (cur==null){
+                    break;
+                }
+                if (!cur.moveToFirst()){
+                    mDbHelper.createPeople(en.getKey(),en.getValue());
+                    al.add(en.getKey());
+                }
+                cur.close();
+            }
+            if (isCancelled()){
+                return false;
+            }
+            //TODO limit update people location to few people
+            if (al.size()<=0){
+                return true;
+            }
+            List <FriendProps> lfp = prs.updatePeopleLocations(al.toArray(new String[0]), null, mDbHelper);
+            if (lfp == null){
+                return false;
+            }
+            else{
+                alreadyScannedSometime = true;
+                return true;
+            }
+        }
+
+
+    }
+
+
     private class ScanOneFriendTask extends AsyncTask<String, Void, Boolean> {
 
         private boolean error = false;
 
         private String friend;
 
+        private ProgressDialog _progressDialog;
+
+        @Override
+        protected void onPreExecute(){
+            _progressDialog = ProgressDialog.show(
+                    ManageContactsActivity.this,
+                    "Checking friend",
+                    "Finding out if your friend is using Aroundroid. Please wait...",
+                    true,
+                    true,
+                    new DialogInterface.OnCancelListener(){
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            ScanOneFriendTask.this.cancel(true);
+                        }
+                    }
+            );
+        }
+
         @Override
         protected void onPostExecute(Boolean result) {
             //TODO check this:
-            if (isFinishing() || wait_canceled){
+            if (isFinishing()){
                 return;
             }
+            _progressDialog.dismiss();
             if (!error){
-                dismissDialog(DIALOG_WAIT_FRIEND);
+
                 if (result){
                     //friend is using Aroundroid
                     showDialog(DIALOG_HURRAY);
