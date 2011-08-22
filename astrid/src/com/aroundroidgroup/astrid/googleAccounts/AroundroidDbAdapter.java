@@ -19,6 +19,8 @@ public class AroundroidDbAdapter {
 
     public static final String KEY_ROWID = "_id";
 
+    public static final long CONTACTID_INVALID_CONTACT = -2L;
+
     private static final String TAG = "AroundroidDbAdapter";
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -111,7 +113,7 @@ public class AroundroidDbAdapter {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_MAIL, mail.toLowerCase());
         if (contactId==null){
-            initialValues.put(KEY_CONTACTID, -2L);
+            initialValues.put(KEY_CONTACTID, CONTACTID_INVALID_CONTACT);
         }
         else{
             initialValues.put(KEY_CONTACTID, contactId);

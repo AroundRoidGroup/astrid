@@ -434,9 +434,9 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private void fillData(){
-        // Create a list of FriendProps, that will be put to our ListActivity.
+        // Create a list of FriendPropsWithContactId, that will be put to our ListActivity.
         // Refreshing the list
-        ArrayAdapter<FriendProps> adapter = new FriendAdapter(this,
+        ArrayAdapter<FriendPropsWithContactId> adapter = new FriendAdapter(this,conHel,
                 getProps(peopleHashSet));
         setListAdapter(adapter);
     }
@@ -523,17 +523,17 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
-    private List<FriendProps> getProps(LinkedHashSet<String> peopleHashSet2) {
+    private List<FriendPropsWithContactId> getProps(LinkedHashSet<String> peopleHashSet2) {
 
         //TODO deal with error
-        List<FriendProps> list = new ArrayList<FriendProps>();
+        List<FriendPropsWithContactId> list = new ArrayList<FriendPropsWithContactId>();
         for (String mail : peopleHashSet2){
             list.add(get(mail));
         }
         return list;
     }
 
-    private FriendProps get(String s) {
+    private FriendPropsWithContactId get(String s) {
         Cursor cur = mDbHelper.fetchByMail(s);
         if (!cur.moveToFirst()){
             cur.close();
@@ -541,9 +541,12 @@ public class ManageContactsActivity extends ListActivity{
             //TODO assming create succesful
             cur = mDbHelper.fetchPeople(rowId);
         }
+        //friendPROPSWITHCONTACTID CRITICAL PART
+
         FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+        FriendPropsWithContactId fpwci = new FriendPropsWithContactId(cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID)), fp);
         cur.close();
-        return fp;
+        return fpwci;
 
 
     }
