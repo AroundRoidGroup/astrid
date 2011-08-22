@@ -35,6 +35,7 @@ import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
+import com.aroundroidgroup.map.AdjustedMap.MapItemizedOverlay;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
 import com.aroundroidgroup.map.AutoComplete;
 import com.aroundroidgroup.map.DPoint;
@@ -170,10 +171,16 @@ public class SpecificMapLocation extends MapActivity{
         for (int i = 0 ; i < mTypes.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, mTypes.get(i));
         int i = 0;
-        for (Map.Entry<String, DPoint> p : mPeople.entrySet()) {
-            int index = mMapView.getItemID(OVERLAY_PEOPLE_NAME, p.getValue());
-            if (index != -1)
-                menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + index, Menu.NONE, p.getKey());
+//        for (Map.Entry<String, DPoint> p : mPeople.entrySet()) {
+//            int index = mMapView.getItemID(OVERLAY_PEOPLE_NAME, p.getValue());
+//            if (index != -1)
+//                menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + index, Menu.NONE, p.getKey());
+//        }
+        MapItemizedOverlay peopleOverlay = mMapView.getOverlay(OVERLAY_PEOPLE_NAME);
+        if (peopleOverlay != null) {
+            for (AdjustedOverlayItem item : peopleOverlay) {
+                menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + item.getUniqueID(), Menu.NONE, item.getSnippet());
+            }
         }
         for (i = 0 ; i < mMapView.getTappedPointsCount() ; i++) {
             String addr = mMapView.getTappedItem(i).getAddress();
@@ -223,7 +230,7 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_SPECIFIC_GROUP:
             pressedItemExtras = null;
             pressedItemIndex = item.getItemId() - MENU_SPECIFIC_GROUP;
-            AdjustedOverlayItem specItem = mMapView.getOverlay(SPECIFIC_OVERLAY).getItem(pressedItemIndex);
+            AdjustedOverlayItem specItem = mMapView.getOverlay(OVERLAY_SPECIFIC_NAME).getItem(pressedItemIndex);
             mMapView.getController().setCenter(specItem.getPoint());
 
             intent.putExtra(DELETE, DELETE);
@@ -255,7 +262,7 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_PEOPLE_GROUP:
             pressedItemExtras = null;
             pressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
-            AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(pressedItemIndex);
+            AdjustedOverlayItem peopleItem = mMapView.getOverlay(OVERLAY_PEOPLE_NAME).getItem(pressedItemIndex);
             if (mPeople.get(peopleItem.getSnippet()) == null) {
                 Toast.makeText(this, "Cannot retrieve person's locations !", Toast.LENGTH_LONG).show();
                 return true;
