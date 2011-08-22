@@ -24,7 +24,6 @@ public class mapFunctions {
     public static int[] addTagsToMap(AdjustedMap map, int id, String[] locationTypes, DPoint center, double radius, long taskID) {
         if (locationTypes.length == 0)
             return new int[0];
-//        DPoint deviceLocation = map.getDeviceLocation();
         LocationsDbAdapter locDB = new LocationsDbAdapter(ContextManager.getContext());
         locDB.open();
         if (center == null)
@@ -33,14 +32,12 @@ public class mapFunctions {
         int i = 0;
         int[] feedback = new int[locationTypes.length];
         for (String type : locationTypes) {
-//            if (map.isContains(id, type)) {
-//                feedback[i] = 1;
-//                continue;
-//            }
             Map<String, DPoint> kindLocations = null;
             try {
                 Cursor c = locDB.fetchByTypeComplex(type, center.toString(), (new Double(radius)).toString());
-                if (c == null) {
+                if (c == null || !c.moveToFirst()) {
+                    if (c != null)
+                        c.close();
                     kindLocations = Misc.googlePlacesQuery(type, center, radius);
                     if (!kindLocations.isEmpty()) {
                         feedback[i] = 1;

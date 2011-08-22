@@ -42,6 +42,7 @@ import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.MyEventClassListener;
 import com.aroundroidgroup.map.mapFunctions;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -222,20 +223,27 @@ public class SpecificMapLocation extends MapActivity{
 
             intent.putExtra(DELETE, DELETE);
             intent.putExtra(CMENU_EXTRAS, item.getItemId() - MENU_SPECIFIC_GROUP + "");
-            intent.putExtra(SHOW_TITLE, specItem.getTitle().toString());
-            intent.putExtra(SHOW_ADDRESS, (specItem.getAddress() == null) ? Misc.geoToDeg(specItem.getPoint()).toString() : specItem.getAddress());
+            if (mMapView.hasConfig(SPECIFIC_OVERLAY, SHOW_TITLE))
+                intent.putExtra(SHOW_TITLE, specItem.getTitle().toString());
+            if (mMapView.hasConfig(SPECIFIC_OVERLAY, SHOW_ADDRESS))
+                intent.putExtra(SHOW_ADDRESS, (specItem.getAddress() == null) ? Misc.geoToDeg(specItem.getPoint()).toString() : specItem.getAddress());
 
             startActivityForResult(intent, MENU_SPECIFIC_GROUP);
             return true;
         case MENU_KIND_GROUP:
             pressedItemIndex = -1;
             pressedItemExtras = item.getTitle().toString();
-            mMapView.getController().setCenter(mMapView.getPointWithMinimalDistanceFromDeviceLocation(TYPE_OVERLAY, item.getTitle().toString()));
+            GeoPoint closestType = mMapView.getPointWithMinimalDistanceFromDeviceLocation(TYPE_OVERLAY, item.getTitle().toString());
+            if (closestType != null)
+                mMapView.getController().setCenter(closestType);
 
             intent.putExtra(DELETE_ALL, DELETE_ALL);
-            intent.putExtra(SHOW_AMOUNT_BY_EXTRAS, mMapView.getItemsByExtrasCount(TYPE_OVERLAY, item.getTitle().toString()));
-            intent.putExtra(SHOW_NAME, OVERLAY_TYPE_NAME);
-            intent.putExtra(SHOW_TITLE, item.getTitle().toString());
+            if (mMapView.hasConfig(TYPE_OVERLAY, SHOW_AMOUNT_BY_EXTRAS))
+                intent.putExtra(SHOW_AMOUNT_BY_EXTRAS, mMapView.getItemsByExtrasCount(TYPE_OVERLAY, item.getTitle().toString()));
+            if (mMapView.hasConfig(TYPE_OVERLAY, SHOW_NAME))
+                intent.putExtra(SHOW_NAME, OVERLAY_TYPE_NAME);
+            if (mMapView.hasConfig(TYPE_OVERLAY, SHOW_TITLE))
+                intent.putExtra(SHOW_TITLE, item.getTitle().toString());
 
             startActivityForResult(intent, MENU_KIND_GROUP);
             return true;
@@ -246,9 +254,12 @@ public class SpecificMapLocation extends MapActivity{
             AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(pressedItemIndex);
 
             intent.putExtra(DELETE, DELETE);
-            intent.putExtra(SHOW_NAME, OVERLAY_PEOPLE_NAME);
-            intent.putExtra(SHOW_TITLE, peopleItem.getSnippet());
-            intent.putExtra(SHOW_ADDRESS, (peopleItem.getAddress() == null) ? Misc.geoToDeg(peopleItem.getPoint()).toString() : peopleItem.getAddress());
+            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_NAME))
+                intent.putExtra(SHOW_NAME, OVERLAY_PEOPLE_NAME);
+            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_TITLE))
+                intent.putExtra(SHOW_TITLE, peopleItem.getSnippet());
+            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_ADDRESS))
+                intent.putExtra(SHOW_ADDRESS, (peopleItem.getAddress() == null) ? Misc.geoToDeg(peopleItem.getPoint()).toString() : peopleItem.getAddress());
 
             startActivityForResult(intent, MENU_PEOPLE_GROUP);
             return true;

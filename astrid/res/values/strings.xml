@@ -34,7 +34,7 @@
   <!-- Location label -->
   <string name="TEA_location_label">Locations</string>
    <!-- Location button -->
-   	<string name="text_location_button">Add Location</string>
+   	<string name="text_location_button">Manage Locations</string>
    	
    	
    	

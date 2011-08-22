@@ -307,6 +307,8 @@ public class Misc {
     }
 
     public static double distance(DPoint p1, DPoint p2) {
+        if (p1 == null || p2 == null)
+            return -1;
         double latDelta = Math.toRadians(p2.getX() - p1.getX());
         double lngDelta = Math.toRadians(p2.getY() - p1.getY());
         double a = Math.pow(Math.sin(latDelta / 2), 2) + Math.cos(Math.toRadians(p1.getY())) * Math.cos(Math.toRadians(p2.getY())) * Math.pow(Math.sin(lngDelta / 2), 2);

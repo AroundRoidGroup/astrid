@@ -124,11 +124,11 @@ public class AdjustedMap extends MapView {
 
     public void showDeviceLocation() {
         if (mDeviceOverlay == null) {
-            mDeviceOverlay = new MapItemizedOverlay(getResources().getDrawable(R.drawable.device_location));
-            mConfigurations.put(mDeviceOverlay, new String[] { SHOW_NAME, SHOW_ADDRESS });
-            mNames.put(mDeviceOverlay, DEVICE_TYPE_FIELD_TEXT);
             DPoint deviceLocation = getDeviceLocation();
             if (deviceLocation != null) {
+                mDeviceOverlay = new MapItemizedOverlay(getResources().getDrawable(R.drawable.device_location));
+                mConfigurations.put(mDeviceOverlay, new String[] { SHOW_NAME, SHOW_ADDRESS });
+                mNames.put(mDeviceOverlay, DEVICE_TYPE_FIELD_TEXT);
                 GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
                 DPoint lastDeviceLocationAsDPoint = Misc.geoToDeg(lastDeviceLocation);
                 String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocationAsDPoint.toString());
@@ -166,6 +166,17 @@ public class AdjustedMap extends MapView {
             overlays.remove(mDeviceOverlay);
             mDeviceOverlay = null;
         }
+    }
+
+    public boolean hasConfig(int uniqueName, String configuaration) {
+        MapItemizedOverlay overlay = overlays.get(uniqueName);
+        if (overlay == null || configuaration == null)
+            return false;
+        String[] configs = mConfigurations.get(overlay);
+        for (String s : configs)
+            if (s.equals(configuaration))
+                return true;
+        return false;
     }
 
     public boolean createOverlay(int uniqueName, Drawable d, String[] config, String name) {
@@ -283,10 +294,12 @@ public class AdjustedMap extends MapView {
                 lst.add(item.getPoint());
             }
         }
-        for (AdjustedOverlayItem item : mTappedOverlay)
-            lst.add(item.getPoint());
-        for (AdjustedOverlayItem item : mDeviceOverlay)
-            lst.add(item.getPoint());
+        if (mTappedOverlay != null)
+            for (AdjustedOverlayItem item : mTappedOverlay)
+                lst.add(item.getPoint());
+        if (mDeviceOverlay != null)
+            for (AdjustedOverlayItem item : mDeviceOverlay)
+                lst.add(item.getPoint());
         return lst;
     }
 
@@ -316,11 +329,8 @@ public class AdjustedMap extends MapView {
         mapOverlays = getOverlays();
         showDeviceLocation();
         getController().setZoom(18);
-        //TODO USERLOCATION
-        //        if (true)
-        //            return;
-        DPoint d = new DPoint(40.714867,-74.006009);
-        getController().setCenter(Misc.degToGeo(d));
+        if (getDeviceLocation() == null) /* in case device location cannot be obtained, center the map on google headquarters */
+            getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
         lastCenter = getMapCenter();
     }
 
