@@ -1,9 +1,11 @@
 package com.todoroo.astrid.activity;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
-import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
@@ -168,7 +171,9 @@ public class SpecificMapLocation extends MapActivity{
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, mTypes.get(i));
         int i = 0;
         for (Map.Entry<String, DPoint> p : mPeople.entrySet()) {
-            menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + i++, Menu.NONE, p.getKey());
+            int index = mMapView.getItemID(OVERLAY_PEOPLE_NAME, p.getValue());
+            if (index != -1)
+                menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + index, Menu.NONE, p.getKey());
         }
         for (i = 0 ; i < mMapView.getTappedPointsCount() ; i++) {
             String addr = mMapView.getTappedItem(i).getAddress();
@@ -250,9 +255,12 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_PEOPLE_GROUP:
             pressedItemExtras = null;
             pressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
-            mMapView.getController().setCenter(Misc.degToGeo(mPeople.get(item.getTitle())));
             AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(pressedItemIndex);
-
+            if (mPeople.get(peopleItem.getSnippet()) == null) {
+                Toast.makeText(this, "Cannot retrieve person's locations !", Toast.LENGTH_LONG).show();
+                return true;
+            }
+            mMapView.getController().setCenter(Misc.degToGeo(mPeople.get(item.getTitle())));
             intent.putExtra(DELETE, DELETE);
             if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_NAME))
                 intent.putExtra(SHOW_NAME, OVERLAY_PEOPLE_NAME);
@@ -515,7 +523,8 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ContextManager.getContext(),ConnectedContactsActivity.class);
+                Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
+                intent.putExtra(ManageContactsActivity.taskIDSTR, taskID);
                 startActivityForResult(intent, CONTACTS_REQUEST_CODE);
             }
         });
@@ -614,23 +623,32 @@ public class SpecificMapLocation extends MapActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CONTACTS_REQUEST_CODE){
             if (resultCode == RESULT_OK){
-                //TODO a contact was picked! add it to control set
                 Bundle bundle = data.getExtras();
                 if (bundle == null)
                     return;
-                CharSequence tmp = bundle.getCharSequence(ConnectedContactsActivity.FRIEND_MAIL);
-                if (tmp == null)
-                    return;
-                String contact = tmp.toString();
-                Cursor c = db.fetchByMail(contact);
-                //TODO tomer change this to a better implementation
-                if (c != null && c.moveToFirst()){
-                    DPoint dp = new DPoint(c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LAT)),c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LON)));
-                    mPeople.put(contact, dp);
-                    mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, new String[] {contact}, new DPoint[] {dp}, taskID);
-                }
-                if (c != null){
-                    c.close();
+                Serializable gerbil = bundle.getSerializable(ManageContactsActivity.PEOPLE_BACK);
+                LinkedHashSet<String> ger = (LinkedHashSet<String>) gerbil;
+                if (ger != null) {
+                    mPeople.clear();
+                    mMapView.clearOverlay(PEOPLE_OVERLAY);
+                    for (String contact : ger) {
+                        Cursor c = db.fetchByMail(contact);
+                        DPoint dp = null;
+                        if (c != null) {
+                            if (c.moveToFirst()) {
+                                FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                                if (fp.isValid()) {
+                                    dp = new DPoint(fp.getDlat(), fp.getDlon());
+                                    mPeople.put(contact, dp);
+                                }
+                                else mPeople.put(contact, null);
+                            }
+                            c.close();
+                        }
+                        else mPeople.put(contact, null);
+                        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY,
+                                new String[] { contact }, new DPoint[] { dp }, taskID);
+                    }
                 }
             }
         }
@@ -705,7 +723,6 @@ public class SpecificMapLocation extends MapActivity{
 
     @Override
     public void onBackPressed() {
-        db.close();
         locDB.close();
         saveAndQuit();
         super.onBackPressed();
@@ -721,7 +738,6 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onPause() {
         super.onPause();
-        db.close();
         locDB.close();
         saveAndQuit();
     }

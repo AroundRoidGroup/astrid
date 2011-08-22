@@ -35,6 +35,7 @@ public class LocationControlSet implements TaskEditControlSet{
 
     public LocationControlSet(Activity activity) {
         mActivity = activity;
+
         Button b = (Button) activity.findViewById(R.id.location_button);
         b.setOnClickListener(new View.OnClickListener() {
 

@@ -289,6 +289,8 @@ public class Misc {
     //	}
 
     public static GeoPoint degToGeo(DPoint dp) {
+        if (dp == null)
+            return null;
         return new GeoPoint((int)(dp.getX() * 1000000), (int)(dp.getY() * 1000000));
     }
 

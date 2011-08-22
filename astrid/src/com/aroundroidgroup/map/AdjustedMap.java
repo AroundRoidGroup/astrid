@@ -363,6 +363,14 @@ public class AdjustedMap extends MapView {
         mTappedOverlay.removeOverlayByIndex(index);
     }
 
+    public boolean clearOverlay(int id) {
+        MapItemizedOverlay overlay = overlays.get(id);
+        if (overlay == null)
+            return false;
+        overlay.clear();
+        return true;
+    }
+
     public boolean removeItemFromOverlayByCoords(int id, GeoPoint coords) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null && coords != null)
@@ -614,6 +622,18 @@ public class AdjustedMap extends MapView {
         return mTappedOverlay.createItem(index);
     }
 
+    public int getItemID(String id, DPoint coords) {
+        if (id == null)
+            return -1;
+        MapItemizedOverlay overlay = null;
+        for (Map.Entry<MapItemizedOverlay, String> x : mNames.entrySet())
+            if (x.getValue().equals(id))
+                overlay = x.getKey();
+        if (overlay == null || coords == null)
+            return -1;
+        return overlay.getIndexOf(Misc.degToGeo(coords));
+    }
+
     public class MapItemizedOverlay extends ItemizedOverlay<AdjustedOverlayItem> implements java.lang.Iterable<AdjustedOverlayItem> {
         private final ArrayList<AdjustedOverlayItem> mOverlays = new ArrayList<AdjustedOverlayItem>();
 
@@ -630,6 +650,10 @@ public class AdjustedMap extends MapView {
         @Override
         public int size() {
             return mOverlays.size();
+        }
+
+        public void clear() {
+            mOverlays.clear();
         }
 
         public int getIndexOf(GeoPoint g) {
