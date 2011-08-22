@@ -1,6 +1,7 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -37,6 +38,8 @@ import com.timsu.astrid.R;
 
 public class ManageContactsActivity extends ListActivity{
 
+    public static final String PEOPLE_BACK = "peopleBack";
+
     public static final int INSERT_ID = Menu.FIRST;
     public static final int INSERT2_ID = Menu.FIRST + 1;
 
@@ -64,7 +67,7 @@ public class ManageContactsActivity extends ListActivity{
     private String[] originalPeople;
 
     //TODO make list parallel
-    private final ArrayList<String> peopleList = new ArrayList<String>();
+    private final LinkedHashSet<String> peopleHashSet = new LinkedHashSet<String>();
 
     private final LocationService myLocationService = new LocationService();
 
@@ -101,7 +104,7 @@ public class ManageContactsActivity extends ListActivity{
             break;
         case INSERT2_ID:
             //TODO remove this
-            peopleList.add(String.valueOf(counter++));
+            peopleHashSet.add(String.valueOf(counter++));
             fillData();
             if (!prs.isConnected()){
                 //if not connected prompt connection
@@ -209,14 +212,7 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private boolean friendInList(String friendMail){
-        boolean alreadyFound = false;
-        for (String mail : peopleList){
-            if (friendMail.compareTo(mail)==0){
-                alreadyFound = true;
-                break;
-            }
-        }
-        return alreadyFound;
+        return peopleHashSet.contains(friendMail);
     }
 
     @Override
@@ -290,7 +286,7 @@ public class ManageContactsActivity extends ListActivity{
             // @Override
             public void onClick(View v) {
                 if (!friendInList(friendMail)){
-                    peopleList.add(friendMail);
+                    peopleHashSet.add(friendMail);
                     fillListSmart();
                     if (cb.isChecked()){
                         // send mail
@@ -384,7 +380,7 @@ public class ManageContactsActivity extends ListActivity{
         // Create a list of FriendProps, that will be put to our ListActivity.
         // Refreshing the list
         ArrayAdapter<FriendProps> adapter = new FriendAdapter(this,
-                getProps(peopleList));
+                getProps(peopleHashSet));
         setListAdapter(adapter);
     }
 
@@ -395,7 +391,7 @@ public class ManageContactsActivity extends ListActivity{
         .setTitle("Delete friend")
         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                peopleList.remove(pos);
+                peopleHashSet.remove(pos);
                 fillData();
             }
         })
@@ -408,6 +404,12 @@ public class ManageContactsActivity extends ListActivity{
         return alert;
 
     }
+
+    /*
+    private void saveNewPeople(){
+        myLocationService.syncLocationsByPeople(taskID,peopleHashSet);
+    }
+    */
 
     /** Called when the activity is first created. */
     @Override
@@ -427,7 +429,7 @@ public class ManageContactsActivity extends ListActivity{
         if (taskID!=null){
             originalPeople = myLocationService.getLocationsByPeopleAsArray(taskID);
             for (String s : originalPeople)
-                peopleList.add(s);
+                peopleHashSet.add(s);
         }
 
         fillData();
@@ -463,11 +465,11 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
-    private List<FriendProps> getProps(List<String> names) {
+    private List<FriendProps> getProps(LinkedHashSet<String> peopleHashSet2) {
 
         //TODO deal with error
         List<FriendProps> list = new ArrayList<FriendProps>();
-        for (String mail : names){
+        for (String mail : peopleHashSet2){
             list.add(get(mail));
         }
         return list;
@@ -484,6 +486,8 @@ public class ManageContactsActivity extends ListActivity{
         FriendProps fp = AroundroidDbAdapter.userToFP(cur);
         cur.close();
         return fp;
+
+
     }
 
     private final Handler mListFillHandler = new Handler();
@@ -559,7 +563,7 @@ public class ManageContactsActivity extends ListActivity{
                     if (!isFinishing()){
                         if (!friendInList(fp.getMail())){
                             //TODO add this check to the onResult function too.
-                            peopleList.add(fp.getMail());
+                            peopleHashSet.add(fp.getMail());
                             fillListSmart();
                         }
                     }
@@ -579,6 +583,9 @@ public class ManageContactsActivity extends ListActivity{
         // TODO Auto-generated method stub
         super.onPause();
         mHan.removeCallbacks(mUpdateTimeTask);
+        Intent intent = new Intent();
+        intent.putExtra(PEOPLE_BACK, peopleHashSet);
+        setResult(RESULT_OK, intent);
     }
 
     @Override
@@ -587,6 +594,8 @@ public class ManageContactsActivity extends ListActivity{
         super.onResume();
         setUITimer();
     }
+
+
 
 
 
