@@ -25,19 +25,21 @@
 	<string name="locationFilterTitle">Places Nearby</string>
    <string name="OK">OK!</string>
    	<!-- in Focaccia activity -->
-   	<string name="specificLocation">Specific Location</string>
-   	<string name="temp">address</string>
+  <string name="fSnippet">Snippet:</string>
+  <string name="fType">Type:</string>
+  <string name="fName">Name:</string>
+  <string name="fAddress">Address:</string>
    	
    	 <!-- =================================== Location  == -->
   <!-- Location label -->
   <string name="TEA_location_label">Locations</string>
    <!-- Location button -->
-   	<string name="text_location_button">Add Location</string>
+   	<string name="text_location_button">Manage Locations</string>
    	
    	
    	
    	<!-- GOOGLE MAPS API KEY -->
-   	<string name="GOOGLE_MAPS_API_KEY">0k9f6DtAnocGE5wRrX9PDhJx6-hKYp8YkXamzlA</string>
+   	<string name="GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
    	
    	<!-- GOOGLE PLACES API KEY -->
    	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>

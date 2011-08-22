@@ -1,5 +1,7 @@
 package com.aroundroidgroup.map;
 
+import java.text.DecimalFormat;
+
 
 public class DPoint{
 
@@ -50,6 +52,21 @@ public class DPoint{
 
     @Override
     public String toString() {
-        return x + "," + y; //$NON-NLS-1$
+        DecimalFormat df = new DecimalFormat("##.######");
+        return df.format(x) + "," + df.format(y); //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        DPoint d = null;
+        try {
+            d = (DPoint)obj;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (d == null)
+            return false;
+        return (this.getX() == d.getX() && this.getY() == d.getY());
     }
 }

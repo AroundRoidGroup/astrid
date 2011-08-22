@@ -7,21 +7,30 @@
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent" android:layout_height="match_parent">
 
-		<AutoCompleteTextView  android:id="@+id/specificAddress" android:text="@string/specificAddressText"
-			android:textColor="#C0C0C0" android:textSize="6pt"
-			android:layout_weight="1"
-			android:completionThreshold="1"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+		<AutoCompleteTextView android:id="@+id/specificAddress"
+			android:text="@string/specificAddressText" android:textColor="#C0C0C0"
+			android:textSize="6pt" android:layout_weight="1"
+			android:completionThreshold="1" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_margin="0dip"/>
 		<Button android:id="@+id/specificAddAddressButton"
 			android:text="@string/specificAddressButtonText"
-			android:layout_width="wrap_content" android:layout_height="match_parent" />
+			android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_margin="0dip"/>
 	</LinearLayout>
 	<LinearLayout android:id="@+id/linearLayout1"
-		android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="match_parent">
+		android:orientation="horizontal" android:layout_width="match_parent"
+		android:layout_height="match_parent">
 		<Button android:layout_width="fill_parent" android:text="@string/viewAllButton"
-			android:id="@+id/viewAll" android:layout_weight="1" android:layout_height="match_parent"></Button>
+		android:padding="0dip"
+			android:id="@+id/viewAll" android:layout_weight="1"
+			android:layout_height="match_parent" android:paddingBottom="0dip" android:paddingTop="0dip"></Button>
 		<Button android:layout_width="fill_parent" android:text="@string/addPeopleButton"
-			android:id="@+id/addPeople" android:layout_weight="1" android:layout_height="match_parent"></Button>
+		android:padding="0dip"
+			android:id="@+id/addPeople" android:layout_weight="1"
+			android:layout_height="match_parent"></Button>
+		<Button android:layout_width="fill_parent"
+		android:padding="0dip"
+			android:layout_height="match_parent" android:layout_weight="1"
+			android:id="@+id/focusDevLoc" android:text="DL"></Button>
 	</LinearLayout>
 	<LinearLayout android:id="@+id/linearLayout1"
 		android:orientation="horizontal" android:layout_width="match_parent"
@@ -32,5 +41,5 @@
 			android:clickable="true" android:apiKey="@string/GOOGLE_MAPS_API_KEY"
 			android:layout_height="wrap_content" />
 	</LinearLayout>
-	
+
 </LinearLayout>

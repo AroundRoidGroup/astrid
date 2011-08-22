@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen  
+    xmlns:android="http://schemas.android.com/apk/res/android">  
+       
+    <PreferenceCategory
+        android:title="@string/sync_SPr_group_status">
+    
+        <Preference 
+            android:layout="@layout/status_preference"
+            android:key="@string/sync_SPr_status_key"  
+            android:textSize="24sp"
+            android:gravity="center"/>
+        
+    </PreferenceCategory>
+            
+    
+    <PreferenceCategory
+        android:title="@string/sync_SPr_group_actions">
+        
+           <ListPreference  
+            android:key="listPref"  
+            android:title="Login" />
+              <Preference 
+            android:key="Logout"
+            android:title="Logout" />
+    
+
+       
+    </PreferenceCategory>
+            
+</PreferenceScreen>  

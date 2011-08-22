@@ -26,7 +26,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.widget.Toast;
 
-import com.aroundroidgroup.astrid.googleAccounts.AccountList;
+import com.aroundroidgroup.astrid.googleAccounts.PeopleLocationPreferneces;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
@@ -107,7 +107,7 @@ public class EditPreferences extends TodorooPreferences {
         Preference connectToPeople = screen.getPreference(CONNECTPEOPLE);
         connectToPeople.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference p) {
-                          Intent intent = new Intent(EditPreferences.this, AccountList.class);
+                          Intent intent = new Intent(EditPreferences.this, PeopleLocationPreferneces.class);
                          startActivity(intent);
                // showAbout();
                          return true;

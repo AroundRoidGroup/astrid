@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:orientation="vertical"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent">
-  	<TextView
-  		android:id="@+id/locationType"
-  		android:text="@string/specificLocation"
-  		android:textSize="6pt"
-  		android:layout_width="wrap_content"
-  		android:layout_height="wrap_content"/>
-  	<TextView
-  		android:id="@+id/locationAddress"
-  		android:text="@string/temp"
-  		android:textSize="6pt"
-  		android:layout_width="wrap_content"
-  		android:layout_height="wrap_content"
-  		android:layout_marginTop="3px"/>
-  		  <ImageButton
-  	android:id="@+id/removeOverlay"
-  	android:layout_width="wrap_content"
-  	android:layout_height="wrap_content"
-  	android:layout_gravity="center"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	<TextView android:id="@+id/locationType" android:text="@string/fType"
+		android:textSize="6pt" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
+	<TextView android:id="@+id/locationSnippet" android:text="@string/fSnippet"
+		android:textSize="6pt" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_marginTop="3px" />
+	<TextView android:id="@+id/locationName" android:text="@string/fName"
+		android:textSize="6pt" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_marginTop="3px" />
+	<TextView android:id="@+id/locationAddress" android:text="@string/fAddress"
+		android:textSize="6pt" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_marginTop="3px" />
+	<LinearLayout android:orientation="horizontal"
+	
+	
+		 android:layout_width="wrap_content"
+		 android:layout_height="wrap_content" 
+		 android:layout_gravity="center_horizontal">
+		<ImageButton android:id="@+id/iOK"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center" />
+		<ImageButton android:id="@+id/iRemove"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_gravity="center" />
+	</LinearLayout>
 </LinearLayout>
