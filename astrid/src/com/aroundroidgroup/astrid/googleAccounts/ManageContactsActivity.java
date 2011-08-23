@@ -60,6 +60,7 @@ public class ManageContactsActivity extends ListActivity{
     private Long taskID;
 
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
+    public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 

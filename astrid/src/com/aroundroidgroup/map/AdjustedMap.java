@@ -366,8 +366,11 @@ public class AdjustedMap extends MapView {
         mTappedOverlay.removeOverlayByIndex(index);
     }
 
-    public boolean clearOverlay(int id) {
-        MapItemizedOverlay overlay = overlays.get(id);
+    public boolean clearOverlay(String id) {
+        MapItemizedOverlay overlay = null;
+        for (Map.Entry<MapItemizedOverlay, String> pair : mNames.entrySet())
+            if (pair.getValue().equals(id))
+                overlay = pair.getKey();
         if (overlay == null)
             return false;
         overlay.clear();
@@ -392,10 +395,6 @@ public class AdjustedMap extends MapView {
             return true;
         }
         return false;
-        //        for (int i = typeOverlay.size() - 1 ; i >= 0 ; i--)
-        //            if (typeOverlay.getItem(i).getSnippet().equals(type))
-        //                typeOverlay.removeOverlay(i);
-
     }
 
     public int getItemsByExtrasCount(int id, String extras) {
@@ -413,16 +412,6 @@ public class AdjustedMap extends MapView {
         MapItemizedOverlay overlay = overlays.get(id);
         List<String> xtraLst = new ArrayList<String>();
         if (overlay != null) {
-            //            if (overlay.getFocus() != null) /* had focus in the past, return the focus to the first item */
-            //                while (overlay.nextFocus(false) != null);
-            //            if (overlay.getFocus() == null) { /* none of the items in the overlay is focused */
-            //                AdjustedOverlayItem item = overlay.nextFocus(true); /* gives the first item */
-            //                while (item != null) { /* as long the overlay isn't empty or not reaching the end */
-            //                    if (item.getExtras().equals(extras))
-            //                        xtraLst.add(Misc.geoToDeg(item.getPoint()).toString());
-            //                    item = overlay.nextFocus(true);
-            //                }
-            //            }
             for (AdjustedOverlayItem item : overlay) {
                 if (item.getExtras().equals(extras))
                     xtraLst.add(Misc.geoToDeg(item.getPoint()).toString());
@@ -531,8 +520,7 @@ public class AdjustedMap extends MapView {
                 }
             }
         }
-        boolean b = super.dispatchTouchEvent(event);
-        return b;
+        return super.dispatchTouchEvent(event);
     }
 
     public void refresh() {
@@ -755,7 +743,10 @@ public class AdjustedMap extends MapView {
         }
 
         public void addOverlay(AdjustedOverlayItem overlay) {
+            if (overlay.getPoint() == null)
+                return;
             mOverlays.add(overlay);
+            overlay.setUniqueID(mOverlays.indexOf(overlay));
             setLastFocusedIndex(-1);
             populate();
         }

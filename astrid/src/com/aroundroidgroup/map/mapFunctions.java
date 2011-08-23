@@ -17,9 +17,11 @@ public class mapFunctions {
     public static final int TITLE_SPECIFIC = 3;
     public static final int TITLE_TASK_NAME = 4;
 
-    public static final int ALL_GOOD = 0;
-    public static final int PARTIAL_GOOD = 1;
-    public static final int ALL_BAD = -1;
+    public static final int FAILURE = 0;
+    public static final int SUCCESS = 1;
+    public static final int ALL_GOOD = 2;
+    public static final int PARTIAL_GOOD = 3;
+    public static final int ALL_BAD = 4;
 
     public static int[] addTagsToMap(AdjustedMap map, int id, String[] locationTypes, DPoint center, double radius, long taskID) {
         if (locationTypes.length == 0)
@@ -40,11 +42,11 @@ public class mapFunctions {
                         c.close();
                     kindLocations = Misc.googlePlacesQuery(type, center, radius);
                     if (!kindLocations.isEmpty()) {
-                        feedback[i] = 1;
+                        feedback[i] = SUCCESS;
                         locDB.createType(type, center.toString(), radius, kindLocations);
                     }
                     else {
-                        feedback[i] = 0;
+                        feedback[i] = FAILURE;
                         continue;
                     }
                     /* running on all the tags (bank, post-office, ATM, etc...) */
@@ -104,10 +106,8 @@ public class mapFunctions {
                 try {
                     savedAddr = Geocoding.reverseGeocoding(d);
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (JSONException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 if (savedAddr == null)
@@ -119,20 +119,36 @@ public class mapFunctions {
 
     }
 
-    public static void addPeopleToMap(AdjustedMap map, int id, String[] people, DPoint[] locations, long taskID) {
-        for (int i = 0 ; i < people.length ; i++)
-            if (!(locations[i] == null || locations[i].isNaN()) && people[i] != null)
-                map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, null);
+    public static int[] addPeopleToMap(AdjustedMap map, int id, String[] people, DPoint[] locations, long taskID) {
+        if (map == null || people.length != locations.length)
+            return new int[0];
+        int[] feedback = new int[people.length];
+        for (int i = 0 ; i < people.length ; i++) {
+            if (people[i] == null || locations[i] == null || locations[i].isNaN()) {
+                feedback[i] = FAILURE;
+                continue;
+            }
+            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, null);
+            feedback[i] = SUCCESS;
+        }
+        return feedback;
     }
 
     public static int degreeOfSuccess(int[] feedback) {
-        int sum = 0;
-        for (int i : feedback)
-            sum += i;
-        if (sum > 0 && sum == feedback.length && feedback.length > 0)
-            return ALL_GOOD;
-        else if (sum == 0 && feedback.length > 0)
+        if (feedback == null)
+            return FAILURE;
+        boolean notAllGood = false;
+        boolean notAllBad = false;
+        for (int i = 0 ; i < feedback.length ; i++) {
+            if (feedback[i] != SUCCESS)
+                notAllGood = true;
+            if (feedback[i] != FAILURE)
+                notAllBad = true;
+        }
+        if (!notAllBad)
             return ALL_BAD;
+        if (!notAllGood)
+            return ALL_GOOD;
         return PARTIAL_GOOD;
     }
 
