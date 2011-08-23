@@ -75,7 +75,7 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
             }
         }
         else{
-            holder.secondaryTextView.setText("No additional contact informatio");
+            holder.secondaryTextView.setText("No additional contact information");
         }
         // Change the icon for Windows and iPhone
         String valid = currectFP.getValid();

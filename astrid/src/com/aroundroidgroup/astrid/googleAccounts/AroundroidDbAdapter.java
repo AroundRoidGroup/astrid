@@ -176,7 +176,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeopleWContactRegistered() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, "(KEY_VALID<>'Unregistered') AND (" + KEY_CONTACTID + ">=0)", null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, "("+ KEY_VALIDS +"<>'Unregistered') AND (" + KEY_CONTACTID + ">=0)", null, null, null, null);
     }
 
     /**

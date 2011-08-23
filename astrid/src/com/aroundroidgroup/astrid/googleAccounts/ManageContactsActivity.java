@@ -51,7 +51,6 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_HURRAY2 = 4;
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
-    private static final int DIALOG_CONTACTS_LIST = 7;
 
 
     //TODO doesnt scan agian for people in list because they are not in locationService.getAllLocationByPeople
@@ -145,6 +144,18 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
+    private Dialog createNoFriendsDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Oh no!");
+        builder.setMessage("Non of your contacts are using Aroundroid.\n:(");
+        builder.setNeutralButton("Ok...",  new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //do nothing
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
+    }
 
 
     private Dialog createHurrayDialog(){
@@ -187,11 +198,18 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private Dialog createContactsDialog(){
-        //TODO change to fetchAllPeopleWContactValids
-        Cursor cur = mDbHelper.fetchAllPeopleWContact();
-        final ArrayList<String> mailList = new ArrayList<String>(cur.getCount());
-        ArrayList<String> displayMailList = new ArrayList<String>(cur.getCount());
-        final boolean[] tickArray = new boolean[(cur.getCount())];
+        Cursor cur = mDbHelper.fetchAllPeopleWContactRegistered();
+        //TODO deal with cur error
+        int numberOfFriends = cur.getCount();
+
+        //if no friends create ok dialog. if has friends create list dialog.
+        if (numberOfFriends<=0){
+            cur.close();
+            return createNoFriendsDialog();
+        }
+        final ArrayList<String> mailList = new ArrayList<String>(numberOfFriends);
+        ArrayList<String> displayMailList = new ArrayList<String>(numberOfFriends);
+        final boolean[] tickArray = new boolean[(numberOfFriends)];
         if (cur.moveToFirst()){
             int i =0;
             do{
@@ -288,9 +306,6 @@ public class ManageContactsActivity extends ListActivity{
         case DIALOG_HURRAY2:
             dialog = createHurray2Dialog();
             break;
-        case DIALOG_CONTACTS_LIST:
-            dialog = createContactsDialog();
-            break;
         case DIALOG_ALREADY_SCANNED:
             dialog = createAlreadyScannedDialog();
             break;
@@ -306,7 +321,7 @@ public class ManageContactsActivity extends ListActivity{
         .setTitle("Contacts Aready Scanned!")
         .setPositiveButton("Yes (recommanded)", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                showDialog(DIALOG_CONTACTS_LIST);
+                createContactsDialog().show();
             }
         })
         .setNegativeButton("No. I like scanning stuff.", new DialogInterface.OnClickListener() {
@@ -574,7 +589,7 @@ public class ManageContactsActivity extends ListActivity{
             }
             _progressDialog.dismiss();
             if (result){
-                showDialog(DIALOG_CONTACTS_LIST);
+                createContactsDialog().show();
             }
             else{
                 //TODO dont know what to do here
@@ -618,6 +633,12 @@ public class ManageContactsActivity extends ListActivity{
                 if (!cur.moveToFirst()){
                     mDbHelper.createPeople(en.getKey(),en.getValue());
                     al.add(en.getKey());
+                }
+                else {
+                    Long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                    if (contactId != -1 && contactId != -2){
+                        al.add(en.getKey());
+                    }
                 }
                 cur.close();
             }
@@ -702,7 +723,11 @@ public class ManageContactsActivity extends ListActivity{
             if (!cur.moveToFirst()){
                 cur.close();
                 //fetch
-                prs.updatePeopleLocations(params,null,mDbHelper);
+                List<FriendProps> lfp =  prs.updatePeopleLocations(params,null,mDbHelper);
+                if (lfp==null){
+                    error = true;
+                    return false;
+                }
                 cur = mDbHelper.fetchByMail(params[0]);
                 if (cur == null || !cur.moveToFirst()){
                     if (cur!=null){
