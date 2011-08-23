@@ -62,6 +62,8 @@ public class ManageContactsActivity extends ListActivity{
 
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
 
+    public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
+
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
     private static boolean alreadyScannedSometime = false;
@@ -492,18 +494,27 @@ public class ManageContactsActivity extends ListActivity{
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
         Bundle extras = getIntent().getExtras();
+        String[] peopleWeGot = null;
         if (extras != null) {
+            peopleWeGot = extras.getStringArray(peopleArraySTR);
             taskID = extras.getLong(taskIDSTR);
         }
         else{
             taskID = null;
         }
 
-        if (taskID!=null){
-            originalPeople = myLocationService.getLocationsByPeopleAsArray(taskID);
-            for (String s : originalPeople)
-                peopleHashSet.add(s);
+        if (peopleWeGot!=null){
+            originalPeople = peopleWeGot;
         }
+        else if (taskID!=null){
+            originalPeople = myLocationService.getLocationsByPeopleAsArray(taskID);
+        }
+        else{
+            originalPeople = new String[0];
+        }
+
+        for (String s : originalPeople)
+            peopleHashSet.add(s);
 
         fillData();
         ListView list = getListView();
