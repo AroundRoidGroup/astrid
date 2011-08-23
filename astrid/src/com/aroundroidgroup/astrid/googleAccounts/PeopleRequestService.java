@@ -42,6 +42,12 @@ public class PeopleRequestService {
         return arcm.isConnecting();
     }
 
+
+    public String getAccountString(){
+        return arcm.getAccountString();
+    }
+
+
     public void connectToService(Account a,Context c){
         setOn(true);
         if (arcm.isConnecting() || arcm.isConnected()){

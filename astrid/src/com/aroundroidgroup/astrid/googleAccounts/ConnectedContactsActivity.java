@@ -16,9 +16,6 @@ z * Copyright (C) 2008 Google Inc.
 
 package com.aroundroidgroup.astrid.googleAccounts;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
@@ -32,14 +29,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
-import com.aroundroidgroup.astrid.gpsServices.ContactsHelper.idNameMail;
 import com.timsu.astrid.R;
 
 public class ConnectedContactsActivity extends ListActivity {
@@ -192,6 +187,7 @@ public class ConnectedContactsActivity extends ListActivity {
         lv.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                     int position, long id) {
+                /*
                 //TODO ALON : open YES NO MESSAGE WOLUD YOU LIKE TO CHOOSE .GETTEXT() ?
                 // When clicked, show a toast with the TextView text
                 idNameMail idnm = (idNameMail)parent.getAdapter().getItem(position);
@@ -201,6 +197,7 @@ public class ConnectedContactsActivity extends ListActivity {
                 intent.putExtra(FRIEND_MAIL, idnm.mail);
                 setResult(RESULT_OK, intent);
                 finish();
+                */
             }
         });
     }
@@ -230,12 +227,13 @@ public class ConnectedContactsActivity extends ListActivity {
 
     private void fillData() {
 
+        /*
         Cursor cur = mDbHelper.fetchAllPeopleWContact();
         List<idNameMail> idnmList = new ArrayList<idNameMail>();
         while(cur.moveToNext()){
             int index = cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID);
             int rowID = cur.getInt(index);
-            List<idNameMail> idNm = conHel.oneFriendWithGoogle(rowID);
+            List<idNameMail> idNm = null;//conHel.oneFriendWithGoogle(rowID);
             if (idNm!=null&&idNm.size()>0){
                 idnmList.add(idNm.get(0));
             }
@@ -251,6 +249,8 @@ public class ConnectedContactsActivity extends ListActivity {
         if (idnmList.size()==0){
             Toast.makeText(getApplicationContext(), "No Friends were found!", Toast.LENGTH_SHORT).show();
         }
+
+        */
 
 
 

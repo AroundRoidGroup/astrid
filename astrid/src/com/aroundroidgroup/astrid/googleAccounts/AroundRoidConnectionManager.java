@@ -29,6 +29,8 @@ public class AroundRoidConnectionManager {
 
     private Account chosenAccount;
 
+
+
     private Context cont;
     private AccountManager accountManager;
 
@@ -41,7 +43,6 @@ public class AroundRoidConnectionManager {
     private String lastToken;
 
     public synchronized HttpResponse executeOnHttp(HttpUriRequest hur) {
-        //TODO maybe parallellaty cause probelms
         if (!isConnected()){
             return null;
         }
@@ -79,6 +80,11 @@ public class AroundRoidConnectionManager {
         accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
 
     }
+
+    public String getAccountString(){
+        return chosenAccount.name;
+    }
+
 
     public boolean reconnect(){
         if (isProps()){

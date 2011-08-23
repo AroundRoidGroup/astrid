@@ -1,7 +1,8 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -27,66 +28,59 @@ public class ContactsHelper {
         return cur;
     }
 
-    public static class idNameMail{
-        public String id;
-        public String name;
-        public String mail;
-        @Override
-        public String toString() {
-            return name!=null&&mail!=null?name+ " : " + mail:super.toString();
-        }
-
-
-    }
-
-    public List<idNameMail> getFriends(Cursor cur){
-        List<idNameMail> friends = new ArrayList<idNameMail>();
+    public Set<Entry<String, Long>> getFriends(Cursor cur){
+        HashMap<String, Long> hm = new HashMap<String, Long>();
         if (cur.getCount() > 0) {
             while (cur.moveToNext()) {
-                idNameMail idm = new idNameMail();
-                idm.id = (cur.getString(
+                String id = (cur.getString(
                         cur.getColumnIndex(ContactsContract.Contacts._ID)));
-                idm.name = cur.getString(
-                        cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 Cursor emailCur = cr.query(
                         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                         null,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
-                        new String[]{idm.id}, null);
-                boolean googleMail = false;
-                while (emailCur.moveToNext() && ! googleMail) {
+                        new String[]{id}, null);
+                while (emailCur.moveToNext()) {
                     // This would allow you get several email addresses
                     // if the email addresses were stored in an array
-                    idm.mail = emailCur.getString(
+                    String mail = emailCur.getString(
                             emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                    String emailType = emailCur.getString(
-                            emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
-                    if (idm.mail.endsWith("@gmail.com")){
-                        googleMail = true;
+                    if (!hm.containsKey(mail)){
+                        hm.put(mail, Long.parseLong(id));
                     }
                 }
                 emailCur.close();
-                if (googleMail){
-                    friends.add(idm);
-                }
 
             }
         }
-        return friends;
+        return hm.entrySet();
     }
 
-    public List<idNameMail> friendsWithGoogle(){
+    public String getDisplayName(Cursor cur){
+        if (cur.moveToNext()) {
+                String id = (cur.getString(
+                        cur.getColumnIndex(ContactsContract.Contacts._ID)));
+                String name = cur.getString(
+                        cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                return name;
+            }
+        else{
+            return null;
+        }
+    }
+
+
+    public Set<Entry<String, Long>> friendsWithMail(){
         Cursor cur = getContactsCursor();
-        List<idNameMail>  l = getFriends(cur);
+        Set<Entry<String, Long>>  l = getFriends(cur);
         cur.close();
         return l;
     }
 
-    public List<idNameMail> oneFriendWithGoogle(long rowID){
-        Cursor cur = getOneFriendContactCursor(rowID);
-        List<idNameMail>  l = getFriends(cur);
+    public String oneDisplayName(long rowId){
+        Cursor cur = getOneFriendContactCursor(rowId);
+        String name = getDisplayName(cur);
         cur.close();
-        return l;
+        return name;
     }
 
 
