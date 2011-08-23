@@ -5,7 +5,15 @@
     <string name="people_location_logout">Logout</string>
     <string name="DLG_logout_pepole_location">Are you sure you want to exit?</string>
     <string name="add_friend_button">Add Friend</string>
+    <string name="send_email_invitation_text">Send e-mail invitation(recommended)</string>
+    <string name="add_friend_that_not_conect_text">It seems that your friend is not using Aroundroid. Would you like to add him anyway?</string>
+    <string name="email_title">E-mail Adrress</string>
     <string name="DLG_cancel_button">Cancel</string>
-
+    <string name="DLG_add_button">Add</string>
+      
+      
+    <!-- MANGE CONTACTS ACTIVITY -->
+   	<string name="menu_add_friend">Enter a friend Email</string>
+   	<string name="menu_add_friend2">Pick friend from Contact List</string>
 </resources>
     

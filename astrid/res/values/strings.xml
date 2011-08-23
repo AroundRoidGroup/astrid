@@ -48,8 +48,6 @@
    	<string name="addPeopleButton">Add People</string>
    	<string name="viewAllButton">View All</string>
    	
-   	<!-- MANGE CONTACTS ACTIVITY -->
-   	<string name="menu_add_friend">Enter a friend Email</string>
-   	<string name="menu_add_friend2">Pick friend from Contact List</string>
+  
 
 </resources>
