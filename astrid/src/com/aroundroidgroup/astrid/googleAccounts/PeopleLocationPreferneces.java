@@ -102,7 +102,7 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
             public boolean onPreferenceClick(Preference p) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(PeopleLocationPreferneces.this);
-                builder.setMessage(r.getString(R.string.DLG_logout_pepole_location))
+                builder.setMessage(r.getString(R.string.DLG_exit_title))
                 .setCancelable(false)
                 .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

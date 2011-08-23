@@ -169,13 +169,13 @@ public class FriendProps{
 
     //TODO fix consts
     public boolean isRegistered(){
-        return getValid()!=null && getValid().compareTo("Unregistered")!=0;
+        return getValid()!=null && getValid().compareTo("Unregistered")!=0; //$NON-NLS-1$
     }
 
     //does NOT relate to the valid parameter necessarily
     //TODO consider removing timestamp check from here and move it
     public boolean isValid(){
-        return (getValid()!=null && getValid().compareTo("Yes")==0 && getTimestamp()!=0.0
+        return (getValid()!=null && getValid().compareTo("Yes")==0 && getTimestamp()!=0.0 //$NON-NLS-1$
                 && DateUtilities.now() - getTimestamp() <= maximumValidTime);
     }
 

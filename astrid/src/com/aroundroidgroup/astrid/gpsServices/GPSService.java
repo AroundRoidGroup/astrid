@@ -37,8 +37,6 @@ public class GPSService extends Service{
 
     private final static LocationService threadLocationService = new LocationService();
 
-    private final WPSLocation userLastLocation = null;
-    private final Object userLocationLock = new Object();
 
     private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
 
@@ -77,12 +75,10 @@ public class GPSService extends Service{
         skyhookSetup();
     }
 
-    private static final int LOCATION_MESSAGE = 1;
-    private static final int ERROR_MESSAGE = 2;
-    private static final int DONE_MESSAGE = 3;
+
     private XPS _xps;
     private final MyLocationCallback _callback = new MyLocationCallback();
-    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid");
+    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid");  //$NON-NLS-1$//$NON-NLS-2$
     int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
@@ -102,13 +98,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("WPS done");
+            toastMe("WPS done"); //$NON-NLS-1$
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("WPS handleError");
+            toastMe("WPS handleError"); //$NON-NLS-1$
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -117,7 +113,7 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleIPLocation");
+            toastMe("WPS handleIPLocation"); //$NON-NLS-1$
 
         }
 
@@ -201,10 +197,8 @@ public class GPSService extends Service{
 
 
         private final int defaultSleepTime = 1000 * 1;
-        private final int defaultLocationInvalidateTime = 1000 * 120;
 
         private final int sleepTime = defaultSleepTime;
-        private final int locationInvalidateTime = defaultLocationInvalidateTime;
 
         private long lastConnectionTime;
 
@@ -285,7 +279,7 @@ public class GPSService extends Service{
         if (cur!=null){
             if (cur.moveToFirst()){
                 long l = cur.getLong(0);
-                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
+                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes"); //$NON-NLS-1$
             }
             cur.close();
         }

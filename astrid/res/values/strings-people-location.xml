@@ -1,19 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="logging_in_status">Logging In...</string>
-    <string name="people_location_login">Login</string>
-    <string name="people_location_logout">Logout</string>
-    <string name="DLG_logout_pepole_location">Are you sure you want to exit?</string>
-    <string name="add_friend_button">Add Friend</string>
-    <string name="send_email_invitation_text">Send e-mail invitation(recommended)</string>
-    <string name="add_friend_that_not_conect_text">It seems that your friend is not using Aroundroid. Would you like to add him anyway?</string>
-    <string name="email_title">E-mail Adrress</string>
-    <string name="DLG_cancel_button">Cancel</string>
-    <string name="DLG_add_button">Add</string>
-      
-      
-    <!-- MANGE CONTACTS ACTIVITY -->
-   	<string name="menu_add_friend">Enter a friend Email</string>
-   	<string name="menu_add_friend2">Pick friend from Contact List</string>
+
+	<string name="DLG_exit_title">Are you sure you want to exit?</string>
+	<string name="DLG_cancel">Cancel</string>
+	<string name="DLG_add">Add</string>
+	<string name="DLG_add_all">Add All</string>
+	<string name="DLG_ok">Ok</string>
+	<string name="DLG_hurray">Hurray!</string>
+	<string name="DLG_yes_recommanded">Yes (recommanded)</string>
+
+    <!--No additional contact information-->
+	<string name="no_contact_info">No additional contact information</string>
+
+	<!-- people location preference (login/logout) -->
+	<string name="EPr_people_base_remainder">People Based Reminder</string>
+	<string name="EPr_connect">Aroundroid people\'s location</string>
+	<string name="logging_in_status">Logging In...</string>
+	<string name="people_location_login">Login</string>
+	<string name="people_location_logout">Logout</string>
+
+
+	<!-- Add anyway dialog -->
+	<string name="add_friend_button">Add Friend</string>
+	<string name="send_email_invitation_text">Send e-mail invitation(recommended)</string>
+	<string name="add_friend_that_not_conect_text">It seems that your friend is not using Aroundroid.
+		Would you like to add him anyway?</string>
+
+	<!-- Add friend dialog -->
+	<string name="DLG_add_title">Enter friend\'s e-mail address</string>
+	<string name="email_title">E-mail Address</string>
+
+	<!-- Delete friend dialog -->
+	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete</string>
+	<string name="DLG_delete_text_after_mail">from your tracking friend list?</string>
+	<string name="DLG_delete_title">Delete friend</string>
+
+	<!-- Toast -invitation sent or not sent to your friend -->
+	<string name="invitation_sent">An invitation was sent to your friend!</string>
+	<string name="invitation_not_sent">Did not send an invitation.</string>
+
+	<!-- invitation suggestion to your friend -->
+	<string name="invitation_suggestion_before_mail">It seems that your friend ( </string>
+	<string name="invitation_suggestion_after_mail"> ) is not using Aroundroid. Would you like to add
+		him anyway?</string>
+
+	<!-- Friend not registered dialog -->
+	<string name="DLG_not_registered_title">Friend not registered</string>
+
+	<!-- Rescan dialog -->
+	<string name="DLG_rescan_title">The contact list has been scanned already. Would
+		you like to skip the scanning process?</string>
+	<string name="DLG_rescan_text">Contacts Aready Scanned!</string>
+
+	<!-- Friend is already in the list dialog -->
+	<string name="DLG_friend_already_exist_title">Already in the List!</string>
+	<string name="DLG_friend_already_exist_text">Your friend is already in your list!</string>
+
+
+	<!-- People location connecting dialog -->
+	<string name="DLG_connecting_title">Not Connected!</string>
+	<string name="DLG_connecting_text">You are not connected right now to Aroundroid
+		People Location Service. You must connected to procced. would you like
+		to do that now?</string>
+
+	<!-- Pick contacts to track -->
+	<string name="pick_contacts">Pick contacts to track</string>
+
+	<!--scanning the contact list dialog -->
+	<string name="contacts_scan_title">Looking for contacts</string>
+	<string name="scaning_contacts_text">Scanning you Contact List to find friends that use
+		AroundRoid. This may take a while...</string>
+
+	<!-- Checking if your friend is using Aroundroid -->
+	<string name="checking_friend_title">Checking friend</string>
+	<string name="checking_friend_text">Finding out if your friend is using Aroundroid.
+		Please wait...</string>
+
+	<!--Friend was added to the tracking list -->
+	<string name="registered_added">Your friend is registered and was added to your
+		tracking list.</string>
+	<string name="unregistered_added">Your friend was added to your tracking list.
+	</string>
+
+
+	<!-- MANGE CONTACTS ACTIVITY -->
+	<string name="menu_add_friend">Enter a friend Email</string>
+	<string name="menu_add_friend2">Pick friend from Contact List</string>
 </resources>
     

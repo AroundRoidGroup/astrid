@@ -3,6 +3,7 @@ package com.aroundroidgroup.astrid.googleAccounts;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
 import com.timsu.astrid.R;
+import com.todoroo.andlib.service.ContextManager;
 
 
 public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
@@ -46,7 +48,7 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
     public View getView(int position, View convertView, ViewGroup parent) {
         // ViewHolder will buffer the assess to the individual fields of the row
         // layout
-
+        Resources r = ContextManager.getContext().getResources();
         ViewHolder holder;
         // Recycle existing view if passed as parameter
         // This will save memory and time on Android
@@ -75,13 +77,13 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
             }
         }
         else{
-            holder.secondaryTextView.setText("No additional contact informatio");
+            holder.secondaryTextView.setText(r.getString(R.string.no_contact_info));
         }
         // Change the icon for Windows and iPhone
         String valid = currectFP.getValid();
-        if (valid.compareTo("Yes")==0){
+        if (valid.compareTo("Yes")==0){ //$NON-NLS-1$
             holder.imageView.setImageResource(R.drawable.btn_green_button);
-        } else if (valid.compareTo("No")==0) {
+        } else if (valid.compareTo("No")==0) { //$NON-NLS-1$
             holder.imageView.setImageResource(R.drawable.btn_red_button);
         } else {
             holder.imageView.setImageResource(R.drawable.btn_sry_sign);

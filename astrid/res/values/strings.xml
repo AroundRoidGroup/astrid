@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add">add</string>
-    <string name="hello">hello</string>
-    <string name="txtWhat">Look For</string>
-    <string name="txtRds">Radius</string>
-    <string name="txtFrom">From</string>
-    
-    <string name="initWhat">icecream</string>
-   	<string name="initRadius">10</string>
-   	<string name="initFrom">WI</string> 
-   	<string name="titleHdr">Task Title:</string>
-   	<string name="connectPeople">Connect To People Base Reminder!</string>
-	<string name="addFriendManually">Type a friend\'s email that is using Aroundroid People location service:</string>
-	<string name="scanForFriends">OR - Hit SCAN button from the menu see which Contact from the Contact List is registered to the service!</string>
-   	<string name="noCreds">There are no users associated with this Android device.</string>
-   	<string name="waitngForContacts">Scanning contact list and checking who is registered! this may take a few minutes, please wait.</string>
-   	<string name="scanContacts">Scan now!</string>
-   	<string name="specificTitleText">Address:</string>
-   	<string name="specificAddressText">By Address...</string>
-   	<string name="specificButtonText">Quit</string>
-   	<string name="specificAddressButtonText">Add</string>
-   	<string name="EPr_people_base_remainder">People Base Reminder</string>
-   	<string name="EPr_connect">Connect...</string>
+	<string name="add">add</string>
+	<string name="hello">hello</string>
+	<string name="txtWhat">Look For</string>
+	<string name="txtRds">Radius</string>
+	<string name="txtFrom">From</string>
+
+	<string name="initWhat">icecream</string>
+	<string name="initRadius">10</string>
+	<string name="initFrom">WI</string>
+	<string name="titleHdr">Task Title:</string>
+	<string name="connectPeople">Connect To People Based Reminder!</string>
+	<string name="addFriendManually">Type a friend\'s email that is using Aroundroid
+		People location service:</string>
+	<string name="scanForFriends">OR - Hit SCAN button from the menu see which
+		Contact from the Contact List is registered to the service!</string>
+	<string name="noCreds">There are no users associated with this Android
+		device.</string>
+	<string name="waitngForContacts">Scanning contact list and checking who is
+		registered! this may take a few minutes, please wait.</string>
+	<string name="scanContacts">Scan now!</string>
+	<string name="specificTitleText">Address:</string>
+	<string name="specificAddressText">By Address...</string>
+	<string name="specificButtonText">Quit</string>
+	<string name="specificAddressButtonText">Add</string>
+	
+	
 	<string name="locationFilterTitle">Places Nearby</string>
-   <string name="OK">OK!</string>
-   	<!-- in Focaccia activity -->
-  <string name="fSnippet">Snippet:</string>
-  <string name="fType">Type:</string>
-  <string name="fName">Name:</string>
-  <string name="fAddress">Address:</string>
-   	
-   	 <!-- =================================== Location  == -->
-  <!-- Location label -->
-  <string name="TEA_location_label">Locations</string>
-   <!-- Location button -->
-   	<string name="text_location_button">Manage Locations</string>
-   	
-   	
-   	
-   	<!-- GOOGLE MAPS API KEY -->
-   	<string name="GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
-   	
-   	<!-- GOOGLE PLACES API KEY -->
-   	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
-   	
-   	<!-- SPECIFIC MAP -->
-   	<string name="addPeopleButton">Add People</string>
-   	<string name="viewAllButton">View All</string>
-   	
-  
+	<string name="OK">OK!</string>
+	<!-- in Focaccia activity -->
+	<string name="fSnippet">Snippet:</string>
+	<string name="fType">Type:</string>
+	<string name="fName">Name:</string>
+	<string name="fAddress">Address:</string>
+
+	<!-- =================================== Location == -->
+	<!-- Location label -->
+	<string name="TEA_location_label">Locations</string>
+	<!-- Location button -->
+	<string name="text_location_button">Manage Locations</string>
+
+
+
+	<!-- GOOGLE MAPS API KEY -->
+	<string name="GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
+
+	<!-- GOOGLE PLACES API KEY -->
+	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+
+	<!-- SPECIFIC MAP -->
+	<string name="addPeopleButton">Add People</string>
+	<string name="viewAllButton">View All</string>
+
+
 
 </resources>
