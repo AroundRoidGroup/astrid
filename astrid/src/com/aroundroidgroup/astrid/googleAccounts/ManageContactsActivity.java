@@ -63,8 +63,6 @@ public class ManageContactsActivity extends ListActivity{
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
     public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
 
-    public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
-
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
     private static boolean alreadyScannedSometime = false;

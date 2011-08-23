@@ -15,8 +15,18 @@ import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
-    public static final int DELETE = 1;
-    public static final int DELETE_ALL = 2;
+    public static final int RESULT_CODE_DELETE = 1;
+    public static final int RESULT_CODE_DELETE_ALL = 2;
+
+    public static final String SHOW_NAME = "name"; //$NON-NLS-1$
+    public static final String SHOW_ADDRESS = "address"; //$NON-NLS-1$
+    public static final String SHOW_TITLE = "title"; //$NON-NLS-1$
+    public static final String SHOW_SNIPPET = "snippet"; //$NON-NLS-1$
+    public static final String SHOW_AMOUNT_BY_EXTRAS = "amount"; //$NON-NLS-1$
+    public static final String CMENU_EXTRAS = "contextMenuExtras"; //$NON-NLS-1$
+    public static final String READ_ONLY = "read_only"; //$NON-NLS-1$
+    public static final String DELETE = "delete"; //$NON-NLS-1$
+    public static final String DELETE_ALL = "delete_all"; //$NON-NLS-1$
 
     private TextView mType;
     private TextView mSnippet;
@@ -41,23 +51,13 @@ public class Focaccia extends Activity {
         String tNameAM = bundle.getString(AdjustedMap.TASK_NAME);
         setTitle((tNameSML == null) ? tNameAM : tNameSML);
 
-        String nameAM = bundle.getString(AdjustedMap.SHOW_NAME);
-        final String addressAM = bundle.getString(AdjustedMap.SHOW_ADDRESS);
-        final String snippetAM = bundle.getString(AdjustedMap.SHOW_SNIPPET);
-        final String amountAM = bundle.getString(AdjustedMap.SHOW_AMOUNT_BY_EXTRAS);
-        final String titleAM = bundle.getString(AdjustedMap.SHOW_TITLE);
-        final String deleteAM = bundle.getString(AdjustedMap.DELETE);
-        final String noDeleteAM = bundle.getString(AdjustedMap.READ_ONLY);
-
-        final String extrasMEL = bundle.getString(SpecificMapLocation.CMENU_EXTRAS);
-        String nameMEL = bundle.getString(SpecificMapLocation.SHOW_NAME);
-        final String addressMEL = bundle.getString(SpecificMapLocation.SHOW_ADDRESS);
-        final String snippetMEL = bundle.getString(SpecificMapLocation.SHOW_SNIPPET);
-        final String amountMEL = bundle.getString(SpecificMapLocation.SHOW_AMOUNT_BY_EXTRAS);
-        final String titleMEL = bundle.getString(SpecificMapLocation.SHOW_TITLE);
-        final String deleteMEL = bundle.getString(SpecificMapLocation.DELETE);
-        final String deleteAllMEL = bundle.getString(SpecificMapLocation.DELETE_ALL);
-        final String noDeleteMEL = bundle.getString(SpecificMapLocation.READ_ONLY);
+        String name = bundle.getString(SHOW_NAME);
+        final String address = bundle.getString(SHOW_ADDRESS);
+        final String snippet = bundle.getString(SHOW_SNIPPET);
+        final String amount = bundle.getString(SHOW_AMOUNT_BY_EXTRAS);
+        final String title = bundle.getString(SHOW_TITLE);
+        final String delete = bundle.getString(DELETE);
+        final String deleteAll = bundle.getString(DELETE_ALL);
 
         mType = (TextView)findViewById(R.id.locationType);
         mSnippet = (TextView)findViewById(R.id.locationSnippet);
@@ -87,7 +87,7 @@ public class Focaccia extends Activity {
                 dialog.setTitle("Confirm Remove"); //$NON-NLS-1$
 
                 /* setting the dialog content message */
-                if (deleteAllMEL != null)
+                if (deleteAll != null)
                     dialog.setMessage("Are you sure you want to remove all locations ?"); //$NON-NLS-1$
                 else dialog.setMessage("Are you sure you want to remove this location ?"); //$NON-NLS-1$
 
@@ -95,10 +95,10 @@ public class Focaccia extends Activity {
                 dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
-                        if (deleteAllMEL != null)
-                            setResult(DELETE_ALL);
+                        if (deleteAll != null)
+                            setResult(RESULT_CODE_DELETE_ALL);
                         else
-                            setResult(DELETE);
+                            setResult(RESULT_CODE_DELETE);
                         finish();
                     }
                 });
@@ -117,7 +117,7 @@ public class Focaccia extends Activity {
         };
 
         /* adding the functionality to the removeButton because DELETE option is enabled */
-        if (deleteAM != null || deleteMEL != null || deleteAllMEL != null) {
+        if (delete != null || deleteAll != null) {
             removeButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.remove_overlay));
             removeButton.setOnClickListener(deleteButtonListener);
         }
@@ -125,22 +125,20 @@ public class Focaccia extends Activity {
 
         okButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.location_info));
         okButton.setOnClickListener(okButtonListener);
-        if (nameAM != null || nameMEL != null) {
-            if (amountAM != null)
-                nameAM += " (" + amountAM + " results)";  //$NON-NLS-1$//$NON-NLS-2$
-            if (amountMEL != null)
-                nameMEL += " (" + amountMEL + " results)";  //$NON-NLS-1$//$NON-NLS-2$
-            mType.setText(Html.fromHtml("<b>" + mType.getText() + "</b> " + ((nameAM != null) ? nameAM : nameMEL))); //$NON-NLS-1$ //$NON-NLS-2$
+        if (name != null) {
+            if (amount != null)
+                name += " (" + amount + " results)";  //$NON-NLS-1$//$NON-NLS-2$
+            mType.setText(Html.fromHtml("<b>" + mType.getText() + "</b> " + name)); //$NON-NLS-1$ //$NON-NLS-2$
         }
         else mType.setVisibility(View.GONE);
-        if (addressAM != null || addressMEL != null)
-            mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b> " + ((addressAM != null) ? addressAM : addressMEL))); //$NON-NLS-1$ //$NON-NLS-2$
+        if (address != null)
+            mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b> " + address)); //$NON-NLS-1$ //$NON-NLS-2$
         else mAddress.setVisibility(View.GONE);
-        if (titleAM != null || titleMEL != null)
-            mName.setText(Html.fromHtml("<b>" + mName.getText() + "</b> " + ((titleAM != null) ? titleAM : titleMEL)));  //$NON-NLS-1$//$NON-NLS-2$
+        if (title != null)
+            mName.setText(Html.fromHtml("<b>" + mName.getText() + "</b> " + title));  //$NON-NLS-1$//$NON-NLS-2$
         else mName.setVisibility(View.GONE);
-        if (snippetAM != null || snippetMEL != null)
-            mSnippet.setText(Html.fromHtml("<b>" + mSnippet.getText() + "</b> " + ((snippetAM != null) ? snippetAM : snippetMEL)));  //$NON-NLS-1$//$NON-NLS-2$
+        if (snippet != null)
+            mSnippet.setText(Html.fromHtml("<b>" + mSnippet.getText() + "</b> " + snippet));  //$NON-NLS-1$//$NON-NLS-2$
         else mSnippet.setVisibility(View.GONE);
     }
 

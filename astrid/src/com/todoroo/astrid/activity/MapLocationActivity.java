@@ -15,6 +15,7 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
 import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
@@ -29,6 +30,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     public static final String MAP_EXTRA_TASK = "task"; //$NON-NLS-1$
 
     private Task mCurrentTask = null;
+    private long mTaskID;
     private AdjustedMap mMapView;
     private final LocationService locationService = new LocationService();
     private double mRadius;
@@ -103,24 +105,23 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         /* Receiving task from the previous activity and extracting the tags from it */
         Bundle b = getIntent().getExtras();
         mCurrentTask = (Task) b.getParcelable(MAP_EXTRA_TASK);
-
-        mMapView.associateMapWithTask(mCurrentTask.getId());
+        mTaskID = mCurrentTask.getId();
 
         /* Setting up the overlay system which will allow us to add drawable object that will mark */
         /* LocationsByType and/or SpecificLocation and/or People */
 
         mMapView.createOverlay(SPECIFIC_OVERLAY, this.getResources().getDrawable(R.drawable.icon_specific), new String[] {
-            AdjustedMap.SHOW_TITLE, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_SPECIFIC_NAME);
         mMapView.createOverlay(TYPE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_type), new String[] {
-            AdjustedMap.SHOW_NAME, AdjustedMap.SHOW_AMOUNT_BY_EXTRAS, AdjustedMap.SHOW_TITLE, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_TYPE_NAME);
         mMapView.createOverlay(PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
-            AdjustedMap.SHOW_NAME, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
         }, OVERLAY_PEOPLE_NAME);
 
         /* Adding people that are related to the task */
-        String[] people = locationService.getLocationsByPeopleAsArray(mCurrentTask.getId());
+        String[] people = locationService.getLocationsByPeopleAsArray(mTaskID);
         DPoint[] coords = new DPoint[people.length];
         for (int i = 0 ; i < people.length ; i++) {
             Cursor c = mPeopleDB.fetchByMail(people[i]);
@@ -131,19 +132,19 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                 c.close();
             }
         }
-        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, mCurrentTask.getId());
+        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, mTaskID);
 
-        String[] specificLocations = locationService.getLocationsBySpecificAsArray(mCurrentTask.getId());
+        String[] specificLocations = locationService.getLocationsBySpecificAsArray(mTaskID);
         /* Converting from location written as string to DPoint */
         coords = new DPoint[specificLocations.length];
         for (int i = 0 ; i < specificLocations.length ; i++)
             coords[i] = new DPoint(specificLocations[i]);
-        mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mCurrentTask.getId()); //$NON-NLS-1$
+        mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mTaskID); //$NON-NLS-1$
 
         /* If the task is location-based, the following code will add the locations to the map */
-        String[] locationTags = locationService.getLocationsByTypeAsArray(mCurrentTask.getId());
+        String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
         mainLoop: for (String type : locationTags) {
-            List<String> locationByType = locationService.getLocationsByTypeSpecial(mCurrentTask.getId(), type);
+            List<String> locationByType = locationService.getLocationsByTypeSpecial(mTaskID, type);
             Map<String, DPoint> data = null;
             for (String location : locationByType) {
                 String savedAddr = mLocationDB.fetchByCoordinateAsString(location);
@@ -186,11 +187,11 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                                 savedBusiness = pair.getKey();
                     }
                 }
-                mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(location)), savedBusiness, type, savedAddr, TYPE_OVERLAY, mCurrentTask.getId(), type);
+                mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(location)), savedBusiness, type, savedAddr, TYPE_OVERLAY, mTaskID, type);
             }
             data = null;
         }
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, mCurrentTask.getId());
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, mTaskID);
 
         /* Setting the text-view to hold the task title */
         mTaskTitleTV.setText(mCurrentTask.getValue(Task.TITLE));
