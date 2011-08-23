@@ -28,16 +28,16 @@ public class PeopleRequest {
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (myFp!=null && myFp.isValid()){
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", myFp.getLat())); //$NON-NLS-1$
-            nameValuePairs.add(new BasicNameValuePair("GPSLON", myFp.getLon()));
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", myFp.getLon())); //$NON-NLS-1$
             //TODO : go back to userLastLocation
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP",myFp.getTime()));
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP",myFp.getTime())); //$NON-NLS-1$
         }
         else{
-            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0)));
-            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0)));
-            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0)));
+            nameValuePairs.add(new BasicNameValuePair("GPSLAT", String.valueOf(0.0))); //$NON-NLS-1$
+            nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0))); //$NON-NLS-1$
+            nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0))); //$NON-NLS-1$
         }
-        nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com"));
+        nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com")); //$NON-NLS-1$
         return nameValuePairs;
     }
 
@@ -67,7 +67,7 @@ public class PeopleRequest {
 
     private static List<NameValuePair> createMailPostData(String mail){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail));
+        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail)); //$NON-NLS-1$
         return nameValuePairs;
     }
 

@@ -51,8 +51,8 @@ public class MyArrayAdapter extends ArrayAdapter<String> {
 		holder.textView.setText(names[position]);
 		// Change the icon for Windows and iPhone
 		String s = names[position];
-		if (s.startsWith("Windows7") || s.startsWith("iPhone")
-				|| s.startsWith("Solaris")) {
+		if (s.startsWith("Windows7") || s.startsWith("iPhone") //$NON-NLS-1$ //$NON-NLS-2$
+				|| s.startsWith("Solaris")) { //$NON-NLS-1$
 
 			holder.imageView.setImageResource(R.drawable.icon);
 		} else {
