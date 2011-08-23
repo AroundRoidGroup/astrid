@@ -31,16 +31,16 @@ public class placeInfo {
 
 	@Override
     public String toString() {
-		String s = "";
-		s += "Title: " + title + "\n";
-		s += "street Address: " + streetAddress + "\n";
-		s += "region: " + region + "\n";
-		s += "city: " + city + "\n";
-		s += "country: " + country + "\n";
-		s += "static Map Url: " + staticMapUrl + "\n";
-		s += "url: " + url + "\n";
-		s += "lng: " + lng + "\n";
-		s += "lat: " + lat + "\n";
+		String s = ""; //$NON-NLS-1$
+		s += "Title: " + title + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "street Address: " + streetAddress + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "region: " + region + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "city: " + city + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "country: " + country + "\n";  //$NON-NLS-1$//$NON-NLS-2$
+		s += "static Map Url: " + staticMapUrl + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "url: " + url + "\n";  //$NON-NLS-1$//$NON-NLS-2$
+		s += "lng: " + lng + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
+		s += "lat: " + lat + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
 		return s;
 	}
 

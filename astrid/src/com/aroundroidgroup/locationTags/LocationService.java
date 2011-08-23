@@ -21,7 +21,7 @@ import com.todoroo.astrid.service.MetadataService;
 
 public class LocationService {
 
-    private static final String MOTI_DIVIDOR = "@";
+    private static final String MOTI_DIVIDOR = "@"; //$NON-NLS-1$
 
     //TODO : check synchronized??
 

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="logging_in_status">Logging In!</string>
-    
-    
-    
+    <string name="logging_in_status">Logging In...</string>
+    <string name="people_location_login">Login</string>
+    <string name="people_location_logout">Logout</string>
+    <string name="DLG_logout_pepole_location">Are you sure you want to exit?</string>
+    <string name="add_friend_button">Add Friend</string>
+    <string name="DLG_cancel_button">Cancel</string>
+
 </resources>
     

@@ -39,9 +39,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private static final int PEOPLE_OVERLAY = 3;
 
     /* overlays' names */
-    private static final String OVERLAY_TYPE_NAME = "Type Location";
-    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location";
-    private static final String OVERLAY_PEOPLE_NAME = "People Location";
+    private static final String OVERLAY_TYPE_NAME = "Type Location"; //$NON-NLS-1$
+    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location"; //$NON-NLS-1$
+    private static final String OVERLAY_PEOPLE_NAME = "People Location"; //$NON-NLS-1$
 
     private AroundroidDbAdapter mPeopleDB;
     private LocationsDbAdapter mLocationDB;

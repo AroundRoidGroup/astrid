@@ -15,8 +15,6 @@ import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
-    private final String addressText = null;
-    private final boolean neededToReverseGecode = false;
 //    public static final int FOCACCIA_RESULT_CODE_REMOVE_TAP = 1;
 //    public static final int FOCACCIA_RESULT_CODE_REMOVE_TYPE = 2;
 //    public static final int FOCACCIA_RESULT_CODE_OK = 3;
@@ -53,9 +51,7 @@ public class Focaccia extends Activity {
         final String amountAM = bundle.getString(AdjustedMap.SHOW_AMOUNT_BY_EXTRAS);
         final String titleAM = bundle.getString(AdjustedMap.SHOW_TITLE);
         final String deleteAM = bundle.getString(AdjustedMap.DELETE);
-        final String noDeleteAM = bundle.getString(AdjustedMap.READ_ONLY);
 
-        final String extrasMEL = bundle.getString(SpecificMapLocation.CMENU_EXTRAS);
         String nameMEL = bundle.getString(SpecificMapLocation.SHOW_NAME);
         final String addressMEL = bundle.getString(SpecificMapLocation.SHOW_ADDRESS);
         final String snippetMEL = bundle.getString(SpecificMapLocation.SHOW_SNIPPET);
@@ -63,7 +59,7 @@ public class Focaccia extends Activity {
         final String titleMEL = bundle.getString(SpecificMapLocation.SHOW_TITLE);
         final String deleteMEL = bundle.getString(SpecificMapLocation.DELETE);
         final String deleteAllMEL = bundle.getString(SpecificMapLocation.DELETE_ALL);
-        final String noDeleteMEL = bundle.getString(SpecificMapLocation.READ_ONLY);
+
 
         mType = (TextView)findViewById(R.id.locationType);
         mSnippet = (TextView)findViewById(R.id.locationSnippet);

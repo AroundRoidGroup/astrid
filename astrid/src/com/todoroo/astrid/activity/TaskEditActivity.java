@@ -462,7 +462,7 @@ public final class TaskEditActivity extends TabActivity {
         if(title.getText().length() > 0)
             model.setValue(Task.DELETION_DATE, 0L);
 
-        if(taskService.save(model) && title.getText().length() > 0) //TODO: also update when changing in metadata
+        if(taskService.save(model) && title.getText().length() > 0)
             showSaveToast(toast.toString());
     }
 
@@ -666,8 +666,8 @@ public final class TaskEditActivity extends TabActivity {
                 Map<String, List<String>> parsedTypes = new HashMap<String, List<String>>();
                 if (typeData != null) {
                     for (String str : typeData) {
-                        String type = str.substring(0, str.indexOf("$$"));
-                        String rest = str.substring(str.indexOf("$$") + "$$".length());
+                        String type = str.substring(0, str.indexOf("$$")); //$NON-NLS-1$
+                        String rest = str.substring(str.indexOf("$$") + "$$".length()); //$NON-NLS-1$ //$NON-NLS-2$
                         List<String> lst = new ArrayList<String>();
                         while (true) {
                             int del = rest.indexOf('%');

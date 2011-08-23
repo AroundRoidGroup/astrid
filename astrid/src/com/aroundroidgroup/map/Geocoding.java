@@ -12,8 +12,8 @@ import org.json.JSONObject;
 
 public class Geocoding {
     public static DPoint geocoding(String address) throws IOException, JSONException {
-        URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?" +
-                "address=" + webString(address) + "&sensor=true");
+        URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?" + //$NON-NLS-1$
+                "address=" + webString(address) + "&sensor=true");  //$NON-NLS-1$//$NON-NLS-2$
         URLConnection connection = url.openConnection();
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000000);
@@ -25,27 +25,26 @@ public class Geocoding {
 
         reader.close();
         JSONObject json = new JSONObject(builder.toString());
-        if (json != null) {
-            if (json.getString("status").equalsIgnoreCase("ok") == true) {
-                JSONArray results = json.getJSONArray("results");
-                if (results != null) {
-                    JSONObject firstResult = results.getJSONObject(0);
-                    JSONObject geometry = firstResult.getJSONObject("geometry");
-                    if (geometry != null) {
-                        JSONObject location = geometry.getJSONObject("location");
-                        if (location != null)
-                            return new DPoint(location.getDouble("lat"), location.getDouble("lng"));
-                    }
+        if (json.getString("status").equalsIgnoreCase("ok") == true) { //$NON-NLS-1$ //$NON-NLS-2$
+            JSONArray results = json.getJSONArray("results"); //$NON-NLS-1$
+            if (results != null) {
+                JSONObject firstResult = results.getJSONObject(0);
+                JSONObject geometry = firstResult.getJSONObject("geometry"); //$NON-NLS-1$
+                if (geometry != null) {
+                    JSONObject location = geometry.getJSONObject("location"); //$NON-NLS-1$
+                    if (location != null)
+                        return new DPoint(location.getDouble("lat"), location.getDouble("lng")); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
         }
+
         return null;
     }
 
     public static String reverseGeocoding(DPoint coordinate) throws IOException, JSONException {
-        URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?" +
-        		"latlng=" + coordinate.getX() + "," + coordinate.getY() +
-        				"&sensor=true");
+        URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?" + //$NON-NLS-1$
+                "latlng=" + coordinate.getX() + "," + coordinate.getY() +  //$NON-NLS-1$//$NON-NLS-2$
+        "&sensor=true"); //$NON-NLS-1$
         URLConnection connection = url.openConnection();
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000000);
@@ -58,16 +57,15 @@ public class Geocoding {
 
         reader.close();
         JSONObject json = new JSONObject(builder.toString());
-        if (json != null) {
             /* checking for successful query */
-            if (json.getString("status").equalsIgnoreCase("ok") == true) {
-                JSONArray results = json.getJSONArray("results");
+            if (json.getString("status").equalsIgnoreCase("ok") == true) { //$NON-NLS-1$ //$NON-NLS-2$
+                JSONArray results = json.getJSONArray("results"); //$NON-NLS-1$
                 if (results != null) {
                     JSONObject firstResult = results.getJSONObject(0);
-                    return firstResult.getString("formatted_address");
+                    return firstResult.getString("formatted_address"); //$NON-NLS-1$
                 }
             }
-        }
+
         return null;
     }
 

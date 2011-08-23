@@ -19,10 +19,10 @@
         
            <ListPreference  
             android:key="listPref"  
-            android:title="Login" />
+            android:title="@string/people_location_login" />
               <Preference 
             android:key="Logout"
-            android:title="Logout" />
+            android:title="@string/people_location_logout" />
     
 
        
