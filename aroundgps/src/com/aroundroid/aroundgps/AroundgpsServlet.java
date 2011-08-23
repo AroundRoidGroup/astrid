@@ -67,6 +67,7 @@ public class AroundgpsServlet extends HttpServlet {
 
 		Double dLat = Double.parseDouble(lat),dLon = Double.parseDouble(lon);
 
+		//TODO when no people are asked, get's some werird shit
 		String users = req.getParameter(USERS);
 		String[] usersArr = users.split(DEL);
 		for(int i =0; i < usersArr.length ; i++){
