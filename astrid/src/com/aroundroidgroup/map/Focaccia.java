@@ -15,12 +15,6 @@ import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
-    private final String addressText = null;
-    private final boolean neededToReverseGecode = false;
-//    public static final int FOCACCIA_RESULT_CODE_REMOVE_TAP = 1;
-//    public static final int FOCACCIA_RESULT_CODE_REMOVE_TYPE = 2;
-//    public static final int FOCACCIA_RESULT_CODE_OK = 3;
-//    public static final int FOCACCIA_RESULT_CODE_BACK_PRESSED = 4;
     public static final int DELETE = 1;
     public static final int DELETE_ALL = 2;
 

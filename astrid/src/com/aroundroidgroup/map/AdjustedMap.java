@@ -146,7 +146,7 @@ public class AdjustedMap extends MapView {
                     if (savedAddr.equals(LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE))
                         savedAddr = lastDeviceLocationAsDPoint.toString();
                 }
-                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_FIELD_TEXT, null, savedAddr, -1, null));
+                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_FIELD_TEXT, null, savedAddr, -1, null, -1));
                 mapOverlays.add(mDeviceOverlay);
             }
         }
@@ -211,14 +211,17 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
-    public MapItemizedOverlay getOverlay(int id) {
-        return overlays.get(id);
+    public MapItemizedOverlay getOverlay(String id) {
+        for (Map.Entry<MapItemizedOverlay, String> pair : mNames.entrySet())
+            if (pair.getValue().equals(id))
+                return pair.getKey();
+        return null;
     }
 
     public boolean addItemToOverlay(GeoPoint g, String title, String snippet, String addr, int identifier, long taskID, String extras) {
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && g != null && title != null && snippet != null) {
-            overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras));
+            overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
             mapOverlays.add(overlay);
             invalidate();
             return true;
@@ -232,7 +235,7 @@ public class AdjustedMap extends MapView {
             if (isContainsByCoords(identifier, oldG)) {
                 AdjustedOverlayItem item = overlay.getItem(overlay.getIndexOf(oldG));
                 overlay.addOverlay(new AdjustedOverlayItem(newG, item.getTitle(), item.getSnippet(),
-                        newAddr, item.getTaskID(), item.getExtras()));
+                        newAddr, item.getTaskID(), item.getExtras(), -1));
                 return removeItemFromOverlayByCoords(identifier, oldG);
             }
         }
@@ -353,7 +356,7 @@ public class AdjustedMap extends MapView {
         if (mTappedOverlay != null) {
             //            locDB.createTranslate(Misc.geoToDeg(g).toString(), ((addr != null) ? addr : LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE));
             //            addItemToOverlay(g, "Specific Location", addr, addr, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, taskID); //$NON-NLS-1$
-            mTappedOverlay.addOverlay(new AdjustedOverlayItem(g, SPECIFIC_TYPE_FIELD_TEXT, addr, addr, taskID, null));
+            mTappedOverlay.addOverlay(new AdjustedOverlayItem(g, SPECIFIC_TYPE_FIELD_TEXT, addr, addr, taskID, null, -1));
             mapOverlays.add(mTappedOverlay);
         }
     }
@@ -363,8 +366,11 @@ public class AdjustedMap extends MapView {
         mTappedOverlay.removeOverlayByIndex(index);
     }
 
-    public boolean clearOverlay(int id) {
-        MapItemizedOverlay overlay = overlays.get(id);
+    public boolean clearOverlay(String id) {
+        MapItemizedOverlay overlay = null;
+        for (Map.Entry<MapItemizedOverlay, String> pair : mNames.entrySet())
+            if (pair.getValue().equals(id))
+                overlay = pair.getKey();
         if (overlay == null)
             return false;
         overlay.clear();
@@ -389,10 +395,6 @@ public class AdjustedMap extends MapView {
             return true;
         }
         return false;
-        //        for (int i = typeOverlay.size() - 1 ; i >= 0 ; i--)
-        //            if (typeOverlay.getItem(i).getSnippet().equals(type))
-        //                typeOverlay.removeOverlay(i);
-
     }
 
     public int getItemsByExtrasCount(int id, String extras) {
@@ -410,16 +412,6 @@ public class AdjustedMap extends MapView {
         MapItemizedOverlay overlay = overlays.get(id);
         List<String> xtraLst = new ArrayList<String>();
         if (overlay != null) {
-            //            if (overlay.getFocus() != null) /* had focus in the past, return the focus to the first item */
-            //                while (overlay.nextFocus(false) != null);
-            //            if (overlay.getFocus() == null) { /* none of the items in the overlay is focused */
-            //                AdjustedOverlayItem item = overlay.nextFocus(true); /* gives the first item */
-            //                while (item != null) { /* as long the overlay isn't empty or not reaching the end */
-            //                    if (item.getExtras().equals(extras))
-            //                        xtraLst.add(Misc.geoToDeg(item.getPoint()).toString());
-            //                    item = overlay.nextFocus(true);
-            //                }
-            //            }
             for (AdjustedOverlayItem item : overlay) {
                 if (item.getExtras().equals(extras))
                     xtraLst.add(Misc.geoToDeg(item.getPoint()).toString());
@@ -528,8 +520,7 @@ public class AdjustedMap extends MapView {
                 }
             }
         }
-        boolean b = super.dispatchTouchEvent(event);
-        return b;
+        return super.dispatchTouchEvent(event);
     }
 
     public void refresh() {
@@ -644,7 +635,9 @@ public class AdjustedMap extends MapView {
 
         @Override
         protected AdjustedOverlayItem createItem(int i) {
-            return mOverlays.get(i);
+            AdjustedOverlayItem item = mOverlays.get(i);
+            return new AdjustedOverlayItem(item.getPoint(), item.getTitle(),
+                    item.getSnippet(), item.getAddress(), item.getTaskID(), item.getExtras(), i);
         }
 
         @Override
@@ -750,7 +743,10 @@ public class AdjustedMap extends MapView {
         }
 
         public void addOverlay(AdjustedOverlayItem overlay) {
+            if (overlay.getPoint() == null)
+                return;
             mOverlays.add(overlay);
+            overlay.setUniqueID(mOverlays.indexOf(overlay));
             setLastFocusedIndex(-1);
             populate();
         }

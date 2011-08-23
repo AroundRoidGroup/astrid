@@ -1,9 +1,7 @@
 package com.aroundroidgroup.map;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-
-import org.json.JSONException;
 
 import com.todoroo.astrid.activity.SpecificMapLocation;
 
@@ -18,20 +16,10 @@ public class AsyncAutoComplete implements Runnable{
 
     @Override
     public void run() {
-        try {
-            //TODO USERLOCATION
-//            if (true)
-//                return;
-            DPoint d = new DPoint(40.714867,-74.006009);
-            List<String> c = Misc.googleAutoCompleteQuery(text, d);
-            for (String s : Misc.types)
-                c.add(s);
-            SpecificMapLocation.updateSuggestions(c);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        List<String> c = new ArrayList<String>();
+        for (String s : Misc.types)
+            c.add(s);
+        SpecificMapLocation.updateSuggestions(c);
 
     }
 
