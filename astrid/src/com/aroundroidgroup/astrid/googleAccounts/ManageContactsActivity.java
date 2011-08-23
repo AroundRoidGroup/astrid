@@ -63,8 +63,6 @@ public class ManageContactsActivity extends ListActivity{
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
     public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
 
-    public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
-
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
     private static boolean alreadyScannedSometime = false;
@@ -774,13 +772,18 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putExtra(PEOPLE_BACK, peopleHashSet);
+        setResult(RESULT_OK, intent);
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onPause() {
         // TODO Auto-generated method stub
         super.onPause();
         mHan.removeCallbacks(mUpdateTimeTask);
-        Intent intent = new Intent();
-        intent.putExtra(PEOPLE_BACK, peopleHashSet);
-        setResult(RESULT_OK, intent);
     }
 
     @Override

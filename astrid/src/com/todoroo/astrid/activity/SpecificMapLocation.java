@@ -28,7 +28,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -38,7 +37,6 @@ import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedMap.MapItemizedOverlay;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
-import com.aroundroidgroup.map.AsyncAutoComplete;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -111,11 +109,11 @@ public class SpecificMapLocation extends MapActivity{
     private AdjustedMap mMapView;
     private double radius;
 
-    private LocationService locationService;
+    private final LocationService locationService = new LocationService();
     private List<String> mTypes = null;
     private Map<String, DPoint> mPeople = null;
     private List<String> mNullPeople = null;
-    private Thread previousThread = null;
+    private final Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
     private DPoint deviceLocation;
 
@@ -354,16 +352,16 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (previousThread != null) {
-                    if (previousThread.isAlive())
-                        previousThread.destroy();
-                    previousThread = null;
-                }
-                TextView t = (TextView) v;
-                if (t != null) {
-                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
-                    previousThread.run();
-                }
+//                if (previousThread != null) {
+//                    if (previousThread.isAlive())
+//                        previousThread.destroy();
+//                    previousThread = null;
+//                }
+//                TextView t = (TextView) v;
+//                if (t != null) {
+//                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
+//                    previousThread.run();
+//                }
                 //                AutoComplete x = new AutoComplete(SpecificMapLocation.this);
                 //                x.execute(textView.getText().toString());
                 return false;
@@ -484,10 +482,15 @@ public class SpecificMapLocation extends MapActivity{
         mNullPeople = new ArrayList<String>();
         for (String s : existedPeople) {
             Cursor c = db.fetchByMail(s);
+            if (c == null || !c.moveToFirst()){
+                if (c!=null) c.close();
+                continue;
+            }
             FriendProps fp = AroundroidDbAdapter.userToFP(c);
             if (fp.isValid())
                 mPeople.put(s, new DPoint(fp.getDlat(), fp.getDlat()));
             else mNullPeople.add(s);
+            c.close();
         }
 
         String[] tomer = new String[1];
@@ -542,7 +545,13 @@ public class SpecificMapLocation extends MapActivity{
             public void onClick(View v) {
                 Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
                 intent.putExtra(ManageContactsActivity.taskIDSTR, taskID);
-                intent.putExtra(ManageContactsActivity.peopleArraySTR, locationService.getLocationsByPeopleAsArray((taskID)));
+                String[] arr = new String[mPeople.size() + mNullPeople.size()];
+                int i = 0;
+                for (Map.Entry<String, DPoint> entry : mPeople.entrySet())
+                    arr[i++] = entry.getKey();
+                for (String s : mNullPeople)
+                    arr[i++] = s;
+                intent.putExtra(ManageContactsActivity.peopleArraySTR, arr);
                 startActivityForResult(intent, CONTACTS_REQUEST_CODE);
             }
         });
