@@ -157,7 +157,7 @@ public class SpecificMapLocation extends MapActivity{
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
+        menu.setHeaderTitle("All Locations");
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -169,7 +169,7 @@ public class SpecificMapLocation extends MapActivity{
         for (int i = 0 ; i < mTypes.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, mTypes.get(i));
         int i = 0;
-        MapItemizedOverlay peopleOverlay = mMapView.getOverlay(OVERLAY_PEOPLE_NAME);
+        MapItemizedOverlay peopleOverlay = mMapView.getOverlay(PEOPLE_OVERLAY);
         if (peopleOverlay != null) {
             for (AdjustedOverlayItem item : peopleOverlay) {
                 menu.add(MENU_PEOPLE_GROUP, item.getUniqueID(), Menu.NONE, item.getSnippet());
@@ -215,7 +215,7 @@ public class SpecificMapLocation extends MapActivity{
             mMapView.getController().setCenter(tapItem.getPoint());
 
             intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
-            intent.putExtra(Focaccia.CMENU_EXTRAS, item.getItemId() - MENU_TAPPED_GROUP + "");
+            intent.putExtra(Focaccia.CMENU_EXTRAS, item.getItemId() - MENU_TAPPED_GROUP + ""); //$NON-NLS-1$
             intent.putExtra(Focaccia.SHOW_TITLE, tapItem.getTitle().toString());
             intent.putExtra(Focaccia.SHOW_ADDRESS, (tapItem.getAddress() == null) ? Misc.geoToDeg(tapItem.getPoint()).toString() : tapItem.getAddress());
 
@@ -224,11 +224,11 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_SPECIFIC_GROUP:
             mPressedItemExtras = null;
             mPressedItemIndex = item.getItemId() - MENU_SPECIFIC_GROUP;
-            AdjustedOverlayItem specItem = mMapView.getOverlay(OVERLAY_SPECIFIC_NAME).getItem(mPressedItemIndex);
+            AdjustedOverlayItem specItem = mMapView.getOverlay(SPECIFIC_OVERLAY).getItem(mPressedItemIndex);
             mMapView.getController().setCenter(specItem.getPoint());
 
             intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
-            intent.putExtra(Focaccia.CMENU_EXTRAS, item.getItemId() - MENU_SPECIFIC_GROUP + "");
+            intent.putExtra(Focaccia.CMENU_EXTRAS, item.getItemId() - MENU_SPECIFIC_GROUP + ""); //$NON-NLS-1$
             if (mMapView.hasConfig(SPECIFIC_OVERLAY, Focaccia.SHOW_TITLE))
                 intent.putExtra(Focaccia.SHOW_TITLE, specItem.getTitle().toString());
             if (mMapView.hasConfig(SPECIFIC_OVERLAY, Focaccia.SHOW_ADDRESS))
@@ -260,7 +260,7 @@ public class SpecificMapLocation extends MapActivity{
                 return true;
             }
             mPressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
-            AdjustedOverlayItem peopleItem = mMapView.getOverlay(OVERLAY_PEOPLE_NAME).getItem(mPressedItemIndex);
+            AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(mPressedItemIndex);
 
             DPoint da = mPeople.get(item.getTitle());
             if (da != null && !da.isNaN()) {
@@ -305,11 +305,7 @@ public class SpecificMapLocation extends MapActivity{
             }
 
         });
-        mDeviceLocation = mMapView.getDeviceLocation();
-        if (mDeviceLocation != null) {
-            /* Centralizing the map to the last known location of the device */
-            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
-        }
+
 
         /* enables adding locations by tapping on the map */
         mMapView.enableAddByTap();
@@ -481,10 +477,17 @@ public class SpecificMapLocation extends MapActivity{
         mNullPeople = new ArrayList<String>();
         for (String s : existedPeople) {
             Cursor c = mPeopleDB.fetchByMail(s);
+            if (c == null)
+                continue;
+            if (!c.moveToFirst()) {
+                c.close();
+                continue;
+            }
             FriendProps fp = AroundroidDbAdapter.userToFP(c);
             if (fp.isValid())
                 mPeople.put(s, new DPoint(fp.getDlat(), fp.getDlat()));
             else mNullPeople.add(s);
+            c.close();
         }
 
 //        String[] tomer = new String[1];
@@ -513,10 +516,19 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
         /* @@@@@ visible to the user.                                                                  @@@@@ */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+        mDeviceLocation = mMapView.getDeviceLocation();
+        if (mDeviceLocation != null) {
+            /* Centralizing the map to the last known location of the device */
+            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
+        }
+        else {
+            /* in case device location cannot be obtained, center the map on google headquarters */
+            mMapView.getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
+        }
         mMapView.setBuiltInZoomControls(true);
         mMapView.setZoomByAllLocations();
         mRadius = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
-        Toast.makeText(this, "radius = " + mRadius, Toast.LENGTH_LONG).show();
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -637,7 +649,7 @@ public class SpecificMapLocation extends MapActivity{
                 if (ger != null) {
                     mPeople.clear();
                     mNullPeople.clear();
-                    mMapView.clearOverlay(OVERLAY_PEOPLE_NAME);
+                    mMapView.clearOverlay(PEOPLE_OVERLAY);
                     for (String contact : ger) {
                         Cursor c = mPeopleDB.fetchByMail(contact);
                         DPoint dp = null;

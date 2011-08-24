@@ -10,6 +10,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.todoroo.andlib.utility.DateUtilities;
 
@@ -59,11 +60,11 @@ public class LocationsDbAdapter {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(CREATE_TABLE_TRANSLATIONS);
             db.execSQL(CREATE_TABLE_TYPES);
-            db.execSQL(
-                    "create table " + "_bank" + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null, " //$NON-NLS-1$ //$NON-NLS-2$
-                    + KEY_TYPE_ID + " text not null) ;" //$NON-NLS-1$
-            );
+//            db.execSQL(
+//                    "create table " + "_bank" + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+//                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null, " //$NON-NLS-1$ //$NON-NLS-2$
+//                    + KEY_TYPE_ID + " text not null) ;" //$NON-NLS-1$
+//            );
         }
 
         @Override
@@ -126,19 +127,29 @@ public class LocationsDbAdapter {
     public long createType(String type, String centerPoint, double radius, Map<String, DPoint> data) {
         //TODO do the search by the radius with respect to some delta, because radius 100 and 100.5
         //TODO is actually the same for us
+        boolean toCreateTableForType = false;
         ContentValues initialValues = new ContentValues();
+        Cursor c = fetchByType(type);
+        if (c == null)
+            toCreateTableForType = true;
+        else if (!c.moveToFirst())
+            toCreateTableForType = true;
+        if (c != null)
+            c.close();
         initialValues.put(KEY_TYPE, type);
         initialValues.put(KEY_CENTER_POINT, centerPoint);
         initialValues.put(KEY_RADIUS, radius);
         initialValues.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
         String typeTableName = "_" + type; //$NON-NLS-1$
-        //        String typeTableSQL =
-        //            "create table " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        //            + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null) ;"; //$NON-NLS-1$ //$NON-NLS-2$
         if (data != null) {
             /* creating the table for the given type. the table contains business names and their coords */
-            //            mDb.execSQL(typeTableSQL);
+            if (toCreateTableForType) {
+                String typeTableSQL =
+                    "create table if not exists " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null) ;"; //$NON-NLS-1$ //$NON-NLS-2$
+                mDb.execSQL(typeTableSQL);
+            }
             for (Map.Entry<String, DPoint> p : data.entrySet()) {
                 ContentValues pair = new ContentValues();
                 pair.put(KEY_BUSINESS_NAME, p.getKey());
@@ -299,6 +310,19 @@ public class LocationsDbAdapter {
             mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_CENTER_POINT, KEY_RADIUS},
                     KEY_TYPE + "='" + type + "' AND " + KEY_CENTER_POINT + "='" + centerPoint + "' AND " + KEY_RADIUS + "='" + radius + "'", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
                     null, null, null, null, null);
+        Cursor mCursor2 =
+            mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_CENTER_POINT, KEY_RADIUS},
+                    null,
+                    null, null, null, null, null);
+        if (mCursor != null) {
+            if (mCursor.moveToFirst()) {
+                Toast.makeText(mCtx, "Type = " + mCursor.getString(mCursor.getColumnIndex(KEY_TYPE))
+                        + " Center = " + mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT))
+                        + " Radius = " + mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)), Toast.LENGTH_LONG).show();
+                mCursor.moveToNext();
+            }
+            mCursor.close();
+        }
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 updateType(mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID)),
@@ -309,6 +333,7 @@ public class LocationsDbAdapter {
                 mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_COORDINATES}, //$NON-NLS-1$
                         null, null, null, null, null);
             }
+            else mCursor.close();
         }
         return mCursor;
     }
