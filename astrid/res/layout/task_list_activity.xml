@@ -24,7 +24,7 @@
             android:scaleType="center"
             android:paddingLeft="5dip" 
             android:paddingRight="5dip"/> 
-        
+      
         <!-- List Label -->
         <TextView android:id="@+id/listLabel"
             android:layout_width="fill_parent"
@@ -49,14 +49,7 @@
         android:layout_weight="1"
         android:orientation="horizontal">
         
-        <Button 
-        	android:id="@+id/peopleBaseConnectButton"
-        	android:layout_width="fill_parent" 
-      		android:layout_height="wrap_content"
-   		    android:layout_weight="1"
-        	android:scaleType="fitCenter"
-        	android:text="@string/connectPeople"
-        	/>
+       
         
     </LinearLayout>
         

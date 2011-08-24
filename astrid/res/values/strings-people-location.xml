@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-	<string name="DLG_exit_title">Are you sure you want to exit?</string>
-	<string name="DLG_cancel">Cancel</string>
-	<string name="DLG_add">Add</string>
-	<string name="DLG_add_all">Add All</string>
-	<string name="DLG_ok">Ok</string>
-	<string name="DLG_hurray">Hurray!</string>
-	<string name="DLG_yes_recommanded">Yes (recommanded)</string>
-
+	<!-- Credentials list is empty text -->
+	<string name="noCreds">There are no users associated with this Android
+		device.</string>
+	
     <!--No additional contact information-->
 	<string name="no_contact_info">No additional contact information</string>
 

@@ -40,7 +40,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -49,7 +48,6 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -58,8 +56,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-import com.aroundroidgroup.astrid.googleAccounts.AccountList;
-import com.aroundroidgroup.astrid.googleAccounts.ConnectedContactsActivity;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
@@ -411,33 +407,6 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
                 startActivityForResult(intent, ACTIVITY_EDIT_TASK);
             }
         });
-
-        //TODO : remove the on long click listener
-
-        //TODO remove the button
-
-        //((Button)findViewById(R.id.peopleBaseConnectButton)).setVisibility(View.GONE);
-
-        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnLongClickListener(new OnLongClickListener() {
-
-
-            @Override
-            public boolean onLongClick(View v) {
-                Intent intent = new Intent(TaskListActivity.this, ConnectedContactsActivity.class);
-                startActivityForResult(intent,1);
-                return true;
-            }
-        });
-        ((Button)findViewById(R.id.peopleBaseConnectButton)).setOnClickListener(new OnClickListener() {
-
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(TaskListActivity.this, AccountList.class);
-                startActivity(intent);
-            }
-        });
-
 
 
         // gestures / animation

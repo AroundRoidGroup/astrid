@@ -57,11 +57,8 @@ public class ContactsHelper {
 
     public String getDisplayName(Cursor cur){
         if (cur.moveToNext()) {
-                String id = (cur.getString(
-                        cur.getColumnIndex(ContactsContract.Contacts._ID)));
-                String name = cur.getString(
+                return cur.getString(
                         cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                return name;
             }
         else{
             return null;

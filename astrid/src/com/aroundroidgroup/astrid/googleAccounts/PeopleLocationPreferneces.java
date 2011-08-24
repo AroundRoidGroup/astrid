@@ -37,7 +37,7 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
 
-        addPreferencesFromResource(R.xml.preferences_peope_location);
+        addPreferencesFromResource(R.xml.preferences_people_location);
 
         r = getResources();
         loginList = (ListPreference) findPreference(r.getString(R.string.login_list_preference_key));
