@@ -103,7 +103,7 @@ public class LocationService {
         Query query = Query.select(prop).where(Criterion.
                 and(MetadataCriteria.withKey(KEY),
                         MetadataCriteria.byTask(taskId)));
-        return new MetadataDao().query(query);//TODO: maybe dont need to create metadatadao every time
+        return new MetadataDao().query(query);
     }
 
     public String[] getAllLocationsByType(){

@@ -4,6 +4,9 @@
 	<string name="noCreds">There are no users associated with this Android
 		device.</string>
 	
+	<!-- tracking list -->
+	<string name="tracking_list_empty">You are not tracking any friends! Press menu to add some.</string>
+	
     <!--No additional contact information-->
 	<string name="no_contact_info">No additional contact information</string>
 
