@@ -93,6 +93,7 @@ public class SpecificMapLocation extends MapActivity{
 
     private long mTaskID;
     private double mRadius;
+    private Button mViewAll;
     private List<String> mTypes;
     private AdjustedMap mMapView;
     private Thread previousThread;
@@ -107,54 +108,37 @@ public class SpecificMapLocation extends MapActivity{
     private final AroundroidDbAdapter mPeopleDB = new AroundroidDbAdapter(this);
     private final LocationService mLocationService = new LocationService();
 
-    private final OnClickListener somethingToShowClickListener = new View.OnClickListener() {
+    private final OnClickListener mViewAllListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            v.showContextMenu();
+            if (!hasPlaces()) {
+                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle("Information");
+                dialog.setMessage("No locations for this task.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
+            else v.showContextMenu();
             return;
         }
 
     };
 
-    private final OnClickListener nothingToShowClickListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
-            dialog.setIcon(android.R.drawable.ic_dialog_alert);
-            dialog.setTitle("Information");
-            dialog.setMessage("No locations for this task.");
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dg, int which) {
-                    return;
-                }
-            });
-            dialog.show();
-        }
-    };
-
-    private final OnLongClickListener nothingToShowLongClickListener = new View.OnLongClickListener() {
+    private final OnLongClickListener mViewAllLongListener = new View.OnLongClickListener() {
 
         @Override
         public boolean onLongClick(View v) {
-            AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
-            dialog.setIcon(android.R.drawable.ic_dialog_alert);
-            dialog.setTitle("Information");
-            dialog.setMessage("No locations for this task.");
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dg, int which) {
-                    return;
-                }
-            });
-            dialog.show();
-            return false;
+            mViewAllListener.onClick(v);
+            return true;
         }
     };
-
-
 
     @Override
     protected boolean isRouteDisplayed() {
@@ -502,7 +486,7 @@ public class SpecificMapLocation extends MapActivity{
                 mPeople.put(s, new DPoint(fp.getDlat(), fp.getDlat()));
             else mNullPeople.add(s);
         }
-//
+
 //        String[] tomer = new String[1];
 //        tomer[0] = "tomer.keshet@gmail.com";
 //        DPoint[] coordTomer = new DPoint[1];
@@ -516,13 +500,10 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Adding the button that displays all the locations that have been added to the task    @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        final Button viewAll = (Button)findViewById(R.id.viewAll);
-        registerForContextMenu(viewAll);
-        if (!hasPlaces()) {
-            viewAll.setOnClickListener(nothingToShowClickListener);
-            viewAll.setOnLongClickListener(nothingToShowLongClickListener);
-        }
-        else viewAll.setOnClickListener(somethingToShowClickListener);
+        mViewAll = (Button)findViewById(R.id.viewAll);
+        registerForContextMenu(mViewAll);
+        mViewAll.setOnClickListener(mViewAllListener);
+        mViewAll.setOnLongClickListener(mViewAllLongListener);
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -675,7 +656,6 @@ public class SpecificMapLocation extends MapActivity{
                         }
                         else mNullPeople.add(contact);
                     }
-                    if (!hasPlaces())
                 }
             }
         }
