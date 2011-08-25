@@ -54,6 +54,7 @@ public class AdjustedMap extends MapView {
 
     private MapItemizedOverlay lastPressedOverlay = null;
     private int lastPressedIndex = -1;
+    private GeoPoint lastDeviceLocation;
 
     private static final String DEVICE_TYPE_NAME = "Your Location";
     private static final String TAP_TYPE_NAME = "Specific Location";
@@ -152,10 +153,39 @@ public class AdjustedMap extends MapView {
 
     public DPoint getDeviceLocation() {
         FriendProps fp = db.specialUserToFP();
-        if (fp != null && fp.isValid())
-            return new DPoint(fp.getDlat(), fp.getDlon());
+        if (fp != null && fp.isValid()) {
+            DPoint d = new DPoint(fp.getDlat(), fp.getDlon());
+            lastDeviceLocation = Misc.degToGeo(d);
+            return d;
+        }
         else
             return null;
+    }
+
+    public void updateDeviceLocation() {
+        if (mDeviceOverlay == null)
+            return;
+        DPoint potentialNewLocation = getDeviceLocation();
+        if (potentialNewLocation != null && !mDeviceOverlay.getItem(mDeviceOverlay.getIndexOf(lastDeviceLocation)).getPoint().equals(lastDeviceLocation)) {
+            mDeviceOverlay.clear();
+            String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
+            if (savedAddr == null) {
+                try {
+                    savedAddr = Geocoding.reverseGeocoding(Misc.geoToDeg(lastDeviceLocation));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (savedAddr == null)
+                    savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+                locDB.createTranslate(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6(), savedAddr);
+                if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
+                    savedAddr = Misc.geoToDeg(lastDeviceLocation).toString();
+            }
+            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_NAME, null, savedAddr, currentTaskID, null, -1));
+        }
+
     }
 
     public void removeDeviceLocation() {

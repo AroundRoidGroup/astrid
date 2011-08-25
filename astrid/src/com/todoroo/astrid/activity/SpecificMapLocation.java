@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 
@@ -17,10 +18,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -148,6 +151,14 @@ public class SpecificMapLocation extends MapActivity{
             return;
         for (String s : lst)
             mAdapter.add(s);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.manage_locations_actionbar, menu);
+        return true;
     }
 
     @Override
@@ -282,9 +293,78 @@ public class SpecificMapLocation extends MapActivity{
     }
 
     @Override
+    protected void onResume() {
+        setUITimer();
+        super.onResume();
+    }
+
+    private final Handler mHan = new Handler();
+    final int mDelayMillis = 10 * 1000;
+    private final Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            /* my code */
+            mPeople.clear();
+            mNullPeople.clear();
+            mMapView.clearOverlay(TYPE_OVERLAY);
+            String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(mTaskID);
+            if (existedPeople != null) {
+                for (String person : existedPeople) {
+                    Cursor c = mPeopleDB.fetchByMail(person);
+                    if (c == null) {
+                        mNullPeople.add(person);
+                        continue;
+                    }
+                    if (!c.moveToFirst()) {
+                        mNullPeople.add(person);
+                        c.close();
+                        continue;
+                    }
+                    FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                    if (fp != null) {
+                        if (fp.isValid())
+                            mPeople.put(person, new DPoint(fp.getDlat(), fp.getDlon()));
+                        else mNullPeople.add(person);
+                    }
+                    c.close();
+                }
+            }
+            for (Entry<String, DPoint> entry : mPeople.entrySet()) {
+                GeoPoint gp = Misc.degToGeo(entry.getValue());
+                String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
+                if (savedAddr == null) {
+                    try {
+                        savedAddr = Geocoding.reverseGeocoding(entry.getValue());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    if (savedAddr == null)
+                        savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
+                    if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
+                        savedAddr = entry.getValue().toString();
+                }
+                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
+            }
+
+            mMapView.updateDeviceLocation();
+
+            mHan.postDelayed(this, mDelayMillis);
+        }
+    };
+    private void setUITimer(){
+        mHan.removeCallbacks(mUpdateTimeTask);
+        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.specific_map);
+
+
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
         mRadius = 100;
@@ -764,6 +844,7 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onPause() {
         super.onPause();
+        mHan.removeCallbacks(mUpdateTimeTask);
         mLocationDB.close();
         saveAndQuit();
     }
