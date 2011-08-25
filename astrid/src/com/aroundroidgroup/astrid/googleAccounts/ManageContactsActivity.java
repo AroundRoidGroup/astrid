@@ -518,7 +518,7 @@ public class ManageContactsActivity extends ListActivity{
             originalPeople = peopleWeGot;
         }
         else if (taskId!=null){
-            originalPeople = myLocationService.getLocationsByPeopleAsArray(taskID);
+            originalPeople = myLocationService.getLocationsByPeopleAsArray(taskId);
         }
         else{
             originalPeople = new String[0];
