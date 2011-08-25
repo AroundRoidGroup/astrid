@@ -40,7 +40,7 @@ import com.timsu.astrid.R;
 
 public class ManageContactsActivity extends ListActivity{
 
-    public static final String PEOPLE_BACK = "peopleBack";
+    public static final String PEOPLE_BACK = "peopleBack"; //$NON-NLS-1$
 
 
     private static final int DIALOG_MAIL_METHOD = 0;
@@ -234,7 +234,7 @@ public class ManageContactsActivity extends ListActivity{
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Pick contacts to track");
-        builder.setMultiChoiceItems(displayMailList.toArray(new String[0]), null, new DialogInterface.OnMultiChoiceClickListener() {
+        builder.setMultiChoiceItems(displayMailList.toArray(new String[0]), tickArray, new DialogInterface.OnMultiChoiceClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
