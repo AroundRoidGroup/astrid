@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,8 +42,6 @@ public class ManageContactsActivity extends ListActivity{
 
     public static final String PEOPLE_BACK = "peopleBack";
 
-    public static final int INSERT_ID = Menu.FIRST;
-    public static final int INSERT2_ID = Menu.FIRST + 1;
 
     private static final int DIALOG_MAIL_METHOD = 0;
     private static final int DIALOG_CONTACT_METHOD = 1;
@@ -85,11 +84,9 @@ public class ManageContactsActivity extends ListActivity{
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //TODO xml and Inflate menu instead of creating it here
-        boolean result = super.onCreateOptionsMenu(menu);
-        menu.add(0, INSERT_ID, 0, R.string.menu_add_friend);
-        menu.add(0, INSERT2_ID, 0, R.string.menu_add_friend2);
-        return result;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.layout.people_menu, menu);
+        return true;
     }
 
 
@@ -98,7 +95,7 @@ public class ManageContactsActivity extends ListActivity{
 
 
         switch (item.getItemId()) {
-        case INSERT_ID:
+        case R.id.peoplelocation_menu_mail:
             if (!prs.isConnected()){
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
@@ -106,7 +103,7 @@ public class ManageContactsActivity extends ListActivity{
                 showDialog(DIALOG_MAIL_METHOD);
             }
             break;
-        case INSERT2_ID:
+        case R.id.peopleLocation_menu_contacts:
             if (!prs.isConnected()){
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
@@ -116,6 +113,10 @@ public class ManageContactsActivity extends ListActivity{
             } else {
                 showDialog(DIALOG_ALREADY_SCANNED);
             }
+            break;
+        case R.id.peoplelocation_menu_login:
+            Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
+            startActivity(intent);
             break;
         }
 
@@ -131,7 +132,7 @@ public class ManageContactsActivity extends ListActivity{
         .setPositiveButton("Yes (recommanded)", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //TODO move to connection screen here
-                Intent intent = new Intent(ManageContactsActivity.this, AccountList.class);
+                Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
                 startActivity(intent);
             }
         })
