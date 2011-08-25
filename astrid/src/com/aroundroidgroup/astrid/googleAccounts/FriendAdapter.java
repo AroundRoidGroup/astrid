@@ -80,9 +80,9 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         }
         // Change the icon for Windows and iPhone
         String valid = currectFP.getValid();
-        if (valid.compareTo("Yes")==0){
+        if (currectFP.isValid()){
             holder.imageView.setImageResource(R.drawable.btn_green_button);
-        } else if (valid.compareTo("No")==0) {
+        } else if (valid.compareTo("Unregistered")!=0) {
             holder.imageView.setImageResource(R.drawable.btn_red_button);
         } else {
             holder.imageView.setImageResource(R.drawable.btn_sry_sign);

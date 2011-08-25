@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 
@@ -261,8 +262,8 @@ public class SpecificMapLocation extends MapActivity{
                 Toast.makeText(this, "Cannot retrieve person's locations !", Toast.LENGTH_LONG).show();
                 return true;
             }
-            pressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
-            AdjustedOverlayItem peopleItem = mMapView.getOverlay(OVERLAY_PEOPLE_NAME).getItem(pressedItemIndex);
+
+            AdjustedOverlayItem peopleItem = mMapView.getOverlay(OVERLAY_PEOPLE_NAME).getItem(item.getItemId());
 
             DPoint da = mPeople.get(item.getTitle());
             if (da != null && !da.isNaN()) {
@@ -377,8 +378,9 @@ public class SpecificMapLocation extends MapActivity{
         Bundle bundle = getIntent().getExtras();
         String[] existedSpecific = bundle.getStringArray(LocationControlSet.SPECIFIC_TO_LOAD);
         String[] existedTypes = bundle.getStringArray(LocationControlSet.TYPE_TO_LOAD);
-        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
         taskID = bundle.getLong(LocationControlSet.TASK_ID);
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
+
 
         for (int i = 0 ; i < existedSpecific.length ; i+=2) {
             DPoint d = new DPoint(existedSpecific[i]);
@@ -491,6 +493,10 @@ public class SpecificMapLocation extends MapActivity{
                 mPeople.put(s, new DPoint(fp.getDlat(), fp.getDlat()));
             else mNullPeople.add(s);
             c.close();
+        }
+
+        for (Entry<String, DPoint> h : mPeople.entrySet()){
+            mMapView.addItemToOverlay(Misc.degToGeo(h.getValue()), OVERLAY_PEOPLE_NAME, h.getKey(), h.getValue().toString(), PEOPLE_OVERLAY, taskID, null);
         }
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
