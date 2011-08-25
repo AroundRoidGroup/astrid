@@ -58,7 +58,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private AroundroidDbAdapter mDbHelper;
 
-    private Long taskID;
+    private Long taskId;
 
     public final static String taskIDSTR = "taskID"; //$NON-NLS-1$
     public final static String peopleArraySTR = "peopleArrrr"; //$NON-NLS-1$
@@ -94,6 +94,7 @@ public class ManageContactsActivity extends ListActivity{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
 
 
         switch (item.getItemId()) {
@@ -456,6 +457,10 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private void fillData(){
+        //sync data before
+        if (taskId!=null){
+            myLocationService.syncLocationsByPeople(taskId, peopleHashSet);
+        }
         // Create a list of FriendPropsWithContactId, that will be put to our ListActivity.
         // Refreshing the list
         ArrayAdapter<FriendPropsWithContactId> adapter = new FriendAdapter(this,conHel,
@@ -503,16 +508,16 @@ public class ManageContactsActivity extends ListActivity{
         String[] peopleWeGot = null;
         if (extras != null) {
             peopleWeGot = extras.getStringArray(peopleArraySTR);
-            taskID = extras.getLong(taskIDSTR);
+            taskId = extras.getLong(taskIDSTR);
         }
         else{
-            taskID = null;
+            taskId = null;
         }
 
         if (peopleWeGot!=null){
             originalPeople = peopleWeGot;
         }
-        else if (taskID!=null){
+        else if (taskId!=null){
             originalPeople = myLocationService.getLocationsByPeopleAsArray(taskID);
         }
         else{
