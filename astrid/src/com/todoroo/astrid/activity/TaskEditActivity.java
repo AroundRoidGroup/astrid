@@ -682,7 +682,6 @@ public final class TaskEditActivity extends TabActivity {
                 }
                 specificCS.updateSpecificPoints(allSpecific, allAddresses);
                 specificCS.updateTypes(parsedTypes);
-                specificCS.updatePeople(b.getStringArray(SpecificMapLocation.PEOPLE_TO_SEND));
             }
             return;
         }

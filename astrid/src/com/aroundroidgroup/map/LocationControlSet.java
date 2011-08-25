@@ -1,6 +1,5 @@
 package com.aroundroidgroup.map;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import com.todoroo.astrid.data.Task;
 public class LocationControlSet implements TaskEditControlSet{
     private final Map<String, String> mSpecific = new HashMap<String, String>();
     private final Map<String, List<String>> mTypes = new HashMap<String, List<String>>();
-    private final List<String> mPeople = new ArrayList<String>();
     private final LocationService locationService = new LocationService();
     private final Activity mActivity;
     private long mTaskID;
@@ -70,13 +68,6 @@ public class LocationControlSet implements TaskEditControlSet{
                 }
                 intent.putExtra(TYPE_TO_LOAD, types);
 
-                /* Adding the people locations to the intent */
-                String[] people = new String[mPeople.size()];
-                i = 0;
-                for (String p : mPeople)
-                    people[i++] = p;
-                intent.putExtra(PEOPLE_TO_LOAD, people);
-
                 LocationControlSet.this.mActivity.startActivityForResult(intent, TaskEditActivity.REQUEST_CODE_SpecificMapLocation);
             }
         });
@@ -94,14 +85,6 @@ public class LocationControlSet implements TaskEditControlSet{
         if (typesToUpdate != null) {
             mTypes.clear();
             mTypes.putAll(typesToUpdate);
-        }
-    }
-
-    public void updatePeople(String[] peopleToUpdate) {
-        if (peopleToUpdate != null) {
-            mPeople.clear();
-            for (int i = 0 ; i < peopleToUpdate.length ; i++)
-                mPeople.add(peopleToUpdate[i]);
         }
     }
 
@@ -123,15 +106,6 @@ public class LocationControlSet implements TaskEditControlSet{
         for (String type : allTypes) {
             List<String> locations = new ArrayList<String>();//locationService.getLocationsByTypeSpecial(mTaskID, type);
             mTypes.put(type, locations);
-        }
-
-        /* adding existed people */
-        String[] allPeople = locationService.getLocationsByPeopleAsArray(mTaskID);
-        thirdLoop: for (String givenPeople : allPeople) {
-            for (String existedPeople : mPeople)
-                if (givenPeople.equalsIgnoreCase(existedPeople))
-                    continue thirdLoop;
-            mPeople.add(givenPeople);
         }
     }
 
@@ -156,11 +130,6 @@ public class LocationControlSet implements TaskEditControlSet{
                 //    task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
             }
             if(locationService.syncLocationsByType(task.getId(), mashu))
-                task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
-
-            mashu.clear();
-            mashu.addAll(mPeople);
-            if(locationService.syncLocationsByPeople(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
         return null;

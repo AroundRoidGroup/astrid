@@ -408,7 +408,6 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
             }
         });
 
-
         // gestures / animation
         try {
             GestureService.registerGestureDetector(this, R.id.gestures, R.raw.gestures, this);

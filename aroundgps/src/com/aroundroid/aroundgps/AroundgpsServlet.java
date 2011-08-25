@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jdo.PersistenceManager;
 import javax.mail.MessagingException;
@@ -14,12 +16,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.jsr107cache.Cache;
+import net.sf.jsr107cache.CacheException;
+import net.sf.jsr107cache.CacheManager;
+
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import java.util.Date;
 
 @SuppressWarnings("serial")
 public class AroundgpsServlet extends HttpServlet {
@@ -28,27 +33,24 @@ public class AroundgpsServlet extends HttpServlet {
 
 
 
-	private final String GPSLat = "GPSLAT";
-	private final String GPSLon = "GPSLON";
-	private final String USERS = "USERS";
-	private final String DEL = "::";
-	private final String TIMESTAMP = "TIMESTAMP";
+	private final static String GPSLat = "GPSLAT";
+	private final static String GPSLon = "GPSLON";
+	private final static String USERS = "USERS";
+	private final static String DEL = "::";
+	private final static String TIMESTAMP = "TIMESTAMP";
+
+	private final static String selectStringStart = "select from "+ GPSProps.class.getName()+" where mail =='";
+
+	private String buildGetQuery(String friend){
+		return (selectStringStart + friend.toLowerCase() + "'");
+	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		resp.sendRedirect("welcome.jsp");
 	}
 
-	private String buildGetQuery(String[] usersArr){
-		StringBuffer query = new StringBuffer();
-		query.append("select from "+ GPSProps.class.getName()+" where (");
-		for (String user : usersArr){
-			query.append(" mail =='" + user.toLowerCase() + "' ||");
-		}
-		query.append(" mail =='" + usersArr[0].toLowerCase() + "')");
-		//query.append(" && timeStamp > "+(requestDate.getTime() - gpsValidTime));
-		return query.toString();
-	}
+	//"select from "+ GPSProps.class.getName()+" where mail == ' '(");
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -69,9 +71,16 @@ public class AroundgpsServlet extends HttpServlet {
 
 		//TODO when no people are asked, get's some werird shit
 		String users = req.getParameter(USERS);
-		String[] usersArr = users.split(DEL);
-		for(int i =0; i < usersArr.length ; i++){
-			usersArr[i] = usersArr[i].toLowerCase();
+
+		String[] usersArr;
+		if (users==null || users==""){
+			usersArr = new String[0];
+		}
+		else{
+			usersArr = users.split(DEL);
+			for(int i =0; i < usersArr.length ; i++){
+				usersArr[i] = usersArr[i].toLowerCase();
+			}
 		}
 
 		Arrays.sort(usersArr);
@@ -88,35 +97,44 @@ public class AroundgpsServlet extends HttpServlet {
 		out.println("<Users>");
 
 
-		String query = buildGetQuery(usersArr);
-		@SuppressWarnings("unchecked")
-		List<GPSProps> gpses  = (List<GPSProps>) pm.newQuery(query).execute();
+		Cache cache = null;
 
-		Collections.sort(gpses, GPSProps.getMailComparator());
+		Map props = new HashMap();
+		props.put(MemcacheService.SetPolicy.ADD_ONLY_IF_NOT_PRESENT, true);
+		props.put(GCacheFactory.EXPIRATION_DELTA, 3600);
 
-		Iterator<GPSProps> iter =  gpses.iterator();
+		try {
+			cache = CacheManager.getInstance().getCacheFactory().createCache(Collections.emptyMap());
+		} catch (CacheException e) {
+			// ...
+		}
 
-		int  i = 0;
-
-		for(GPSProps gpsP : gpses){
-			for( ;i<usersArr.length; i++){
-				if (usersArr[i].compareTo(gpsP.getMail())==0){
-					out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,gpsP));
-					i++;
-					break;
+		for (String friendMail : usersArr){
+			GPSProps hisGPS;
+			if (cache!=null && cache.containsKey(friendMail)){
+				hisGPS = ((GPSProps) cache.get(friendMail));
+			}
+			else{
+				@SuppressWarnings("unchecked")
+				List<GPSProps> friendGPS  = (List<GPSProps>) pm.newQuery(buildGetQuery(friendMail)).execute();
+				if (friendGPS.size()>0){
+					hisGPS  = friendGPS.get(0);
 				}
 				else{
-					out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
+					hisGPS = GPSProps.getNoPROPSGps();
 				}
-
+				if (cache!=null){
+					cache.put(friendMail,hisGPS );
+				}
+			}
+			if (GPSProps.isNoProps(hisGPS)){
+				out.append(GPSPropXML.mailToFriend(false, friendMail));
+			} else {
+				out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,hisGPS));
 			}
 		}
-		for( ;i<usersArr.length; i++){
-			out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
-		}
 
-
-		String query2 = buildGetQuery(new String[]{user.getEmail()});
+		String query2 = buildGetQuery(user.getEmail());
 		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses2  = (List<GPSProps>) pm.newQuery(query2).execute();
 
@@ -131,24 +149,28 @@ public class AroundgpsServlet extends HttpServlet {
 
 		try {
 			if (lTimeStamp>0){
-				GPSProps gspP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);
+				if (gpses2.size()==0){
+					//TODO use a better mailing system, plus sending a html mail for bold and stuff
+					Mailer ml = new Mailer(AroundGPSConstants.mailName, AroundGPSConstants.mailUser);
+					try {
+						ml.sendOneMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", "Hi "+user.getNickname()+"!\n\nWe are happy that you have chosen using Astrid, Aroundroid, and Aroundroid People Location.");
+					} catch (MessagingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				GPSProps gpsP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);
 				pm.deletePersistentAll(gpses2);
-				pm.makePersistent(gspP);
+				pm.makePersistent(gpsP);
+				if (cache!=null){
+					cache.put(user.getEmail(), gpsP);
+				}				
 			}
 		} finally {
 			pm.close();
 		}
 
-		if (gpses2.size()==0){
-			//TODO use a better mailing system, plus sending a html mail for bold and stuff
-			Mailer ml = new Mailer(AroundGPSConstants.mailName, AroundGPSConstants.mailUser);
-			try {
-				ml.sendOneMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", "Hi "+user.getNickname()+"!\n\nWe are happy that you have chosen using Astrid, Aroundroid, and Aroundroid People Location.");
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+
 
 	}
 

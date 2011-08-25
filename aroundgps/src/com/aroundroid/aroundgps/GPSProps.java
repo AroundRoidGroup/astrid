@@ -1,5 +1,6 @@
 package com.aroundroid.aroundgps;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -11,7 +12,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
 
 @PersistenceCapable
-public class GPSProps {
+public class GPSProps implements Serializable{
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private Key key;
@@ -33,6 +34,20 @@ public class GPSProps {
     
     @Persistent
     private boolean reminded;
+
+    private final static GPSProps noProps;
+    
+    static{
+    	noProps = new GPSProps(null, null, 0.0, 0.0, 0);
+    }
+    
+    public static GPSProps getNoPROPSGps(){
+    	return noProps;
+    }
+    
+    public static boolean isNoProps(GPSProps gpsP){
+    	return gpsP.user==null && gpsP.mail == null;
+    }
 
     public GPSProps(User user,String mail, double lon, double lat,long timeStamp) {
     	this.setMail(mail);

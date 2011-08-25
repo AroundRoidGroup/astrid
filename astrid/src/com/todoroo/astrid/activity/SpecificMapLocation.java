@@ -35,8 +35,8 @@ import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
+import com.aroundroidgroup.map.AdjustedMap.MapItemizedOverlay;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
-import com.aroundroidgroup.map.AutoComplete;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -109,9 +109,10 @@ public class SpecificMapLocation extends MapActivity{
     private AdjustedMap mMapView;
     private double radius;
 
-    private LocationService locationService;
+    private final LocationService locationService = new LocationService();
     private List<String> mTypes = null;
     private Map<String, DPoint> mPeople = null;
+    private List<String> mNullPeople = null;
     private final Thread previousThread = null;
     private static ArrayAdapter<String> adapter;
     private DPoint deviceLocation;
@@ -170,11 +171,14 @@ public class SpecificMapLocation extends MapActivity{
         for (int i = 0 ; i < mTypes.size() ; i++)
             menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, mTypes.get(i));
         int i = 0;
-        for (Map.Entry<String, DPoint> p : mPeople.entrySet()) {
-            int index = mMapView.getItemID(OVERLAY_PEOPLE_NAME, p.getValue());
-            if (index != -1)
-                menu.add(MENU_PEOPLE_GROUP, MENU_PEOPLE_GROUP + index, Menu.NONE, p.getKey());
+        MapItemizedOverlay peopleOverlay = mMapView.getOverlay(OVERLAY_PEOPLE_NAME);
+        if (peopleOverlay != null) {
+            for (AdjustedOverlayItem item : peopleOverlay) {
+                menu.add(MENU_PEOPLE_GROUP, item.getUniqueID(), Menu.NONE, item.getSnippet());
+            }
         }
+        for (i = 0 ; i < mNullPeople.size() ; i++)
+            menu.add(MENU_PEOPLE_GROUP, -1, Menu.NONE, mNullPeople.get(i));
         for (i = 0 ; i < mMapView.getTappedPointsCount() ; i++) {
             String addr = mMapView.getTappedItem(i).getAddress();
             if (addr == null)
@@ -206,7 +210,6 @@ public class SpecificMapLocation extends MapActivity{
         }
 
         switch (item.getGroupId()) {
-        //TODO consider removing the arrays and add each field as a stand-alone extra
         case MENU_TAPPED_GROUP:
             pressedItemExtras = null;
             pressedItemIndex = item.getItemId() - MENU_TAPPED_GROUP;
@@ -223,7 +226,7 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_SPECIFIC_GROUP:
             pressedItemExtras = null;
             pressedItemIndex = item.getItemId() - MENU_SPECIFIC_GROUP;
-            AdjustedOverlayItem specItem = mMapView.getOverlay(SPECIFIC_OVERLAY).getItem(pressedItemIndex);
+            AdjustedOverlayItem specItem = mMapView.getOverlay(OVERLAY_SPECIFIC_NAME).getItem(pressedItemIndex);
             mMapView.getController().setCenter(specItem.getPoint());
 
             intent.putExtra(DELETE, DELETE);
@@ -254,23 +257,27 @@ public class SpecificMapLocation extends MapActivity{
             return true;
         case MENU_PEOPLE_GROUP:
             pressedItemExtras = null;
-            pressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
-            AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(pressedItemIndex);
-            if (mPeople.get(peopleItem.getSnippet()) == null) {
+            if (item.getItemId() == -1) {
                 Toast.makeText(this, "Cannot retrieve person's locations !", Toast.LENGTH_LONG).show();
                 return true;
             }
-            mMapView.getController().setCenter(Misc.degToGeo(mPeople.get(item.getTitle())));
-            intent.putExtra(DELETE, DELETE);
-            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_NAME))
-                intent.putExtra(SHOW_NAME, OVERLAY_PEOPLE_NAME);
-            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_TITLE))
-                intent.putExtra(SHOW_TITLE, peopleItem.getSnippet());
-            if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_ADDRESS))
-                intent.putExtra(SHOW_ADDRESS, (peopleItem.getAddress() == null) ? Misc.geoToDeg(peopleItem.getPoint()).toString() : peopleItem.getAddress());
+            pressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
+            AdjustedOverlayItem peopleItem = mMapView.getOverlay(OVERLAY_PEOPLE_NAME).getItem(pressedItemIndex);
 
-            startActivityForResult(intent, MENU_PEOPLE_GROUP);
-            return true;
+            DPoint da = mPeople.get(item.getTitle());
+            if (da != null && !da.isNaN()) {
+                mMapView.getController().setCenter(Misc.degToGeo(da));
+                intent.putExtra(DELETE, DELETE);
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_NAME))
+                    intent.putExtra(SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_TITLE))
+                    intent.putExtra(SHOW_TITLE, peopleItem.getSnippet());
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, SHOW_ADDRESS))
+                    intent.putExtra(SHOW_ADDRESS, (peopleItem.getAddress() == null) ? Misc.geoToDeg(peopleItem.getPoint()).toString() : peopleItem.getAddress());
+
+                startActivityForResult(intent, MENU_PEOPLE_GROUP);
+                return true;
+            }
         default: return super.onContextItemSelected(item);
         }
     }
@@ -357,15 +364,18 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                //                if (previousThread != null) {
-                //                    if (previousThread.isAlive())
-                //                        previousThread.destroy();
-                //                    previousThread = null;
-                //                }
-                //previousThread = new Thread(new AsyncAutoComplete(textView.getText().toString()));
-                //previousThread.run();
-                AutoComplete x = new AutoComplete(SpecificMapLocation.this);
-                x.execute(textView.getText().toString());
+//                if (previousThread != null) {
+//                    if (previousThread.isAlive())
+//                        previousThread.destroy();
+//                    previousThread = null;
+//                }
+//                TextView t = (TextView) v;
+//                if (t != null) {
+//                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
+//                    previousThread.run();
+//                }
+                //                AutoComplete x = new AutoComplete(SpecificMapLocation.this);
+                //                x.execute(textView.getText().toString());
                 return false;
             }
         });
@@ -379,10 +389,9 @@ public class SpecificMapLocation extends MapActivity{
         Bundle bundle = getIntent().getExtras();
         String[] existedSpecific = bundle.getStringArray(LocationControlSet.SPECIFIC_TO_LOAD);
         String[] existedTypes = bundle.getStringArray(LocationControlSet.TYPE_TO_LOAD);
-        String[] existedPeople = bundle.getStringArray(LocationControlSet.PEOPLE_TO_LOAD);
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
         taskID = bundle.getLong(LocationControlSet.TASK_ID);
 
-        //        mMapView.associateMapWithTask(taskID);
         for (int i = 0 ; i < existedSpecific.length ; i+=2) {
             DPoint d = new DPoint(existedSpecific[i]);
             if (d.isNaN())
@@ -482,16 +491,20 @@ public class SpecificMapLocation extends MapActivity{
         }
 
         mPeople = new HashMap<String, DPoint>();
-        for (String s : existedPeople)
-            mPeople.put(s, null);
+        mNullPeople = new ArrayList<String>();
+        for (String s : existedPeople) {
+            Cursor c = db.fetchByMail(s);
+            if (c == null || !c.moveToFirst()){
+                if (c!=null) c.close();
+                continue;
+            }
+            FriendProps fp = AroundroidDbAdapter.userToFP(c);
+            if (fp.isValid())
+                mPeople.put(s, new DPoint(fp.getDlat(), fp.getDlat()));
+            else mNullPeople.add(s);
+            c.close();
+        }
 
-        String[] tomer = new String[1];
-        tomer[0] = "tomer.keshet@gmail.com";
-        DPoint[] coordTomer = new DPoint[1];
-        coordTomer[0] = new DPoint(40.710215,-74.009013);
-        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, tomer, coordTomer, taskID);
-        mPeople.put(tomer[0], coordTomer[0]);
-        db.updatePeople(db.createPeople(tomer[0]), 40.710215, -74.009013, 21600L);
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -539,6 +552,13 @@ public class SpecificMapLocation extends MapActivity{
             public void onClick(View v) {
                 Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
                 intent.putExtra(ManageContactsActivity.taskIDSTR, taskID);
+                String[] arr = new String[mPeople.size() + mNullPeople.size()];
+                int i = 0;
+                for (Map.Entry<String, DPoint> entry : mPeople.entrySet())
+                    arr[i++] = entry.getKey();
+                for (String s : mNullPeople)
+                    arr[i++] = s;
+                //intent.putExtra(ManageContactsActivity.peopleArraySTR, arr);
                 startActivityForResult(intent, CONTACTS_REQUEST_CODE);
             }
         });
@@ -644,7 +664,8 @@ public class SpecificMapLocation extends MapActivity{
                 LinkedHashSet<String> ger = (LinkedHashSet<String>) gerbil;
                 if (ger != null) {
                     mPeople.clear();
-                    mMapView.clearOverlay(PEOPLE_OVERLAY);
+                    mNullPeople.clear();
+                    mMapView.clearOverlay(OVERLAY_PEOPLE_NAME);
                     for (String contact : ger) {
                         Cursor c = db.fetchByMail(contact);
                         DPoint dp = null;
@@ -654,14 +675,14 @@ public class SpecificMapLocation extends MapActivity{
                                 if (fp.isValid()) {
                                     dp = new DPoint(fp.getDlat(), fp.getDlon());
                                     mPeople.put(contact, dp);
+                                    mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY,
+                                            new String[] { contact }, new DPoint[] { dp }, taskID);
                                 }
-                                else mPeople.put(contact, null);
+                                else mNullPeople.add(contact);
                             }
                             c.close();
                         }
-                        else mPeople.put(contact, null);
-                        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY,
-                                new String[] { contact }, new DPoint[] { dp }, taskID);
+                        else mNullPeople.add(contact);
                     }
                 }
             }
@@ -724,13 +745,6 @@ public class SpecificMapLocation extends MapActivity{
             types[i++] = t;
         }
         intent.putExtra(TYPE_TO_SEND, types);
-
-        /* adding the people */
-        i = 0;
-        String[] people = new String[mPeople.size()];
-        for (Map.Entry<String, DPoint> pair : mPeople.entrySet())
-            people[i++] = pair.getKey();
-        intent.putExtra(PEOPLE_TO_SEND, people);
 
         setResult(RESULT_OK, intent);
     }
