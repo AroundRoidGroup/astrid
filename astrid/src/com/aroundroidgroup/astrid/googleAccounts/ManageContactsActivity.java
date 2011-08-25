@@ -66,6 +66,8 @@ public class ManageContactsActivity extends ListActivity{
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
+    private final String emailRegularExpression = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+
     private static boolean alreadyScannedSometime = false;
 
     public static synchronized boolean getAlreadyScannedSometime(Boolean bool){
@@ -448,11 +450,14 @@ public class ManageContactsActivity extends ListActivity{
         addButton.setOnClickListener(new OnClickListener() {
             // @Override
             public void onClick(View v) {
-
-                //Toast.makeText(getBaseContext(), "Please enter email address.",
-                //Toast.LENGTH_LONG).show();
                 String friendMail = et_email.getText().toString();
-                if (friendInList(friendMail)){
+                if (friendMail.compareTo("")==0){
+                    Toast.makeText(getBaseContext(), "Please enter email address.",
+                            Toast.LENGTH_LONG).show();
+                }else if (!friendMail.matches(emailRegularExpression)){
+                    Toast.makeText(getBaseContext(), "Not a valid email address.",
+                            Toast.LENGTH_LONG).show();
+                }else if (friendInList(friendMail)){
                     showDialog(DIALOG_ALREADY_FOUND);
                 }else{
                     loginDialog.dismiss();
