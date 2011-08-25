@@ -20,6 +20,7 @@ import com.aroundroidgroup.map.Geocoding;
 import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.mapFunctions;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.timsu.astrid.R;
@@ -147,7 +148,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             List<String> locationByType = locationService.getLocationsByTypeSpecial(mTaskID, type);
             Map<String, DPoint> data = null;
             for (String location : locationByType) {
-                String savedAddr = mLocationDB.fetchByCoordinateAsString(location);
+                GeoPoint geoLocation = Misc.degToGeo(new DPoint(location));
+                String savedAddr = mLocationDB.fetchByCoordinateAsString(geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6());
                 if (savedAddr == null) {
                     try {
                         savedAddr = Geocoding.reverseGeocoding(new DPoint(location));
@@ -158,11 +160,11 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                     }
                     if (savedAddr == null)
                         savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                    mLocationDB.createTranslate(location, savedAddr);
+                    mLocationDB.createTranslate(geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6(), savedAddr);
                     if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
                         savedAddr = location;
                 }
-                String savedBusiness = mLocationDB.fetchByCoordinateFromType(type, location);
+                String savedBusiness = mLocationDB.fetchByCoordinateFromType(type, geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6());
                 if (savedBusiness == null) {
                     if (data == null) {
                         try {

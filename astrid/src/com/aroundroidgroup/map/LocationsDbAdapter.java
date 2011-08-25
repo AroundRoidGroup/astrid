@@ -1,6 +1,5 @@
 package com.aroundroidgroup.map;
 
-import java.util.Calendar;
 import java.util.Map;
 
 import android.content.ContentValues;
@@ -20,12 +19,14 @@ public class LocationsDbAdapter {
     public static final String KEY_LAST_USE_TIME = "time"; //$NON-NLS-1$
 
     public static final String KEY_ADDRESS = "address"; //$NON-NLS-1$
-    public static final String KEY_COORDINATES = "coordinates"; //$NON-NLS-1$
+    //    public static final String KEY_COORDINATES = "coordinates"; //$NON-NLS-1$
+    public static final String KEY_LATITUDE = "lat"; //$NON-NLS-1$
+    public static final String KEY_LONGITUDE = "lon"; //$NON-NLS-1$
     public static final String KEY_BUSINESS_NAME = "businessName"; //$NON-NLS-1$
     public static final String KEY_TYPE_ID = "idOfTypeByCenterAndRadius"; //$NON-NLS-1$
 
     public static final String KEY_TYPE = "type"; //$NON-NLS-1$
-    public static final String KEY_CENTER_POINT = "centerPoint"; //$NON-NLS-1$
+    //    public static final String KEY_CENTER_POINT = "centerPoint"; //$NON-NLS-1$
     public static final String KEY_RADIUS = "radius"; //$NON-NLS-1$
 
     private static final String TAG = "NotesDbAdapter"; //$NON-NLS-1$
@@ -39,16 +40,18 @@ public class LocationsDbAdapter {
     public static final String DATABASE_ADDRESS_GEOCODE_FAILURE = "$addrFailure$"; //$NON-NLS-1$
     public static final String DATABASE_COORDINATE_GEOCODE_FAILURE = "$coordFailure$"; //$NON-NLS-1$
 
+    private final int mRadiusError = 5000;
+    private final int mCoordinateError = 5000;
     private final Context mCtx;
 
     private static final String CREATE_TABLE_TRANSLATIONS =
         "create table " + DATABASE_TABLE_TRANSLATIONS + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        + KEY_COORDINATES + " text not null, " + KEY_ADDRESS + " text not null, "  //$NON-NLS-1$ //$NON-NLS-2$
+        + KEY_LATITUDE + " integer, " + KEY_LONGITUDE + " integer, " + KEY_ADDRESS + " text not null, "  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         + KEY_LAST_USE_TIME + " text not null) ;"; //$NON-NLS-1$
     private static final String CREATE_TABLE_TYPES =
-        "create table " + DATABASE_TABLE_TYPES + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        + KEY_TYPE + " text not null, " + KEY_CENTER_POINT + " text not null, "  //$NON-NLS-1$ //$NON-NLS-2$
-        + KEY_RADIUS + " text not null, " + KEY_LAST_USE_TIME + " text not null) ;";  //$NON-NLS-1$ //$NON-NLS-2$
+        "CREATE TABLE " + DATABASE_TABLE_TYPES + " (" + KEY_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        + KEY_TYPE + " TEXT NOT NULL, " + KEY_LATITUDE + " INTEGER, " + KEY_LONGITUDE + " INTEGER, "   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        + KEY_RADIUS + " DOUBLE, " + KEY_LAST_USE_TIME + " TEXT NOT NULL) ;";  //$NON-NLS-1$ //$NON-NLS-2$
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -60,11 +63,6 @@ public class LocationsDbAdapter {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(CREATE_TABLE_TRANSLATIONS);
             db.execSQL(CREATE_TABLE_TYPES);
-//            db.execSQL(
-//                    "create table " + "_bank" + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-//                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null, " //$NON-NLS-1$ //$NON-NLS-2$
-//                    + KEY_TYPE_ID + " text not null) ;" //$NON-NLS-1$
-//            );
         }
 
         @Override
@@ -116,46 +114,40 @@ public class LocationsDbAdapter {
      * @param body the body of the note
      * @return rowId or -1 if failed
      */
-    public long createTranslate(String coordinate, String address) {
+    public long createTranslate(int latitude, int longitude, String address) {
         ContentValues initialValues = new ContentValues();
-        initialValues.put(KEY_COORDINATES, coordinate);
+        initialValues.put(KEY_LATITUDE, latitude);
+        initialValues.put(KEY_LONGITUDE, longitude);
         initialValues.put(KEY_ADDRESS, address);
-        initialValues.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
+        initialValues.put(KEY_LAST_USE_TIME, DateUtilities.now());
         return mDb.insert(DATABASE_TABLE_TRANSLATIONS, null, initialValues);
     }
 
-    public long createType(String type, String centerPoint, double radius, Map<String, DPoint> data) {
-        //TODO do the search by the radius with respect to some delta, because radius 100 and 100.5
-        //TODO is actually the same for us
-        boolean toCreateTableForType = false;
+    public long createType(String type, long latitude, long longitude, double radius, Map<String, DPoint> data) {
         ContentValues initialValues = new ContentValues();
-        Cursor c = fetchByType(type);
-        if (c == null)
-            toCreateTableForType = true;
-        else if (!c.moveToFirst())
-            toCreateTableForType = true;
-        if (c != null)
-            c.close();
         initialValues.put(KEY_TYPE, type);
-        initialValues.put(KEY_CENTER_POINT, centerPoint);
+        initialValues.put(KEY_LATITUDE, latitude);
+        initialValues.put(KEY_LONGITUDE, longitude);
         initialValues.put(KEY_RADIUS, radius);
-        initialValues.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
+        initialValues.put(KEY_LAST_USE_TIME, DateUtilities.now());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
+        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
         String typeTableName = "_" + type; //$NON-NLS-1$
         if (data != null) {
             /* creating the table for the given type. the table contains business names and their coords */
-            if (toCreateTableForType) {
-                String typeTableSQL =
-                    "create table if not exists " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    + KEY_BUSINESS_NAME + " text not null, " + KEY_COORDINATES + " text not null) ;"; //$NON-NLS-1$ //$NON-NLS-2$
-                mDb.execSQL(typeTableSQL);
-            }
+            String typeTableSQL =
+                "create table if not exists " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                + KEY_BUSINESS_NAME + " text not null, " + KEY_LATITUDE + " integer, " + KEY_LONGITUDE + " integer, " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                KEY_TYPE_ID + " integer) ;"; //$NON-NLS-1$
+            mDb.execSQL(typeTableSQL);
             for (Map.Entry<String, DPoint> p : data.entrySet()) {
                 ContentValues pair = new ContentValues();
                 pair.put(KEY_BUSINESS_NAME, p.getKey());
-                pair.put(KEY_COORDINATES, p.getValue().toString());
+                pair.put(KEY_LATITUDE, Misc.degToGeo(p.getValue()).getLatitudeE6());
+                pair.put(KEY_LONGITUDE, Misc.degToGeo(p.getValue()).getLongitudeE6());
                 pair.put(KEY_TYPE_ID, rowID);
-                mDb.insert(typeTableName, null, pair);
+                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+
             }
         }
         return rowID;
@@ -181,19 +173,20 @@ public class LocationsDbAdapter {
      * @return Cursor over all notes
      */
     public Cursor fetchAllTranslations() {
-        return mDb.query(DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID, KEY_COORDINATES,
+        return mDb.query(DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID, KEY_LATITUDE, KEY_LONGITUDE,
                 KEY_ADDRESS}, null, null, null, null, null);
     }
 
     public Cursor fetchAllTypes() {
-        return mDb.query(DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_CENTER_POINT,
+        return mDb.query(DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_LATITUDE, KEY_LONGITUDE,
                 KEY_RADIUS}, null, null, null, null, null);
     }
 
-    public String fetchByCoordinateFromType(String type, String coordinate) throws SQLException {
+    public String fetchByCoordinateFromType(String type, int latitude, int longitude) throws SQLException {
         Cursor mCursor =
             mDb.query(true, "_" + type, new String[] {KEY_BUSINESS_NAME}, //$NON-NLS-1$
-                    KEY_COORDINATES + " ='" + coordinate + "'", //$NON-NLS-1$ //$NON-NLS-2$
+                    "(" + KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " and " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + ") and " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                    + "(" + KEY_LONGITUDE + "<=" + (longitude + mCoordinateError) + " and " + KEY_LONGITUDE + ">=" + (longitude - mCoordinateError) + ")", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                     null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
@@ -206,23 +199,26 @@ public class LocationsDbAdapter {
         return null;
     }
 
-    public Cursor fetchByCoordinate(String coordinate) throws SQLException{
+    public Cursor fetchByCoordinate(int latitude, int longitude) throws SQLException{
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
-                    KEY_COORDINATES, KEY_ADDRESS}, KEY_COORDINATES + " ='" + coordinate + "'", //$NON-NLS-1$ //$NON-NLS-2$
+                    KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS},
+                    "(" + KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " and " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + ") and " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                    + "(" + KEY_LONGITUDE + "<=" + (longitude + mCoordinateError) + " and " + KEY_LONGITUDE + ">=" + (longitude - mCoordinateError) + ")", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                     null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 updateTranslate(mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
         }
         return mCursor;
     }
 
-    public String fetchByCoordinateAsString(String coordinate) throws SQLException {
-        Cursor mCursor = fetchByCoordinate(coordinate);
+    public String fetchByCoordinateAsString(int latitude, int longitude) throws SQLException {
+        Cursor mCursor = fetchByCoordinate(latitude, longitude);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
@@ -237,12 +233,13 @@ public class LocationsDbAdapter {
     public Cursor fetchByAddress(String address) throws SQLException {
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
-                    KEY_COORDINATES, KEY_ADDRESS}, KEY_ADDRESS + "='" + address + "'", //$NON-NLS-1$ //$NON-NLS-2$
+                    KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS}, KEY_ADDRESS + "='" + address + "'", //$NON-NLS-1$ //$NON-NLS-2$
                     null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 updateTranslate(mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
         }
@@ -272,11 +269,13 @@ public class LocationsDbAdapter {
     public Cursor fetchTranslation(long rowId) throws SQLException {
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
-                    KEY_COORDINATES, KEY_ADDRESS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
+                    KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
                     null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
-                updateTranslate(rowId, mCursor.getString(mCursor.getColumnIndex(KEY_COORDINATES)),
+                updateTranslate(rowId,
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS)));
             }
         }
@@ -287,51 +286,45 @@ public class LocationsDbAdapter {
     public Cursor fetchByType(String type) throws SQLException{
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE,
-                    KEY_CENTER_POINT, KEY_RADIUS}, KEY_TYPE + "='" + type + "'", //$NON-NLS-1$ //$NON-NLS-2$
+                    KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS}, KEY_TYPE + "='" + type + "'", //$NON-NLS-1$ //$NON-NLS-2$
                     null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 updateType(mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID)),
                         mCursor.getString(mCursor.getColumnIndex(KEY_TYPE)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)));
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
+                        mCursor.getDouble(mCursor.getColumnIndex(KEY_RADIUS)));
                 mCursor.close();
-                mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_COORDINATES}, //$NON-NLS-1$
+                mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_LATITUDE, KEY_LONGITUDE}, //$NON-NLS-1$
                         null, null, null, null, null);
             }
+            else mCursor.close();
         }
         return mCursor;
     }
 
-    public Cursor fetchByTypeComplex(String type, String centerPoint, String radius) throws SQLException {
-        if (type == null || centerPoint == null || radius == null)
+    public Cursor fetchByTypeComplex(String type, int latitude, int longitude, double radius) throws SQLException {
+        if (type == null)
             return null;
         Cursor mCursor =
-            mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_CENTER_POINT, KEY_RADIUS},
-                    KEY_TYPE + "='" + type + "' AND " + KEY_CENTER_POINT + "='" + centerPoint + "' AND " + KEY_RADIUS + "='" + radius + "'", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-                    null, null, null, null, null);
-        Cursor mCursor2 =
-            mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_CENTER_POINT, KEY_RADIUS},
-                    null,
-                    null, null, null, null, null);
+        mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS},
+                KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " AND " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                KEY_LONGITUDE + "<=" + (longitude + mCoordinateError) + " AND " + KEY_LONGITUDE + ">=" + (longitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                KEY_RADIUS + "<=" + (radius + mRadiusError) + " AND " + KEY_RADIUS + ">=" + (radius - mRadiusError), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
-                Toast.makeText(mCtx, "Type = " + mCursor.getString(mCursor.getColumnIndex(KEY_TYPE))
-                        + " Center = " + mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT))
-                        + " Radius = " + mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)), Toast.LENGTH_LONG).show();
-                mCursor.moveToNext();
-            }
-            mCursor.close();
-        }
-        if (mCursor != null) {
-            if (mCursor.moveToFirst()) {
-                updateType(mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID)),
+                Toast.makeText(mCtx, "kjkj", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+                int rowID = mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID));
+                updateType(rowID,
                         mCursor.getString(mCursor.getColumnIndex(KEY_TYPE)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)));
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
+                        mCursor.getDouble(mCursor.getColumnIndex(KEY_RADIUS)));
                 mCursor.close();
-                mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_COORDINATES}, //$NON-NLS-1$
-                        null, null, null, null, null);
+                mCursor = mDb.query("_" + type, new String[] {KEY_BUSINESS_NAME, KEY_LATITUDE, KEY_LONGITUDE}, //$NON-NLS-1$
+                        KEY_ROWID + "=" + rowID , null, null, null, null); //$NON-NLS-1$
             }
             else mCursor.close();
         }
@@ -343,13 +336,14 @@ public class LocationsDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE,
-                    KEY_CENTER_POINT, KEY_RADIUS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
+                    KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
                     null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
                 updateType(rowId, mCursor.getString(mCursor.getColumnIndex(KEY_TYPE)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_CENTER_POINT)),
-                        mCursor.getString(mCursor.getColumnIndex(KEY_RADIUS)));
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(KEY_LONGITUDE)),
+                        mCursor.getDouble(mCursor.getColumnIndex(KEY_RADIUS)));
             }
         }
         return mCursor;
@@ -366,20 +360,22 @@ public class LocationsDbAdapter {
      * @param body value to set note body to
      * @return true if the note was successfully updated, false otherwise
      */
-    public boolean updateTranslate(long rowId, String coordinate, String address) {
+    public boolean updateTranslate(long rowId, int latitude, int longitude, String address) {
         ContentValues args = new ContentValues();
-        args.put(KEY_COORDINATES, coordinate);
+        args.put(KEY_LATITUDE, latitude);
+        args.put(KEY_LONGITUDE, longitude);
         args.put(KEY_ADDRESS, address);
         args.put(KEY_LAST_USE_TIME, DateUtilities.now());
         return mDb.update(DATABASE_TABLE_TRANSLATIONS, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
-    public boolean updateType(long rowId, String type, String centerPoint, String radius) {
+    public boolean updateType(long rowId, String type, int latitude, int longitude, double radius) {
         ContentValues args = new ContentValues();
         args.put(KEY_TYPE, type);
-        args.put(KEY_CENTER_POINT, centerPoint);
+        args.put(KEY_LATITUDE, latitude);
+        args.put(KEY_LONGITUDE, longitude);
         args.put(KEY_RADIUS, radius);
-        args.put(KEY_LAST_USE_TIME, Calendar.getInstance().getTime().toGMTString());
+        args.put(KEY_LAST_USE_TIME, DateUtilities.now());
         return mDb.update(DATABASE_TABLE_TYPES, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 }

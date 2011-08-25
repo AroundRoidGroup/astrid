@@ -103,6 +103,15 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    public boolean associateMapWithTask(long taskID) {
+        if (currentTaskID == -1) {
+            currentTaskID = taskID;
+            return true;
+        }
+        currentTaskID = taskID;
+        return false;
+    }
+
     public void makeEditable() {
         editable = true;
     }
@@ -120,7 +129,7 @@ public class AdjustedMap extends MapView {
                 mNames.put(mDeviceOverlay, DEVICE_TYPE_NAME);
                 GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
                 DPoint lastDeviceLocationAsDPoint = Misc.geoToDeg(lastDeviceLocation);
-                String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocationAsDPoint.toString());
+                String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
                 if (savedAddr == null) {
                     try {
                         savedAddr = Geocoding.reverseGeocoding(lastDeviceLocationAsDPoint);
@@ -131,7 +140,7 @@ public class AdjustedMap extends MapView {
                     }
                     if (savedAddr == null)
                         savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                    locDB.createTranslate(lastDeviceLocationAsDPoint.toString(), savedAddr);
+                    locDB.createTranslate(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6(), savedAddr);
                     if (savedAddr.equals(LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE))
                         savedAddr = lastDeviceLocationAsDPoint.toString();
                 }
@@ -348,6 +357,14 @@ public class AdjustedMap extends MapView {
         return true;
     }
 
+    public boolean removeTapItem(int index) {
+        if (mTappedOverlay == null)
+            return false;
+        mTappedOverlay.removeOverlayByIndex(index);
+        invalidate();
+        return true;
+    }
+
     public boolean removeItemFromOverlayByCoords(int id, GeoPoint coords) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null && coords != null)
@@ -424,7 +441,7 @@ public class AdjustedMap extends MapView {
                     fireEvent();
                     lastCenter = getMapCenter();
                 }
-
+                // hopa
                 if (event.getEventTime() - event.getDownTime() > 1500) {
                     GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
 
@@ -441,7 +458,7 @@ public class AdjustedMap extends MapView {
                     /* wants to add the tapped location to the task, so the task will be specific- */
                     /* location based */
 
-                    String savedAddr = locDB.fetchByCoordinateAsString(lastPointedLocation.toString());
+                    String savedAddr = locDB.fetchByCoordinateAsString(p.getLatitudeE6(), p.getLongitudeE6());
                     if (savedAddr == null) { /* if no previous geocoding has been made, lets do one */
                         try {
                             address = Geocoding.reverseGeocoding(lastPointedLocation);
@@ -455,7 +472,7 @@ public class AdjustedMap extends MapView {
                         address = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
 
                     /* adding the pair of coordinate and address to DB */
-                    locDB.createTranslate(lastPointedLocation.toString(), address);
+                    locDB.createTranslate(p.getLatitudeE6(), p.getLongitudeE6(), address);
 
                     address = (address != LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE) ? address : lastPointedLocation.toString();
                     dialog.setMessage("Would you like to add the following location:\n" + address); //$NON-NLS-1$
@@ -654,7 +671,7 @@ public class AdjustedMap extends MapView {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     cursor.moveToNext();
                     task.readFromCursor(cursor);
-                    intent.putExtra(TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                    intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
                     break;
                 }
             } finally {
@@ -675,7 +692,7 @@ public class AdjustedMap extends MapView {
                 intent.putExtra(Focaccia.READ_ONLY, Focaccia.READ_ONLY);
                 intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
                 intent.putExtra(Focaccia.SHOW_NAME, DEVICE_TYPE_NAME);
-                intent.putExtra(TASK_NAME, TASK_NAME_HEADER_OF_DEVICE_ITEM);
+                intent.putExtra(Focaccia.TASK_NAME, TASK_NAME_HEADER_OF_DEVICE_ITEM);
             }
             else {
                 if (editable)

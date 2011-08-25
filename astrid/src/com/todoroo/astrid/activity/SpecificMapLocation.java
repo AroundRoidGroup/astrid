@@ -30,7 +30,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -40,7 +39,6 @@ import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedMap.MapItemizedOverlay;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
-import com.aroundroidgroup.map.AsyncAutoComplete;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -69,7 +67,6 @@ public class SpecificMapLocation extends MapActivity{
     public static final String CMENU_KIND = "ContextMenu_Kind_Selection"; //$NON-NLS-1$
     public static final String CMENU_SPECIFIC = "ContextMenu_Specific_Selection"; //$NON-NLS-1$
     public static final String CMENU_PEOPLE = "ContextMenu_People_Selection"; //$NON-NLS-1$
-    public static final String TASK_NAME = "Task_Name_For_POPUP_HEADER"; //$NON-NLS-1$
 
     private static final int MENU_SPECIFIC_GROUP = 1;
     private static final int MENU_KIND_GROUP = 65536;
@@ -200,7 +197,7 @@ public class SpecificMapLocation extends MapActivity{
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
-                intent.putExtra(TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
                 break;
             }
         } finally {
@@ -281,7 +278,7 @@ public class SpecificMapLocation extends MapActivity{
     }
 
     public boolean hasPlaces() {
-        return !(mMapView.getTappedPointsCount() == 0 && mTypes.size() == 0 && mPeople.size() == 0);
+        return !(mMapView.getTappedPointsCount() == 0 && mMapView.getOverlaySize(SPECIFIC_OVERLAY) == 0 && mTypes.size() == 0 && mPeople.size() == 0);
     }
 
     @Override
@@ -347,16 +344,16 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (previousThread != null) {
-                    if (previousThread.isAlive())
-                        previousThread.destroy();
-                    previousThread = null;
-                }
-                TextView t = (TextView) v;
-                if (t != null) {
-                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
-                    previousThread.run();
-                }
+//                if (previousThread != null) {
+//                    if (previousThread.isAlive())
+//                        previousThread.destroy();
+//                    previousThread = null;
+//                }
+//                TextView t = (TextView) v;
+//                if (t != null) {
+//                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
+//                    previousThread.run();
+//                }
                 //                AutoComplete x = new AutoComplete(SpecificMapLocation.this);
                 //                x.execute(textView.getText().toString());
                 return false;
@@ -374,6 +371,7 @@ public class SpecificMapLocation extends MapActivity{
         String[] existedTypes = bundle.getStringArray(LocationControlSet.TYPE_TO_LOAD);
         String[] existedPeople = bundle.getStringArray(LocationControlSet.PEOPLE_TO_LOAD);
         mTaskID = bundle.getLong(LocationControlSet.TASK_ID);
+        mMapView.associateMapWithTask(mTaskID);
 
         for (int i = 0 ; i < existedSpecific.length ; i+=2) {
             DPoint d = new DPoint(existedSpecific[i]);
@@ -383,7 +381,8 @@ public class SpecificMapLocation extends MapActivity{
             if (existedSpecific[i + 1] != null)
                 address = existedSpecific[i + 1];
             else {
-                address = mLocationDB.fetchByCoordinateAsString(d.toString());
+                GeoPoint gp = Misc.degToGeo(d);
+                address = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
                 if (address == null) { /* such mapping does not exist, lets make one */
                     try {
                         address = Geocoding.reverseGeocoding(d);
@@ -394,7 +393,7 @@ public class SpecificMapLocation extends MapActivity{
                     }
                     if (address == null)
                         address = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
-                    mLocationDB.createTranslate(d.toString(), address);
+                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), address);
                 }
                 /* mapping exists but previous trial to geocode failed */
                 if (address != null && address.equals(LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE))
@@ -413,8 +412,9 @@ public class SpecificMapLocation extends MapActivity{
                 len = Integer.parseInt(typeAndSize[1]);
                 Map<String, DPoint> data = null;
                 for (int k = 0 ; k < len ; k++) {
-                    String savedBusiness = mLocationDB.fetchByCoordinateFromType(typeAndSize[0], existedTypes[i]);
-                    String savedAddr = mLocationDB.fetchByCoordinateAsString(existedTypes[i]);
+                    GeoPoint gp = Misc.degToGeo(new DPoint(existedTypes[i]));
+                    String savedBusiness = mLocationDB.fetchByCoordinateFromType(typeAndSize[0], gp.getLatitudeE6(), gp.getLongitudeE6());
+                    String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
                     if (savedAddr == null) {
                         try {
                             savedAddr = Geocoding.reverseGeocoding(new DPoint(existedTypes[i]));
@@ -425,7 +425,7 @@ public class SpecificMapLocation extends MapActivity{
                         }
                         if (savedAddr == null)
                             savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                        mLocationDB.createTranslate(existedTypes[i], savedAddr);
+                        mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
                     }
                     if (savedBusiness != null) {
                         mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(existedTypes[i + k])),
@@ -599,7 +599,8 @@ public class SpecificMapLocation extends MapActivity{
 
                     if (d != null) {
                         String addr = null;
-                        String savedAddr = mLocationDB.fetchByCoordinateAsString(theCoord);
+                        GeoPoint gp = Misc.degToGeo(new DPoint(theCoord));
+                        String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
                         if (savedAddr == null) {
                             try {
                                 addr = Geocoding.reverseGeocoding(d);
@@ -614,7 +615,7 @@ public class SpecificMapLocation extends MapActivity{
                             theAddr = addr;
                         else theAddr = savedAddr;
 
-                        mLocationDB.createTranslate(theCoord, theAddr);
+                        mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), theAddr);
                         mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(theCoord)), OVERLAY_SPECIFIC_NAME, theAddr, theAddr, SPECIFIC_OVERLAY, mTaskID, null);
                         mMapView.invalidate();
                     }
@@ -669,6 +670,12 @@ public class SpecificMapLocation extends MapActivity{
                         else mNullPeople.add(contact);
                     }
                 }
+            }
+        }
+
+        if (requestCode == MENU_TAPPED_GROUP) {
+            if (resultCode == RESULT_FIRST_USER) {
+                mMapView.removeTapItem(mPressedItemIndex);
             }
         }
 

@@ -7,6 +7,7 @@ import org.json.JSONException;
 
 import android.database.Cursor;
 
+import com.google.android.maps.GeoPoint;
 import com.todoroo.andlib.service.ContextManager;
 
 public class mapFunctions {
@@ -33,17 +34,19 @@ public class mapFunctions {
 
         int i = 0;
         int[] feedback = new int[locationTypes.length];
+        GeoPoint gp = Misc.degToGeo(center);
         for (String type : locationTypes) {
             Map<String, DPoint> kindLocations = null;
             try {
-                Cursor c = locDB.fetchByTypeComplex(type, center.toString(), (new Double(radius)).toString());
+                Cursor c = locDB.fetchByTypeComplex(type, gp.getLatitudeE6(), gp.getLongitudeE6(), radius);
+                //TODO although c is not empty, it enters to createType :(
                 if (c == null || !c.moveToFirst()) {
                     if (c != null)
                         c.close();
                     kindLocations = Misc.googlePlacesQuery(type, center, radius);
                     if (!kindLocations.isEmpty()) {
                         feedback[i] = SUCCESS;
-                        locDB.createType(type, center.toString(), radius, kindLocations);
+                        locDB.createType(type, gp.getLatitudeE6(), gp.getLongitudeE6(), radius, kindLocations);
                     }
                     else {
                         feedback[i] = FAILURE;
@@ -51,12 +54,13 @@ public class mapFunctions {
                     }
                     /* running on all the tags (bank, post-office, ATM, etc...) */
                     for (Map.Entry<String, DPoint> p : kindLocations.entrySet()) {
-                        String savedAddr = locDB.fetchByCoordinateAsString(p.getValue().toString());
+                        GeoPoint geoP = Misc.degToGeo(p.getValue());
+                        String savedAddr = locDB.fetchByCoordinateAsString(geoP.getLatitudeE6(), geoP.getLongitudeE6());
                         if (savedAddr == null) {
                             savedAddr = Geocoding.reverseGeocoding(p.getValue());
                             if (savedAddr == null)
                                 savedAddr = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
-                            locDB.createTranslate(p.getValue().toString(), savedAddr);
+                            locDB.createTranslate(geoP.getLatitudeE6(), geoP.getLongitudeE6(), savedAddr);
                         }
                         map.addItemToOverlay(Misc.degToGeo(p.getValue()), p.getKey(),
                                 type, ((savedAddr.equals(LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE))?p.getValue().toString():savedAddr),
@@ -66,15 +70,17 @@ public class mapFunctions {
                 else {
                     /* having a record of this type in DB */
                     while (!c.isAfterLast()) {
-                        String coord = c.getString(c.getColumnIndex(LocationsDbAdapter.KEY_COORDINATES));
-                        String savedAddr = locDB.fetchByCoordinateAsString(coord);
+                        int lat = c.getInt(c.getColumnIndex(LocationsDbAdapter.KEY_LATITUDE));
+                        int lon = c.getInt(c.getColumnIndex(LocationsDbAdapter.KEY_LONGITUDE));
+                        String savedAddr = locDB.fetchByCoordinateAsString(lat, lon);
+                        DPoint dp = Misc.geoToDeg(new GeoPoint(lat, lon));
                         if (savedAddr == null) {
-                            savedAddr = Geocoding.reverseGeocoding(new DPoint(coord));
+                            savedAddr = Geocoding.reverseGeocoding(dp);
                             if (savedAddr == null)
                                 savedAddr = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
-                            locDB.createTranslate(coord, savedAddr);
+                            locDB.createTranslate(lat, lon, savedAddr);
                         }
-                        map.addItemToOverlay(Misc.degToGeo(new DPoint(coord)),
+                        map.addItemToOverlay(Misc.degToGeo(dp),
                                 c.getString(c.getColumnIndex(LocationsDbAdapter.KEY_BUSINESS_NAME)),
                                 type,
                                 savedAddr,
@@ -101,7 +107,8 @@ public class mapFunctions {
         LocationsDbAdapter locDB = new LocationsDbAdapter(ContextManager.getContext());
         locDB.open();
         for (DPoint d : locations) {
-            String savedAddr = locDB.fetchByCoordinateAsString(d.toString());
+            GeoPoint gp = Misc.degToGeo(d);
+            String savedAddr = locDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
             if (savedAddr == null) {
                 try {
                     savedAddr = Geocoding.reverseGeocoding(d);
@@ -111,8 +118,8 @@ public class mapFunctions {
                     e.printStackTrace();
                 }
                 if (savedAddr == null)
-                    locDB.createTranslate(d.toString(), LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE);
-                else locDB.createTranslate(d.toString(), savedAddr);
+                    locDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE);
+                else locDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
             }
             map.addItemToOverlay(Misc.degToGeo(d), title, d.toString(), savedAddr, id, taskID, null);
         }

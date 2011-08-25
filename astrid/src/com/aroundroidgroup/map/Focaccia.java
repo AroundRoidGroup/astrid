@@ -11,13 +11,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.timsu.astrid.R;
-import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class Focaccia extends Activity {
 
     public static final int RESULT_CODE_DELETE = 1;
     public static final int RESULT_CODE_DELETE_ALL = 2;
 
+    public static final String TASK_NAME = "taskName"; //$NON-NLS-1$
     public static final String SHOW_NAME = "name"; //$NON-NLS-1$
     public static final String SHOW_ADDRESS = "address"; //$NON-NLS-1$
     public static final String SHOW_TITLE = "title"; //$NON-NLS-1$
@@ -47,9 +47,8 @@ public class Focaccia extends Activity {
             return;
 
         /* setting the title of the activity to be the task name */
-        String tNameSML = bundle.getString(SpecificMapLocation.TASK_NAME);
-        String tNameAM = bundle.getString(AdjustedMap.TASK_NAME);
-        setTitle((tNameSML == null) ? tNameAM : tNameSML);
+        String header = bundle.getString(TASK_NAME);
+        setTitle(header);
 
         String name = bundle.getString(SHOW_NAME);
         final String address = bundle.getString(SHOW_ADDRESS);
