@@ -12,6 +12,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -35,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
 
@@ -65,6 +67,14 @@ public class ManageContactsActivity extends ListActivity{
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
     private static boolean alreadyScannedSometime = false;
+
+    public static synchronized boolean getAlreadyScannedSometime(Boolean bool){
+        boolean res = alreadyScannedSometime;
+        if (bool!=null){
+            alreadyScannedSometime = bool;
+        }
+        return res;
+    }
 
     private ContactsHelper conHel;
 
@@ -109,7 +119,7 @@ public class ManageContactsActivity extends ListActivity{
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
             }
-            else if (!alreadyScannedSometime){
+            else if (!getAlreadyScannedSometime(null)){
                 new ScanContactsTask().execute(new Void[0]);
             } else {
                 showDialog(DIALOG_ALREADY_SCANNED);
@@ -208,6 +218,7 @@ public class ManageContactsActivity extends ListActivity{
         //if no friends create ok dialog. if has friends create list dialog.
         if (numberOfFriends<=0){
             cur.close();
+            GPSService.lockDeletes(false);
             return createNoFriendsDialog();
         }
         final ArrayList<String> mailList = new ArrayList<String>(numberOfFriends);
@@ -257,7 +268,8 @@ public class ManageContactsActivity extends ListActivity{
                         peopleHashSet.remove(mailList.get(i));
                     }
                 }
-                fillListSmart();
+                GPSService.lockDeletes(false);
+                fillData();
 
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -265,6 +277,13 @@ public class ManageContactsActivity extends ListActivity{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
+
+            }
+        }).setOnCancelListener(new OnCancelListener() {
+
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                GPSService.lockDeletes(false);
 
             }
         });
@@ -366,7 +385,7 @@ public class ManageContactsActivity extends ListActivity{
             public void onClick(View v) {
                 if (!friendInList(friendMail)){
                     peopleHashSet.add(friendMail);
-                    fillListSmart();
+                    fillData();
                     if (cb.isChecked()){
                         // send mail
                         new InviteFriendTask().execute(new String[]{friendMail});
@@ -585,6 +604,7 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
+    /*
     private final Handler mListFillHandler = new Handler();
     private synchronized void fillListSmart(){
         new Thread() {
@@ -593,17 +613,20 @@ public class ManageContactsActivity extends ListActivity{
                 mListFillHandler.post(new Runnable() {
                     public void run() {
                         fillData();
+                        GPSService.lockDeletes(false);
                     }
                 });
             }
         }.start();
     }
+    */
 
     private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
 
         @Override
         protected void onPostExecute(Boolean result) {
             if (isFinishing()){
+                GPSService.lockDeletes(false);
                 return;
             }
             _progressDialog.dismiss();
@@ -643,6 +666,8 @@ public class ManageContactsActivity extends ListActivity{
             if (isCancelled()){
                 return false;
             }
+
+            GPSService.lockDeletes(true);
             ArrayList<String> al = new ArrayList<String>();
             for(Entry<String, Long> en : friendSet){
                 Cursor cur = mDbHelper.fetchByMail(en.getKey());
@@ -666,18 +691,21 @@ public class ManageContactsActivity extends ListActivity{
                 cur.close();
             }
             if (isCancelled()){
+                GPSService.lockDeletes(false);
                 return false;
             }
             //TODO limit update people location to few people
             if (al.size()<=0){
+                GPSService.lockDeletes(false);
                 return true;
             }
             List <FriendProps> lfp = prs.updatePeopleLocations(al.toArray(new String[0]), null, mDbHelper);
             if (lfp == null){
+                GPSService.lockDeletes(false);
                 return false;
             }
             else{
-                alreadyScannedSometime = true;
+                getAlreadyScannedSometime(true);
                 return true;
             }
         }
@@ -721,6 +749,7 @@ public class ManageContactsActivity extends ListActivity{
             if (!error){
 
                 if (result){
+                    fillData();
                     //friend is using Aroundroid
                     showDialog(DIALOG_HURRAY);
                 }
@@ -769,8 +798,7 @@ public class ManageContactsActivity extends ListActivity{
                     if (!isFinishing()){
                         if (!friendInList(fp.getMail())){
                             //TODO add this check to the onResult function too.
-                            peopleHashSet.add(fp.getMail());
-                            fillListSmart();
+                            peopleHashSet.add(fp.getMail());;
                         }
                     }
                 }

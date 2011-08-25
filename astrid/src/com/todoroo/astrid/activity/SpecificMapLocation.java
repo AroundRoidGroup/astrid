@@ -377,7 +377,7 @@ public class SpecificMapLocation extends MapActivity{
         Bundle bundle = getIntent().getExtras();
         String[] existedSpecific = bundle.getStringArray(LocationControlSet.SPECIFIC_TO_LOAD);
         String[] existedTypes = bundle.getStringArray(LocationControlSet.TYPE_TO_LOAD);
-        String[] existedPeople = bundle.getStringArray(LocationControlSet.PEOPLE_TO_LOAD);
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(taskID);
         taskID = bundle.getLong(LocationControlSet.TASK_ID);
 
         for (int i = 0 ; i < existedSpecific.length ; i+=2) {

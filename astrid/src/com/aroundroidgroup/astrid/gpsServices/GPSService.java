@@ -13,6 +13,7 @@ import android.os.IBinder;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
@@ -55,6 +56,13 @@ public class GPSService extends Service{
     public static int connectCount = 0;
 
     private static Object deleteObj = new Object();
+    private static boolean holdDeletes = false;
+
+    public static void lockDeletes(boolean lockIt){
+        synchronized(deleteObj){
+            holdDeletes = lockIt;
+        }
+    }
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -210,6 +218,8 @@ public class GPSService extends Service{
     }
 
     private void cleanDataBase(String[] realPeople) {
+        synchronized (deleteObj){
+        ManageContactsActivity.getAlreadyScannedSometime(false);
         Set<String> hs = new TreeSet<String>();
         for (String s : realPeople){
             hs.add(s);
@@ -223,7 +233,7 @@ public class GPSService extends Service{
                 String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
                 long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
                 long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                if (!hs.contains(mail) && contactId!=-1){
+                if (!holdDeletes && !hs.contains(mail) && contactId!=-1){
                     aDba.deletePeople(rowId);
                 }
                 else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
@@ -232,6 +242,8 @@ public class GPSService extends Service{
             }while (cur.moveToNext());
         }
         cur.close();
+
+        }
     }
 
     private class DataRefresher extends Thread{
