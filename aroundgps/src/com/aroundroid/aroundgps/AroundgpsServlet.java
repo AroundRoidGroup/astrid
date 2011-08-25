@@ -2,12 +2,10 @@ package com.aroundroid.aroundgps;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +21,6 @@ import net.sf.jsr107cache.CacheException;
 import net.sf.jsr107cache.CacheManager;
 
 import com.google.appengine.api.memcache.MemcacheService;
-
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -36,17 +33,16 @@ public class AroundgpsServlet extends HttpServlet {
 
 
 
-	private final String GPSLat = "GPSLAT";
-	private final String GPSLon = "GPSLON";
-	private final String USERS = "USERS";
-	private final String DEL = "::";
-	private final String TIMESTAMP = "TIMESTAMP";
+	private final static String GPSLat = "GPSLAT";
+	private final static String GPSLon = "GPSLON";
+	private final static String USERS = "USERS";
+	private final static String DEL = "::";
+	private final static String TIMESTAMP = "TIMESTAMP";
+	
+	private final static String selectStringStart = "select from "+ GPSProps.class.getName()+" where mail =='";
 
 	private String buildGetQuery(String friend){
-		StringBuffer query = new StringBuffer();
-		query.append("select from "+ GPSProps.class.getName()+" where ");
-		query.append(" mail =='" + friend.toLowerCase() + "'");
-		return query.toString();
+		return (selectStringStart + friend.toLowerCase() + "'");
 	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
