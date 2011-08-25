@@ -300,6 +300,18 @@ public class SpecificMapLocation extends MapActivity{
             }
 
         });
+
+        mMapView.setOnLongClickListener(new OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                int a = 5;
+                a= a*3;
+                a=3;
+                return false;
+            }
+        });
+
         deviceLocation = mMapView.getDeviceLocation();
         if (deviceLocation != null) {
             /* Centralizing the map to the last known location of the device */
@@ -511,7 +523,9 @@ public class SpecificMapLocation extends MapActivity{
         mMapView.setBuiltInZoomControls(true);
         mMapView.setZoomByAllLocations();
         radius = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
-        Toast.makeText(this, "radius = " + radius, Toast.LENGTH_LONG).show();
+        int lon = mMapView.getLongitudeSpan();
+        int lat = mMapView.getLatitudeSpan();
+        Toast.makeText(this, "radius = " + radius + ",lon = "+ lon + ",lat = " + lat, Toast.LENGTH_LONG).show();
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */

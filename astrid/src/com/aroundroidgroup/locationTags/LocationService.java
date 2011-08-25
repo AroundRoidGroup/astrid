@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import com.aroundroidgroup.map.DPoint;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
@@ -22,6 +23,7 @@ import com.todoroo.astrid.service.MetadataService;
 public class LocationService {
 
     private static final String MOTI_DIVIDOR = "@"; //$NON-NLS-1$
+    private final String MOTI_DIVIDOR_BETWEEN_DOUBLES = "%"; //$NON-NLS-1$
 
     //TODO : check synchronized??
 
@@ -253,30 +255,30 @@ public class LocationService {
 //////////////////////////////////////TODO:make it all better
 
 
-    public List<String> getLocationsByTypeSpecial(long taskId,String key){//TODO: be more percise
+    public List<DPoint> getLocationsByTypeSpecial(long taskId,String key){//TODO: be more percise
         return getLocationsListByType(getLocationPropertyAsArray(taskId,LocationFields.motiLocations,
                 LocationFields.MOTI_METADATA_KEY),key);
     }
     /* returns the string array mapped to the String key inside the DP represented in the parameter strings */
-    private List<String> getLocationsListByType(
+    private List<DPoint> getLocationsListByType(
             String[] strings, String key) {
         for (String str : strings){
             int dividor = str.indexOf(MOTI_DIVIDOR);
             if (key.compareTo(str.substring(0, dividor))==0)
                 return parseLocations(str.substring(dividor+1));
         }
-        return new ArrayList<String>();
+        return new ArrayList<DPoint>();
     }
 
-    private List<String> parseLocations(String str) {
+    private List<DPoint> parseLocations(String str) {
         int index = 0;
-        ArrayList<String> arr = new ArrayList<String>();
+        ArrayList<DPoint> arr = new ArrayList<DPoint>();
         while(index!=-1){
             index = str.indexOf(MOTI_DIVIDOR);
             if (index==-1)
-                arr.add(str);
+                arr.add(new DPoint(str));
             else{
-                arr.add(str.substring(0,index));
+                arr.add(new DPoint(str.substring(0,index)));
                 str = str.substring(index+1);
             }
         }
@@ -284,7 +286,10 @@ public class LocationService {
         return arr;
     }
 
-    public boolean syncLocationsByTypeSpecial(long taskID, String key, String[] arr){
+    public boolean syncLocationsByTypeSpecial(long taskID, String key, DPoint[] arr){
+        String[] stringsArr = new String[arr.length];
+        for (int i=0; i<arr.length;i++)
+            stringsArr[i]=arr[i].toString();
         String[] strings = getLocationPropertyAsArray(taskID,LocationFields.motiLocations,
                 LocationFields.MOTI_METADATA_KEY);
 
@@ -297,7 +302,7 @@ public class LocationService {
                 set.add(str);
         }
 
-        for(String place: arr){
+        for(String place: stringsArr){
             newStr=newStr+MOTI_DIVIDOR+place;
         }
         set.add(newStr);
@@ -306,6 +311,5 @@ public class LocationService {
 
 
     }
-
 
 }

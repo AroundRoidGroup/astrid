@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -456,7 +457,18 @@ public class AdjustedMap extends MapView {
                 GeoPoint pdf = getMapCenter();
                 if (!pdf.equals(lastCenter)) {
                     /* map center changed */
-                        Toast.makeText(mContext, "hopa", Toast.LENGTH_SHORT).show();
+                    AdjustedMap mMapView = (AdjustedMap) findViewById(R.id.mapview);
+                    int lon = mMapView.getLongitudeSpan();
+                    int lat = mMapView.getLatitudeSpan();
+                    float[] hight = new float[1], width = new float[1];
+                    if (lat==0 || lon==0){
+                        hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
+                        width[0]=241; //initialized map width. need to be changed if initial zoom level changes
+                    }else{
+                    Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
+                    Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
+                    }
+                        Toast.makeText(mContext, "hopa"+", hight= "+ hight[0] +", width= "+ width[0], Toast.LENGTH_SHORT).show();
                         fireEvent();
                     lastCenter = getMapCenter();
                 }

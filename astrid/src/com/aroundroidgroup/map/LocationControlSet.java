@@ -121,7 +121,7 @@ public class LocationControlSet implements TaskEditControlSet{
         /* adding existed types */
         String[] allTypes = locationService.getLocationsByTypeAsArray(mTaskID);
         for (String type : allTypes) {
-            List<String> locations = locationService.getLocationsByTypeSpecial(mTaskID, type);
+            List<String> locations = new ArrayList<String>();//locationService.getLocationsByTypeSpecial(mTaskID, type);
             mTypes.put(type, locations);
         }
 
@@ -152,8 +152,8 @@ public class LocationControlSet implements TaskEditControlSet{
                 int i = 0;
                 for (String s : element.getValue())
                     arr[i++] = s;
-                if (locationService.syncLocationsByTypeSpecial(mTaskID, element.getKey(), arr))
-                    task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
+                //if (locationService.syncLocationsByTypeSpecial(mTaskID, element.getKey(), arr))
+                //    task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
             }
             if(locationService.syncLocationsByType(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
@@ -116,15 +117,18 @@ public class Notificator {
 
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
             WPSLocation location, int radius) {
-        //TODO USERLOCATION
-        if (true){
-            return false;
-        }
-        DPoint d = new DPoint(1.0,1.0);
+        DPoint loc = new DPoint(location.getLatitude(),location.getLongitude());
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
-                if (!(Misc.googlePlacesQuery(str,d,radius).isEmpty()))
-                    return true;
+                Map<String, DPoint> places = Misc.googlePlacesQuery(str,loc,radius);
+                List<DPoint> blackList = locationService.getLocationsByTypeSpecial(task.getId(), str);
+                outer_loop: for (DPoint d: places.values())
+                    for (DPoint badD: blackList){
+                        if (Double.compare(d.getX(), badD.getX())==0 && Double.compare(d.getY(), badD.getY())==0)
+                            continue outer_loop;
+                        return true; //gets here if the location was not blacklisted
+                    }
+                return false;
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
