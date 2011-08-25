@@ -493,13 +493,6 @@ public class SpecificMapLocation extends MapActivity{
             c.close();
         }
 
-        String[] tomer = new String[1];
-        tomer[0] = "tomer.keshet@gmail.com";
-        DPoint[] coordTomer = new DPoint[1];
-        coordTomer[0] = new DPoint(40.710215,-74.009013);
-        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, tomer, coordTomer, taskID);
-        mPeople.put(tomer[0], coordTomer[0]);
-        db.updatePeople(db.createPeople(tomer[0]), 40.710215, -74.009013, 21600L);
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -551,7 +544,7 @@ public class SpecificMapLocation extends MapActivity{
                     arr[i++] = entry.getKey();
                 for (String s : mNullPeople)
                     arr[i++] = s;
-                intent.putExtra(ManageContactsActivity.peopleArraySTR, arr);
+                //intent.putExtra(ManageContactsActivity.peopleArraySTR, arr);
                 startActivityForResult(intent, CONTACTS_REQUEST_CODE);
             }
         });
@@ -738,13 +731,6 @@ public class SpecificMapLocation extends MapActivity{
             types[i++] = t;
         }
         intent.putExtra(TYPE_TO_SEND, types);
-
-        /* adding the people */
-        i = 0;
-        String[] people = new String[mPeople.size()];
-        for (Map.Entry<String, DPoint> pair : mPeople.entrySet())
-            people[i++] = pair.getKey();
-        intent.putExtra(PEOPLE_TO_SEND, people);
 
         setResult(RESULT_OK, intent);
     }

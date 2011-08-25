@@ -55,21 +55,6 @@ public class GPSService extends Service{
     public static int connectCount = 0;
 
     private static Object deleteObj = new Object();
-    private static boolean holdDeletes = false;
-
-    public static void lockDeletes(boolean lockIt){
-        synchronized(deleteObj){
-            holdDeletes = lockIt;
-        }
-    }
-
-    public static boolean getHoldDeletes(){
-        boolean res;
-        synchronized (deleteObj) {
-            res = holdDeletes;
-        }
-        return res;
-    }
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -93,7 +78,15 @@ public class GPSService extends Service{
         refreshData = new DataRefresher();
         conHel = new ContactsHelper(getContentResolver());
         aDba.open();
-        aDba.createSpecialUser();
+        //TODO problem with "me"
+        //aDba.dropPeople();
+        Cursor cur = aDba.createAndfetchSpecialUser();
+        if (cur!=null){
+            cur.close();
+        }
+        cleanDataBase(threadLocationService.getAllLocationsByPeople());
+
+
         skyhookSetup();
     }
 
@@ -216,6 +209,31 @@ public class GPSService extends Service{
         }.start();
     }
 
+    private void cleanDataBase(String[] realPeople) {
+        Set<String> hs = new TreeSet<String>();
+        for (String s : realPeople){
+            hs.add(s);
+        }
+        Cursor cur = aDba.fetchAllPeople();
+        if (cur==null){
+            return;
+        }
+        if (cur.moveToFirst()){
+            do{
+                String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
+                long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                if (!hs.contains(mail) && contactId!=-1){
+                    aDba.deletePeople(rowId);
+                }
+                else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
+                    aDba.updatePeople(rowId, -2);
+                }
+            }while (cur.moveToNext());
+        }
+        cur.close();
+    }
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
@@ -287,7 +305,7 @@ public class GPSService extends Service{
 
                     if ((++loopCounter % peiodicDataScanMax == 0)){
                         loopCounter = 0;
-                        cleanDataBase(threadLocationService.getAllLocationsByPeople(),getHoldDeletes());
+                        cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
 
                     //TODO once a while delete from the database all records that are not in peopleArr
@@ -307,30 +325,7 @@ public class GPSService extends Service{
             okDestroy();
         }
 
-        private void cleanDataBase(String[] realPeople,boolean noDelete) {
-            Set<String> hs = new TreeSet<String>();
-            for (String s : realPeople){
-                hs.add(s);
-            }
-            Cursor cur = aDba.fetchAllPeople();
-            if (cur==null){
-                return;
-            }
-            if (cur.moveToFirst()){
-                do{
-                    String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
-                    long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
-                    long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                    if (!noDelete && !hs.contains(mail) && contactId!=-1){
-                        aDba.deletePeople(rowId);
-                    }
-                    else if (hs.contains(mail) && conHel.oneDisplayName(contactId)==null){
-                        aDba.updatePeople(rowId, -2);
-                    }
-                }while (cur.moveToNext());
-            }
-            cur.close();
-        }
+
 
     }
 

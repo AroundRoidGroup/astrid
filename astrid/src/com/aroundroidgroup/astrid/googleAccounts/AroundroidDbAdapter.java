@@ -276,7 +276,7 @@ public class AroundroidDbAdapter {
         mDbHelper.kill(mDb);
     }
 
-    public long createSpecialUser(){
+    private long createSpecialUser(){
         long rowID = this.createPeople("me", -1L);
         if (rowID==-1){
             return -1;
@@ -289,7 +289,7 @@ public class AroundroidDbAdapter {
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
-        c= fetchByMail("me");
+        c = fetchByMail("me");
         if (c!=null && c.moveToFirst()){
             return c;
         }

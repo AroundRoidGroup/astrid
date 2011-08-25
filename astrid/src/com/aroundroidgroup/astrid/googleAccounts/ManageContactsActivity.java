@@ -35,7 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
-import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
 
@@ -80,7 +79,6 @@ public class ManageContactsActivity extends ListActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        GPSService.lockDeletes(false);
         mDbHelper.close();
     }
 
@@ -500,7 +498,6 @@ public class ManageContactsActivity extends ListActivity{
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.friend_list_layout);
-        GPSService.lockDeletes(true);
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
