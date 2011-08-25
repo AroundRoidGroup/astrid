@@ -106,48 +106,30 @@ public class AroundgpsServlet extends HttpServlet {
 			// ...
 		}
 
-		//TODO double pass on the userArr, can be united!
-		
-		List<GPSProps> gpses = new ArrayList<GPSProps>(usersArr.length);
-
 		for (String friendMail : usersArr){
-			if (cache.containsKey(friendMail)){
-				gpses.add((GPSProps) cache.get(friendMail));
+			GPSProps hisGPS;
+			if (cache!=null && cache.containsKey(friendMail)){
+				hisGPS = ((GPSProps) cache.get(friendMail));
 			}
 			else{
 				@SuppressWarnings("unchecked")
 				List<GPSProps> friendGPS  = (List<GPSProps>) pm.newQuery(buildGetQuery(friendMail)).execute();
 				if (friendGPS.size()>0){
-					GPSProps hisProps = friendGPS.get(0);
-					gpses.add(hisProps);
-					if (cache!=null){
-						cache.put(friendMail,hisProps );
-					}
-				}
-			}
-		}
-
-		Iterator<GPSProps> iter =  gpses.iterator();
-
-		int  i = 0;
-
-		for(GPSProps gpsP : gpses){
-			for( ;i<usersArr.length; i++){
-				if (usersArr[i].compareTo(gpsP.getMail())==0){
-					out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,gpsP));
-					i++;
-					break;
+					hisGPS  = friendGPS.get(0);
 				}
 				else{
-					out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
+					hisGPS = GPSProps.getNoPROPSGps();
 				}
-
+				if (cache!=null){
+					cache.put(friendMail,hisGPS );
+				}
+			}
+			if (GPSProps.isNoProps(hisGPS)){
+				out.append(GPSPropXML.mailToFriend(false, friendMail));
+			} else {
+				out.append(GPSPropXML.gpsPropToFriend(requestDate.getTime(),false,hisGPS));
 			}
 		}
-		for( ;i<usersArr.length; i++){
-			out.append(GPSPropXML.mailToFriend(false, usersArr[i]));
-		}
-
 
 		String query2 = buildGetQuery(user.getEmail());
 		@SuppressWarnings("unchecked")
