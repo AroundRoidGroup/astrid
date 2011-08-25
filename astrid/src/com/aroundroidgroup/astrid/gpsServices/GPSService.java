@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -123,13 +124,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("WPS done");
+            //toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("WPS handleError");
+            //toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -138,7 +139,7 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleIPLocation");
+            //toastMe("WPS handleIPLocation");
 
         }
 
@@ -201,7 +202,7 @@ public class GPSService extends Service{
     private final Runnable mUpdateResults = new Runnable() {
         public void run() {
             if (mToastMsg!=null){
-                //Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
+                Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -258,7 +259,7 @@ public class GPSService extends Service{
 
         private long lastConnectionTime;
 
-        private final long maxWait = 1000 * 90;
+        private final long maxWait = 1000 * 30;
 
         private final int peiodicDataScanMax = 5;
 
@@ -282,10 +283,11 @@ public class GPSService extends Service{
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    break;
+                    continue;
                 }
                 if (!prs.isConnected()){
                     if (!prs.isConnecting()){
+
                         if (connectCount>0){
                             reported = false;
                             //TODO stop doesn't really works
@@ -301,6 +303,8 @@ public class GPSService extends Service{
                     }
                     else if (DateUtilities.now()-lastConnectionTime>maxWait){
                         prs.stop();
+                        reported = true;
+                        toastMe("Connection lost!!!");//$NON-NLS-1$
                     }
                 }
                 else if (!reported){
@@ -309,20 +313,20 @@ public class GPSService extends Service{
                 }
 
 
-                //TODO move inside of prs.isconnected
-                FriendProps myFp = aDba.specialUserToFP();
-
                 //check if friends is enabled and connected and needed
                 if (prs.isConnected()){
 
-                    if ((++loopCounter % peiodicDataScanMax == 0)){
+                    ++loopCounter;
+
+                    if ((loopCounter % peiodicDataScanMax == 0)){
                         loopCounter = 0;
                         cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
 
                     //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    if ( peopleArr.length>0){
+                    if (loopCounter==0 || peopleArr.length>0){
+                        FriendProps myFp = aDba.specialUserToFP();
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
                         if (myFp!=null && myFp.isValid()){

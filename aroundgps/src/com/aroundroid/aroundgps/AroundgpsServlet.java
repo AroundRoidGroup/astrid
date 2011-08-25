@@ -38,7 +38,7 @@ public class AroundgpsServlet extends HttpServlet {
 	private final static String USERS = "USERS";
 	private final static String DEL = "::";
 	private final static String TIMESTAMP = "TIMESTAMP";
-	
+
 	private final static String selectStringStart = "select from "+ GPSProps.class.getName()+" where mail =='";
 
 	private String buildGetQuery(String friend){
@@ -71,9 +71,16 @@ public class AroundgpsServlet extends HttpServlet {
 
 		//TODO when no people are asked, get's some werird shit
 		String users = req.getParameter(USERS);
-		String[] usersArr = users.split(DEL);
-		for(int i =0; i < usersArr.length ; i++){
-			usersArr[i] = usersArr[i].toLowerCase();
+
+		String[] usersArr;
+		if (users==null || users==""){
+			usersArr = new String[0];
+		}
+		else{
+			usersArr = users.split(DEL);
+			for(int i =0; i < usersArr.length ; i++){
+				usersArr[i] = usersArr[i].toLowerCase();
+			}
 		}
 
 		Arrays.sort(usersArr);
