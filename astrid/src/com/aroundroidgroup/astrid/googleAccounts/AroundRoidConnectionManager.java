@@ -46,6 +46,13 @@ public class AroundRoidConnectionManager {
         if (!isConnected()){
             return null;
         }
+        //TODO remove this
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         try {
             return http_client.execute(hur);
         } catch (ClientProtocolException e) {
