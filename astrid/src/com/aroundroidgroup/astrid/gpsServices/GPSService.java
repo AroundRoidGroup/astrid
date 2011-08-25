@@ -321,7 +321,7 @@ public class GPSService extends Service{
                     String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
                     long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
                     long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                    if (!noDelete && !hs.contains(mail) ){
+                    if (!noDelete && !hs.contains(mail) && contactId!=-1){
                         aDba.deletePeople(rowId);
                     }
                     else if (hs.contains(mail) && conHel.oneDisplayName(contactId)==null){
@@ -329,6 +329,7 @@ public class GPSService extends Service{
                     }
                 }while (cur.moveToNext());
             }
+            cur.close();
         }
 
     }
