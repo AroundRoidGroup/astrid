@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.timsu.astrid.R;
 
@@ -79,6 +80,7 @@ public class ManageContactsActivity extends ListActivity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        GPSService.lockDeletes(false);
         mDbHelper.close();
     }
 
@@ -225,8 +227,11 @@ public class ManageContactsActivity extends ListActivity{
                 }
                 i++;
                 Long contactID = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                String dispalyName = conHel.oneDisplayName(contactID);
-                displayMailList.add(dispalyName + "\n(" + mail + ")");
+                String displayName = conHel.oneDisplayName(contactID);
+                if (displayName==null){
+                    displayName = "*Contact information unavailable*";
+                }
+                displayMailList.add(displayName + "\n(" + mail + ")");
             }while (cur.moveToNext());
         }
         cur.close();
@@ -490,6 +495,7 @@ public class ManageContactsActivity extends ListActivity{
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.friend_list_layout);
+        GPSService.lockDeletes(true);
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
@@ -642,15 +648,19 @@ public class ManageContactsActivity extends ListActivity{
                     break;
                 }
                 if (!cur.moveToFirst()){
+                    //record not found
                     mDbHelper.createPeople(en.getKey(),en.getValue());
-                    al.add(en.getKey());
                 }
                 else {
                     Long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                    if (contactId != -1 && contactId != -2){
-                        al.add(en.getKey());
+                    if (contactId == -2){
+                        //record found with no contact id.
+                        //UPDATE A NEW CONTACT ID
+                        Long oldRecordId = cur.getLong(cur.getColumnIndex((AroundroidDbAdapter.KEY_ROWID)));
+                        mDbHelper.updatePeople(oldRecordId, en.getValue());
                     }
                 }
+                al.add(en.getKey());
                 cur.close();
             }
             if (isCancelled()){

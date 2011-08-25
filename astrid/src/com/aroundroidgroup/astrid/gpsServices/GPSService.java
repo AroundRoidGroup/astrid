@@ -1,6 +1,8 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import android.accounts.Account;
 import android.app.Service;
@@ -44,12 +46,30 @@ public class GPSService extends Service{
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
+    private ContactsHelper conHel;
+
     private double mySpeed;
 
     //TODO find a better method for doing this
     public static Account account = null;
     public static int connectCount = 0;
 
+    private static Object deleteObj = new Object();
+    private static boolean holdDeletes = false;
+
+    public static void lockDeletes(boolean lockIt){
+        synchronized(deleteObj){
+            holdDeletes = lockIt;
+        }
+    }
+
+    public static boolean getHoldDeletes(){
+        boolean res;
+        synchronized (deleteObj) {
+            res = holdDeletes;
+        }
+        return res;
+    }
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -71,8 +91,8 @@ public class GPSService extends Service{
         //Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
+        conHel = new ContactsHelper(getContentResolver());
         aDba.open();
-        aDba.dropPeople();
         aDba.createSpecialUser();
         skyhookSetup();
     }
@@ -210,6 +230,10 @@ public class GPSService extends Service{
 
         private final long maxWait = 1000 * 90;
 
+        private final int peiodicDataScanMax = 5;
+
+        private int loopCounter = -1;
+
         private boolean reported = false;
 
         public void setExit(){
@@ -260,6 +284,12 @@ public class GPSService extends Service{
 
                 //check if friends is enabled and connected and needed
                 if (prs.isConnected()){
+
+                    if ((++loopCounter % peiodicDataScanMax == 0)){
+                        loopCounter = 0;
+                        cleanDataBase(threadLocationService.getAllLocationsByPeople(),getHoldDeletes());
+                    }
+
                     //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     if ( peopleArr.length>0){
@@ -275,6 +305,30 @@ public class GPSService extends Service{
 
             }
             okDestroy();
+        }
+
+        private void cleanDataBase(String[] realPeople,boolean noDelete) {
+            Set<String> hs = new TreeSet<String>();
+            for (String s : realPeople){
+                hs.add(s);
+            }
+            Cursor cur = aDba.fetchAllPeople();
+            if (cur==null){
+                return;
+            }
+            if (cur.moveToFirst()){
+                do{
+                    String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                    long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
+                    long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                    if (!noDelete && !hs.contains(mail) ){
+                        aDba.deletePeople(rowId);
+                    }
+                    else if (hs.contains(mail) && conHel.oneDisplayName(contactId)==null){
+                        aDba.updatePeople(rowId, -2);
+                    }
+                }while (cur.moveToNext());
+            }
         }
 
     }

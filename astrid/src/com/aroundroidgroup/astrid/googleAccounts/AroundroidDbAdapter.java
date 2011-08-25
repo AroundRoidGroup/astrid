@@ -219,6 +219,23 @@ public class AroundroidDbAdapter {
 
     }
 
+
+    /**
+     * Update the people using the details provided.
+
+     * @return true if the people was successfully updated, false otherwise
+     */
+    public boolean updatePeople(long rowId ,long contactId ) {
+        ContentValues args = new ContentValues();
+        args.put(KEY_CONTACTID, contactId);
+        boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
+        //TODO remove debug
+        if (!ef){
+            int z  =  2;
+        }
+        return ef;
+    }
+
     /**
      * Update the people using the details provided.
 
@@ -252,6 +269,8 @@ public class AroundroidDbAdapter {
     public boolean updatePeople(long rowId,double lat , double lon , long time) {
         return updatePeople(rowId,lat, lon, time,null,null);
     }
+
+
 
     public void dropPeople(){
         mDbHelper.kill(mDb);

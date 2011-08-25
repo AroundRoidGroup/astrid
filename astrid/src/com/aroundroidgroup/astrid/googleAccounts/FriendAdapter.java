@@ -70,9 +70,10 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         Long conId = currectFP.getContactId();
         if (conId!=AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
             String displayName = conHel.oneDisplayName(conId);
-            if (displayName!=null){
-                holder.secondaryTextView.setText(displayName);
+            if (displayName==null){
+                displayName = "";
             }
+            holder.secondaryTextView.setText(displayName);
         }
         else{
             holder.secondaryTextView.setText("No additional contact information");
