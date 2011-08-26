@@ -37,11 +37,11 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
 
-        addPreferencesFromResource(R.xml.preferences_peope_location);
+        addPreferencesFromResource(R.xml.preferences_people_location);
 
         r = getResources();
-        loginList = (ListPreference) findPreference("listPref");
-        Logout =  findPreference("Logout");
+        loginList = (ListPreference) findPreference(r.getString(R.string.login_list_preference_key));
+        Logout =  findPreference(r.getString(R.string.logout_preference_key));
         status = findPreference(r.getString(R.string.sync_SPr_status_key));
 
 
@@ -102,14 +102,14 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
             public boolean onPreferenceClick(Preference p) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(PeopleLocationPreferneces.this);
-                builder.setMessage("Are you sure you want to exit?")
+                builder.setMessage(r.getString(R.string.DLG_exit_title))
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         prs.stop();
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Logout.setEnabled(true);
                         dialog.cancel();
@@ -200,30 +200,9 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         setUITimer();
     }
 
-    private static class AccountHolder{
-        private Account acc;
-        public AccountHolder(Account acc){
-            this.setAcc(acc);
-        }
-        private void setAcc(Account acc) {
-            this.acc = acc;
-        }
-        public Account getAcc() {
-            return acc;
-        }
 
-        @Override
-        public String toString(){
-            return "Mail: " + acc.name; //$NON-NLS-1$
-        }
 
-        public static AccountHolder[] accountHoldersFromAccounts(Account[] accounts){
-            AccountHolder[] acchArr= new AccountHolder[accounts.length];
-            for (int i =0 ; i< accounts.length ; i++){
-                acchArr[i] = new AccountHolder(accounts[i]);
-            }
-            return acchArr;
-        }
 
-    }
+
+
 }

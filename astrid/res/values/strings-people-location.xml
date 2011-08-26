@@ -1,8 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="logging_in_status">Logging In!</string>
-    
-    
-    
+	<!-- Credentials list is empty text -->
+	<string name="noCreds">There are no users associated with this Android
+		device.</string>
+	
+	<!-- tracking list -->
+	<string name="tracking_list_empty">You are not tracking any friends! Press menu to add some.</string>
+	
+    <!--No additional contact information-->
+	<string name="no_contact_info">No additional contact information</string>
+
+	<!-- people location preference (login/logout) -->
+	<string name="EPr_people_base_remainder">People Based Reminder</string>
+	<string name="EPr_connect">Aroundroid people\'s location</string>
+	<string name="logging_in_status">Logging In...</string>
+	<string name="people_location_login">Login</string>
+	<string name="people_location_logout">Logout</string>
+
+
+	<!-- Add anyway dialog -->
+	<string name="add_friend_button">Add Friend</string>
+	<string name="send_email_invitation_text">Send e-mail invitation(recommended)</string>
+	<string name="add_friend_that_not_conect_text">It seems that your friend is not using Aroundroid.
+		Would you like to add him anyway?</string>
+
+	<!-- Add friend dialog -->
+	<string name="DLG_add_title">Enter friend\'s e-mail address</string>
+	<string name="email_title">E-mail Address</string>
+
+	<!-- Delete friend dialog -->
+	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete</string>
+	<string name="DLG_delete_text_after_mail">from your tracking friend list?</string>
+	<string name="DLG_delete_title">Delete friend</string>
+
+	<!-- Toast -invitation sent or not sent to your friend -->
+	<string name="invitation_sent">An invitation was sent to your friend!</string>
+	<string name="invitation_not_sent">Did not send an invitation.</string>
+
+	<!-- invitation suggestion to your friend -->
+	<string name="invitation_suggestion_before_mail">It seems that your friend ( </string>
+	<string name="invitation_suggestion_after_mail"> ) is not using Aroundroid. Would you like to add
+		him anyway?</string>
+
+	<!-- Friend not registered dialog -->
+	<string name="DLG_not_registered_title">Friend not registered</string>
+
+	<!-- Rescan dialog -->
+	<string name="DLG_rescan_text">The contact list has been scanned already. Would
+		you like to skip the scanning process?</string>
+	<string name="DLG_rescan_title">Contacts Already Scanned!</string>
+
+	<!-- Friend is already in the list dialog -->
+	<string name="DLG_friend_already_exist_title">Already in the List!</string>
+	<string name="DLG_friend_already_exist_text">Your friend is already in your list!</string>
+
+
+	<!-- People location connecting dialog -->
+	<string name="DLG_connecting_title">Not Connected!</string>
+	<string name="DLG_connecting_text">You are not connected right now to Aroundroid
+		People Location Service. You must connected to procced. would you like
+		to do that now?</string>
+
+	<!-- no friends dialog -->
+	<string name="DLG_friendless_text">None of your contacts are using Aroundroid.\n:(</string>
+	<string name="DLG_friendless_title">Oh no!</string>
+
+	<!-- valid/invalid email toast -->
+	<string name="invalid_email">Not a valid email address.</string>
+	<string name="valid_email">Please enter email address.</string>
+
+	<!-- Pick contacts to track -->
+	<string name="pick_contacts">Pick contacts to track</string>
+
+	<!--scanning the contact list dialog -->
+	<string name="contacts_scan_title">Looking for contacts</string>
+	<string name="contacts_scan_text">Scanning you Contact List to find friends that use AroundRoid. This may take a while...</string>
+
+    <!-- exit dialog-->
+	<string name="DLG_exit_title">Are you sure you want to exit?</string>
+
+	<!-- Checking if your friend is using Aroundroid -->
+	<string name="checking_friend_title">Checking friend</string>
+	<string name="checking_friend_text">Finding out if your friend is using Aroundroid.
+		Please wait...</string>
+
+	<!--Friend was added to the tracking list -->
+	<string name="registered_added">Your friend is registered and was added to your
+		tracking list.</string>
+	<string name="unregistered_added">Your friend was added to your tracking list.
+	</string>
+
+
+	<!-- MANGE CONTACTS ACTIVITY -->
+	<string name="menu_add_friend">Enter a friend Email</string>
+	<string name="menu_add_friend2">Pick friend from Contact List</string>
 </resources>
     

@@ -32,9 +32,9 @@ public class MapFilterActivity extends MapActivity {
     private static final int PEOPLE_OVERLAY = 3;
 
     /* overlays' names */
-    private static final String OVERLAY_TYPE_NAME = "Type Location";
-    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location";
-    private static final String OVERLAY_PEOPLE_NAME = "People Location";
+    private static final String OVERLAY_TYPE_NAME = "Type Location"; //$NON-NLS-1$
+    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location"; //$NON-NLS-1$
+    private static final String OVERLAY_PEOPLE_NAME = "People Location"; //$NON-NLS-1$
 
 
     @Override
@@ -103,7 +103,7 @@ public class MapFilterActivity extends MapActivity {
 
         /* adding the locations by KIND */
         String[] tags = mLocationService.getLocationsByTypeAsArray(taskID);
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, tags, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, taskID);
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, tags, mRadius, taskID);
 
         /* Adding people that are related to the task */
         String[] people = mLocationService.getLocationsByPeopleAsArray(taskID);

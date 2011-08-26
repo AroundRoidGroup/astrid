@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<!-- hint for the textbox in SpecificMapLocation -->
+	<string name="map_textbox_hint">Type Location...</string>
+
+	<!-- Map Filter title -->
+	<string name="location_filter_title">Places Nearby</string>
+
+
+
+	<!-- in Focaccia activity -->
+	<string name="focaccia_snippet">Snippet:</string>
+	<string name="focaccia_type">Type:</string>
+	<string name="focaccia_name">Name:</string>
+	<string name="focaccia_address">Address:</string>
+
+
+	<!-- taskEditActivity Location button == -->
+	<!-- Location label -->
+	<string name="TEA_location_label">Locations</string>
+	<!-- Location button -->
+	<string name="text_location_button">Manage Locations</string>
+
+	<!-- SpecificMapLocation buttons -->
+	<string name="addPeopleButton">Add People</string>
+	<string name="viewAllButton">View All</string>
+
+	<!-- Locations action bar title -->
+	<string name="actionbar_title">hello</string>
+
+	<!-- GOOGLE MAPS API KEY -->
+	<string name="GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
+
+	<!-- GOOGLE PLACES API KEY -->
+	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+
+</resources>

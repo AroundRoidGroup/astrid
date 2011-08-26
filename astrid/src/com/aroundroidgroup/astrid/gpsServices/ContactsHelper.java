@@ -24,7 +24,7 @@ public class ContactsHelper {
 
     private Cursor getOneFriendContactCursor(long rowID){
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
-                null, ContactsContract.Contacts._ID + "=" + rowID, null, null);
+                null, ContactsContract.Contacts._ID + "=" + rowID, null, null); //$NON-NLS-1$
         return cur;
     }
 
@@ -37,7 +37,7 @@ public class ContactsHelper {
                 Cursor emailCur = cr.query(
                         ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                         null,
-                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?", //$NON-NLS-1$
                         new String[]{id}, null);
                 while (emailCur.moveToNext()) {
                     // This would allow you get several email addresses
@@ -57,11 +57,8 @@ public class ContactsHelper {
 
     public String getDisplayName(Cursor cur){
         if (cur.moveToNext()) {
-                String id = (cur.getString(
-                        cur.getColumnIndex(ContactsContract.Contacts._ID)));
-                String name = cur.getString(
+                return cur.getString(
                         cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                return name;
             }
         else{
             return null;

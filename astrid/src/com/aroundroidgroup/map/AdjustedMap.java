@@ -121,6 +121,10 @@ public class AdjustedMap extends MapView {
         editable = false;
     }
 
+    public boolean hasOverlayWithID(int id) {
+        return overlays.get(id) != null;
+    }
+
     public void showDeviceLocation() {
         if (mDeviceOverlay == null) {
             DPoint deviceLocation = getDeviceLocation();

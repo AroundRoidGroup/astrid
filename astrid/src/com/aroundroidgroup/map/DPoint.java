@@ -52,7 +52,7 @@ public class DPoint{
 
     @Override
     public String toString() {
-        DecimalFormat df = new DecimalFormat("##.######");
+        DecimalFormat df = new DecimalFormat("##.######"); //$NON-NLS-1$
         return df.format(x) + "," + df.format(y); //$NON-NLS-1$
     }
 

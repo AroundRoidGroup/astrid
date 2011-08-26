@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+ <!-- Preference Key (do not translate) -->
+    <string name="login_list_preference_key">listPref</string>
+    <!-- Preference Key (do not translate) -->
+    <string name="logout_preference_key">Logout</string>
+    
+ </resources>

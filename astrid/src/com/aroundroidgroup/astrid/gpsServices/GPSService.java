@@ -1,6 +1,8 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import android.accounts.Account;
 import android.app.Service;
@@ -8,9 +10,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
@@ -44,12 +48,22 @@ public class GPSService extends Service{
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
+    private ContactsHelper conHel;
+
     private double mySpeed;
 
     //TODO find a better method for doing this
     public static Account account = null;
     public static int connectCount = 0;
 
+    private static Object deleteObj = new Object();
+    private static boolean holdDeletes = false;
+
+    public static void lockDeletes(boolean lockIt){
+        synchronized(deleteObj){
+            holdDeletes = lockIt;
+        }
+    }
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -71,9 +85,17 @@ public class GPSService extends Service{
         //Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
+        conHel = new ContactsHelper(getContentResolver());
         aDba.open();
-        aDba.dropPeople();
-        aDba.createSpecialUser();
+        //TODO problem with "me"
+        //aDba.dropPeople();
+        Cursor cur = aDba.createAndfetchSpecialUser();
+        if (cur!=null){
+            cur.close();
+        }
+        cleanDataBase(threadLocationService.getAllLocationsByPeople());
+
+
         skyhookSetup();
     }
 
@@ -82,7 +104,7 @@ public class GPSService extends Service{
     private static final int DONE_MESSAGE = 3;
     private XPS _xps;
     private final MyLocationCallback _callback = new MyLocationCallback();
-    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid");
+    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid"); //$NON-NLS-1$ //$NON-NLS-2$
     int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
@@ -102,13 +124,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("WPS done");
+            //toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("WPS handleError");
+            //toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -117,7 +139,7 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleIPLocation");
+            //toastMe("WPS handleIPLocation");
 
         }
 
@@ -180,7 +202,7 @@ public class GPSService extends Service{
     private final Runnable mUpdateResults = new Runnable() {
         public void run() {
             if (mToastMsg!=null){
-                //Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
+                Toast.makeText(GPSService.this, mToastMsg, Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -196,11 +218,40 @@ public class GPSService extends Service{
         }.start();
     }
 
+    private void cleanDataBase(String[] realPeople) {
+        synchronized (deleteObj){
+        ManageContactsActivity.getAlreadyScannedSometime(false);
+        Set<String> hs = new TreeSet<String>();
+        for (String s : realPeople){
+            hs.add(s);
+        }
+        Cursor cur = aDba.fetchAllPeople();
+        if (cur==null){
+            return;
+        }
+        if (cur.moveToFirst()){
+            do{
+                String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
+                long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                if (!holdDeletes && !hs.contains(mail) && contactId!=-1){
+                    aDba.deletePeople(rowId);
+                }
+                else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
+                    aDba.updatePeople(rowId, -2);
+                }
+            }while (cur.moveToNext());
+        }
+        cur.close();
+
+        }
+    }
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 1 * 1;
+        private final int defaultSleepTime = 1 * 1000;
         private final int defaultLocationInvalidateTime = 1000 * 120;
 
         private final int sleepTime = defaultSleepTime;
@@ -208,7 +259,11 @@ public class GPSService extends Service{
 
         private long lastConnectionTime;
 
-        private final long maxWait = 1000 * 90;
+        private final long maxWait = 1000 * 30;
+
+        private final int peiodicDataScanMax = 5;
+
+        private int loopCounter = -1;
 
         private boolean reported = false;
 
@@ -228,10 +283,11 @@ public class GPSService extends Service{
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    break;
+                    continue;
                 }
                 if (!prs.isConnected()){
                     if (!prs.isConnecting()){
+
                         if (connectCount>0){
                             reported = false;
                             //TODO stop doesn't really works
@@ -247,6 +303,8 @@ public class GPSService extends Service{
                     }
                     else if (DateUtilities.now()-lastConnectionTime>maxWait){
                         prs.stop();
+                        reported = true;
+                        toastMe("Connection lost!!!");//$NON-NLS-1$
                     }
                 }
                 else if (!reported){
@@ -255,14 +313,20 @@ public class GPSService extends Service{
                 }
 
 
-                //TODO move inside of prs.isconnected
-                FriendProps myFp = aDba.specialUserToFP();
-
                 //check if friends is enabled and connected and needed
                 if (prs.isConnected()){
+
+                    ++loopCounter;
+
+                    if ((loopCounter % peiodicDataScanMax == 0)){
+                        loopCounter = 0;
+                        cleanDataBase(threadLocationService.getAllLocationsByPeople());
+                    }
+
                     //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    if ( peopleArr.length>0){
+                    if (loopCounter==0 || peopleArr.length>0){
+                        FriendProps myFp = aDba.specialUserToFP();
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
                         if (myFp!=null && myFp.isValid()){
@@ -277,6 +341,8 @@ public class GPSService extends Service{
             okDestroy();
         }
 
+
+
     }
 
     protected void makeUseOfNewLocation(WPSLocation location) {
@@ -285,7 +351,7 @@ public class GPSService extends Service{
         if (cur!=null){
             if (cur.moveToFirst()){
                 long l = cur.getLong(0);
-                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
+                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes"); //$NON-NLS-1$
             }
             cur.close();
         }

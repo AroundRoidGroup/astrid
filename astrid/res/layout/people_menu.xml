@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/peoplelocation_menu_mail"
+          android:icon="@drawable/ic_menu_add"
+          android:title="Mail" />
+    <item android:id="@+id/peopleLocation_menu_contacts"
+          android:icon="@drawable/ic_menu_friendslist"
+          android:title="Contacts" />
+    <item android:id="@+id/peoplelocation_menu_login"
+          android:icon="@drawable/ic_menu_preferences"
+          android:title="Login" />
+</menu>
