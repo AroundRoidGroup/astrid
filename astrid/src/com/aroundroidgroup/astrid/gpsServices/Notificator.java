@@ -11,6 +11,7 @@ import org.json.JSONException;
 import android.location.Location;
 
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.locationTags.LocationFields;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
@@ -25,23 +26,25 @@ import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.reminders.Notifications;
 import com.todoroo.astrid.reminders.ReminderService;
 import com.todoroo.astrid.service.TaskService;
-
+/**
+ *
+ * @author Shiran
+ *
+ */
 public class Notificator {
+
     static LocationService locationService = new LocationService();
+
     public static void notifyAboutPeopleLocation(Task task,double speed, double myLat, double myLon, double lat, double lon) {
-        float[] arr = new float[3];
-        //TODO : check array
+        float[] arr = new float[1];
 
         Location.distanceBetween(
                 myLat,
                 myLon,
                 lat,lon, arr);
         float dist = arr[0];
-
-        //distance - 100 kilometers
-        //TODO change 25 to an editable parameter
-        int radius = 0;
-        if (speed>25)
+        int radius;
+        if (speed>LocationFields.carSpeedThreshold)
             radius = locationService.getCarRadius(task.getId());
         else
             radius = locationService.getFootRadius(task.getId());
@@ -121,7 +124,7 @@ public class Notificator {
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
                 Map<String, DPoint> places = Misc.googlePlacesQuery(str,loc,radius);
-                List<DPoint> blackList = locationService.getLocationsByTypeSpecial(task.getId(), str);
+                List<DPoint> blackList = locationService.getLocationsByTypeBlacklist(task.getId(), str);
                 outer_loop: for (DPoint d: places.values())
                     for (DPoint badD: blackList){
                         if (Double.compare(d.getX(), badD.getX())==0 && Double.compare(d.getY(), badD.getY())==0)

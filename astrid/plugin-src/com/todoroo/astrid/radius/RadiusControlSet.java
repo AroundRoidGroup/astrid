@@ -27,8 +27,6 @@ public class RadiusControlSet implements TaskEditControlSet{
     private final TextView footValue;
     private final TextView carValue;
     private final LocationService locService= new LocationService();
-    String defaultSettingCarRadius;
-    String defaultSettingFootRadius;
 
 
     public RadiusControlSet(final Activity activity, ViewGroup parent) {
@@ -51,18 +49,17 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                     // TODO Auto-generated method stub
                         carValue.setText(String.valueOf(progress));
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                       //
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                       //
                     }
                         });
                 footRadiusSelector.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -70,18 +67,17 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                     // TODO Auto-generated method stub
                         footValue.setText(String.valueOf(progress));
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                        //
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                        //
                     }
                 });
             }
