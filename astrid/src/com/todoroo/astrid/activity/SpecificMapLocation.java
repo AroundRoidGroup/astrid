@@ -354,6 +354,8 @@ public class SpecificMapLocation extends MapActivity{
             mHan.postDelayed(this, mDelayMillis);
         }
     };
+
+    private final LocationService locationService = new LocationService();
     private void setUITimer(){
         mHan.removeCallbacks(mUpdateTimeTask);
         mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
@@ -450,8 +452,8 @@ public class SpecificMapLocation extends MapActivity{
         Bundle bundle = getIntent().getExtras();
         String[] existedSpecific = bundle.getStringArray(LocationControlSet.SPECIFIC_TO_LOAD);
         String[] existedTypes = bundle.getStringArray(LocationControlSet.TYPE_TO_LOAD);
-        String[] existedPeople = bundle.getStringArray(LocationControlSet.PEOPLE_TO_LOAD);
         mTaskID = bundle.getLong(LocationControlSet.TASK_ID);
+        String[] existedPeople = locationService.getLocationsByPeopleAsArray(mTaskID);
         mMapView.associateMapWithTask(mTaskID);
 
         for (int i = 0 ; i < existedSpecific.length ; i+=2) {

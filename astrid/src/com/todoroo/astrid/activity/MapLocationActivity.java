@@ -1,6 +1,7 @@
 package com.todoroo.astrid.activity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -145,7 +146,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         /* If the task is location-based, the following code will add the locations to the map */
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
         mainLoop: for (String type : locationTags) {
-            List<String> locationByType = locationService.getLocationsByTypeSpecial(mTaskID, type);
+            List<String> locationByType = new ArrayList<String>();//locationService.getLocations(mTaskID, type);
             Map<String, DPoint> data = null;
             for (String location : locationByType) {
                 GeoPoint geoLocation = Misc.degToGeo(new DPoint(location));
