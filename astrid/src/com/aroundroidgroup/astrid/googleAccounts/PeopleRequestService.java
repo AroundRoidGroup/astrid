@@ -15,14 +15,14 @@ import android.database.Cursor;
 
 public class PeopleRequestService {
 
-    private final AroundRoidConnectionManager arcm;
+    private final ConnectionManager arcm;
 
     private boolean isOn = false;
 
 
     //Singleton
     private PeopleRequestService(){
-        arcm = new AroundRoidConnectionManager();
+        arcm = new ConnectionManager();
     }
 
     private static PeopleRequestService singleton = null;

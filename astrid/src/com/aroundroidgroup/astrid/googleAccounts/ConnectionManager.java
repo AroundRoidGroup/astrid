@@ -21,7 +21,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-public class AroundRoidConnectionManager {
+public class ConnectionManager {
 
     private Account chosenAccount;
     private Context cont;

@@ -47,7 +47,6 @@ public class ManageContactsActivity extends ListActivity{
     public static final String PEOPLE_BACK = "peopleBack"; //$NON-NLS-1$
 
     private static final int DIALOG_MAIL_METHOD = 0;
-    private static final int DIALOG_CONTACT_METHOD = 1;
     private static final int DIALOG_ALREADY_SCANNED = 2;
     private static final int DIALOG_HURRAY = 3;
     private static final int DIALOG_HURRAY2 = 4;
@@ -301,23 +300,6 @@ public class ManageContactsActivity extends ListActivity{
             break;
         case DIALOG_MAIL_METHOD:
             dialog = createAddDialog();
-            break;
-        case DIALOG_CONTACT_METHOD:
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(r.getString(R.string.DLG_exit_title))
-            .setCancelable(false)
-            .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    ManageContactsActivity.this.finish();
-                }
-            })
-            .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alert = builder.create();
-            dialog = alert;
             break;
         case DIALOG_NOT_CONNECTED:
             dialog = createNotConnectedDialog();

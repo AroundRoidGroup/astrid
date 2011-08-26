@@ -40,46 +40,16 @@ public class PeopleRequest {
         return nameValuePairs;
     }
 
-    private static InputStream requestToStream(HttpUriRequest hr, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+    private static InputStream requestToStream(HttpUriRequest hr, ConnectionManager arcm) throws ClientProtocolException, IOException{
         HttpResponse result = arcm.executeOnHttp(hr);
         InputStream is = result.getEntity().getContent();
         return is;
     }
 
-    public static List<FriendProps> requestPeople(FriendProps myFp,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
-        // sending current location and request for users
-        HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createPostData(myFp,people)));
-        InputStream is  = requestToStream(http_post,arcm);
-        //data is recieved. starts parsing:
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(is);
-        doc.getDocumentElement().normalize();
-        NodeList nodeLst = doc.getElementsByTagName(FriendProps.root);
-        List<String[]> propsArrList = extractPropsArray(nodeLst,FriendProps.props);
-        List<FriendProps> fpl = FriendProps.fromArrList(propsArrList);
-        //parsing complete!
-        return fpl;
-
-    }
-
-
     private static List<NameValuePair> createMailPostData(String mail){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
         nameValuePairs.add(new BasicNameValuePair("FRIEND",mail)); //$NON-NLS-1$
         return nameValuePairs;
-    }
-
-    //TODO CHANGE
-    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
-        // sending current location and request for users
-        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
-        InputStream is  = requestToStream(http_post,arcm);
-        byte[] buf = new byte[20];
-        is.read(buf, 0, 4);
-        return buf[0]=='s';
     }
 
     //TODO IMPORTANT FUNCTION
@@ -107,7 +77,36 @@ public class PeopleRequest {
         }
 
         return lfp;
+    }
 
+    public static List<FriendProps> requestPeople(FriendProps myFp,String people, ConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+        // sending current location and request for users
+        HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
+        http_post.setEntity(new UrlEncodedFormEntity(createPostData(myFp,people)));
+        InputStream is  = requestToStream(http_post,arcm);
+        //data is recieved. starts parsing:
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(is);
+        doc.getDocumentElement().normalize();
+        NodeList nodeLst = doc.getElementsByTagName(FriendProps.root);
+        List<String[]> propsArrList = extractPropsArray(nodeLst,FriendProps.props);
+        List<FriendProps> fpl = FriendProps.fromArrList(propsArrList);
+        //parsing complete!
+        return fpl;
+
+    }
+
+    //TODO CHANGE
+    public static boolean inviteMail(String people, ConnectionManager arcm) throws ClientProtocolException, IOException{
+        // sending current location and request for users
+        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
+        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
+        InputStream is  = requestToStream(http_post,arcm);
+        byte[] buf = new byte[20];
+        is.read(buf, 0, 4);
+        return buf[0]=='s';
+    }
 
     /*
     private static String convertStreamToString(InputStream is)
@@ -137,7 +136,7 @@ public class PeopleRequest {
             return "";
         }
     }
-    */ }
+    */
 
 
 

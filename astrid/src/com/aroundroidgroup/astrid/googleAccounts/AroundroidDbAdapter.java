@@ -21,7 +21,7 @@ public class AroundroidDbAdapter {
 
     public static final long CONTACTID_INVALID_CONTACT = -2L;
     public static final long CONTACTID_MY_ID = -1L;
-    public static final String MAIL_MY_FAKE_MAIL= "me";
+    public static final String MAIL_MY_FAKE_MAIL= "me"; //$NON-NLS-1$
 
     private static final String TAG = "AroundroidDbAdapter"; //$NON-NLS-1$
     private DatabaseHelper mDbHelper;
@@ -40,10 +40,6 @@ public class AroundroidDbAdapter {
     private static final int DATABASE_VERSION = 2;
 
     private final Context mCtx;
-
-    //TODO consider change in the table of astrid that mails will be saved as row numbers in the database?
-
-    //TODO check why when on first time installed there is a database cursor sql error
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -110,7 +106,6 @@ public class AroundroidDbAdapter {
      *
      * @return rowId or -1 if failed
      */
-    //TODO remove lower case check
     public long createPeople(String mail , Long contactId) {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_MAIL, mail.toLowerCase());
@@ -183,8 +178,6 @@ public class AroundroidDbAdapter {
      * @return Cursor over all people
      */
     public Cursor fetchByMail(String mail) {
-
-        //TODO remove lower case
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
