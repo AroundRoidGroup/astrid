@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
 import com.timsu.astrid.R;
+import com.todoroo.andlib.service.ContextManager;
 
 
 public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
@@ -71,18 +72,18 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         if (conId!=AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
             String displayName = conHel.oneDisplayName(conId);
             if (displayName==null){
-                displayName = "";
+                displayName = ""; //$NON-NLS-1$
             }
             holder.secondaryTextView.setText(displayName);
         }
         else{
-            holder.secondaryTextView.setText("No additional contact information");
+            holder.secondaryTextView.setText(ContextManager.getContext().getResources().getString(R.string.no_contact_info));
         }
         // Change the icon for Windows and iPhone
         String valid = currectFP.getValid();
         if (currectFP.isValid()){
             holder.imageView.setImageResource(R.drawable.btn_green_button);
-        } else if (valid.compareTo("Unregistered")!=0) {
+        } else if (valid.compareTo("Unregistered")!=0) { //$NON-NLS-1$
             holder.imageView.setImageResource(R.drawable.btn_red_button);
         } else {
             holder.imageView.setImageResource(R.drawable.btn_sry_sign);

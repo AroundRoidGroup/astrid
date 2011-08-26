@@ -54,10 +54,7 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
 
-
-    //TODO doesnt scan agian for people in list because they are not in locationService.getAllLocationByPeople
-
-    Resources r = getResources();
+    private Resources r;
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -528,6 +525,8 @@ public class ManageContactsActivity extends ListActivity{
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
+        r = getResources();
+
         Bundle extras = getIntent().getExtras();
         String[] peopleWeGot = null;
         if (extras != null) {
