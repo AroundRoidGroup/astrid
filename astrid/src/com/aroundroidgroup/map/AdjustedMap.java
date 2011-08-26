@@ -247,10 +247,25 @@ public class AdjustedMap extends MapView {
         currentTaskID = taskID;
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && g != null && title != null && snippet != null) {
-            overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
-            mapOverlays.add(overlay);
-            invalidate();
-            return true;
+            if (overlay.getIndexOf(g) == -1) {
+                overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
+                mapOverlays.add(overlay);
+                invalidate();
+                return true;
+            }
+            else { // item with this coordinates allready exists, informing about it
+                AlertDialog dialog = new AlertDialog.Builder(mContext).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle("Information");
+                dialog.setMessage("This location is already attached to task.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
         }
         return false;
     }

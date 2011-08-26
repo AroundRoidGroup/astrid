@@ -17,7 +17,7 @@
    	<string name="waitngForContacts">Scanning contact list and checking who is registered! this may take a few minutes, please wait.</string>
    	<string name="scanContacts">Scan now!</string>
    	<string name="specificTitleText">Address:</string>
-   	<string name="specificAddressText">By Address...</string>
+   	<string name="specificAddressText">Search</string>
    	<string name="specificButtonText">Quit</string>
    	<string name="specificAddressButtonText">Add</string>
    	<string name="EPr_people_base_remainder">People Base Reminder</string>

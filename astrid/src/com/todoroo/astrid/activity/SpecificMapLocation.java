@@ -571,13 +571,6 @@ public class SpecificMapLocation extends MapActivity{
             c.close();
         }
 
-//        String[] tomer = new String[1];
-//        tomer[0] = "tomer.keshet@gmail.com";
-//        DPoint[] coordTomer = new DPoint[1];
-//        coordTomer[0] = new DPoint(40.710215,-74.009013);
-//        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, tomer, coordTomer, mTaskID);
-//        mPeople.put(tomer[0], coordTomer[0]);
-//        mPeopleDB.updatePeople(mPeopleDB.createPeople(tomer[0]), 40.710215, -74.009013, 21600L);
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -595,7 +588,7 @@ public class SpecificMapLocation extends MapActivity{
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
-        /* @@@@@ visible to the user.                                                                  @@@@@ */
+        /* @@@@@ visible to the user.                                                                  @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
         mDeviceLocation = mMapView.getDeviceLocation();
