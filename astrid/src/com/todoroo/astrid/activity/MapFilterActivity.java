@@ -6,6 +6,7 @@ import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.mapFunctions;
 import com.google.android.maps.MapActivity;
@@ -17,15 +18,13 @@ import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
 import com.todoroo.astrid.service.TaskService;
-@SuppressWarnings("unused")
 
 public class MapFilterActivity extends MapActivity {
-    public static final String MAP_EXTRA_TASK = "of"; //$NON-NLS-1$
-    private final String TAG = "mapFilterActivity"; //$NON-NLS-1$
 
+    private double mRadius;
     private AdjustedMap mMapView;
-
-    private final LocationService locationService = new LocationService();
+    private AroundroidDbAdapter mPeopleDB;
+    private final LocationService mLocationService = new LocationService();
 
     /* identifiers for the overlays in the mapView */
     private static final int SPECIFIC_OVERLAY = 1;
@@ -37,9 +36,6 @@ public class MapFilterActivity extends MapActivity {
     private static final String OVERLAY_SPECIFIC_NAME = "Specific Location"; //$NON-NLS-1$
     private static final String OVERLAY_PEOPLE_NAME = "People Location"; //$NON-NLS-1$
 
-    private double mRadius;
-
-    private AroundroidDbAdapter mPeopleDB;
 
     @Override
     protected boolean isRouteDisplayed() {
@@ -75,13 +71,13 @@ public class MapFilterActivity extends MapActivity {
         mMapView.getController().setZoom(13);
 
         mMapView.createOverlay(SPECIFIC_OVERLAY, this.getResources().getDrawable(R.drawable.icon_specific), new String[] {
-            AdjustedMap.SHOW_TITLE, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_SPECIFIC_NAME);
         mMapView.createOverlay(TYPE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_type), new String[] {
-            AdjustedMap.SHOW_NAME, AdjustedMap.SHOW_AMOUNT_BY_EXTRAS, AdjustedMap.SHOW_TITLE, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_TYPE_NAME);
         mMapView.createOverlay(PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
-            AdjustedMap.SHOW_NAME, AdjustedMap.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
         }, OVERLAY_PEOPLE_NAME);
 
         TaskService taskService = new TaskService();
@@ -97,7 +93,7 @@ public class MapFilterActivity extends MapActivity {
                 Long taskID = task.getId();
 
         /* adding the locations by SPECIFIC */
-        String[] specificLocations = locationService.getLocationsBySpecificAsArray(taskID);
+        String[] specificLocations = mLocationService.getLocationsBySpecificAsArray(taskID);
 
         /* converting from location written as string to DPoint */
         DPoint[] points = new DPoint[specificLocations.length];
@@ -106,11 +102,11 @@ public class MapFilterActivity extends MapActivity {
         mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, points, "Specific Location", taskID); //$NON-NLS-1$
 
         /* adding the locations by KIND */
-        String[] tags = locationService.getLocationsByTypeAsArray(taskID);
+        String[] tags = mLocationService.getLocationsByTypeAsArray(taskID);
         mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, tags, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, taskID);
 
         /* Adding people that are related to the task */
-        String[] people = locationService.getLocationsByPeopleAsArray(taskID);
+        String[] people = mLocationService.getLocationsByPeopleAsArray(taskID);
         DPoint[] coords = new DPoint[people.length];
         for (int i = 0 ; i < people.length ; i++) {
             Cursor c = mPeopleDB.fetchByMail(people[i]);
