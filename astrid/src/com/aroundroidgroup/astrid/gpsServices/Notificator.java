@@ -11,10 +11,10 @@ import org.json.JSONException;
 import android.location.Location;
 
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.astrid.gpsServices.GPSService.LocStruct;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
-import com.skyhookwireless.wps.WPSLocation;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
@@ -74,7 +74,7 @@ public class Notificator {
                 if (index>=0){
                     FriendProps findMe = lfp.get(index);
                     if (findMe.isValid()){
-                        Notificator.notifyAboutPeopleLocation(task, myFp.getDlat(),myFp.getDlon(),speed,findMe.getDlat(),findMe.getDlon());
+                        Notificator.notifyAboutPeopleLocation(task, speed,myFp.getDlat(),myFp.getDlon(),findMe.getDlat(),findMe.getDlon());
                     }
                 }
             }
@@ -82,7 +82,7 @@ public class Notificator {
         cursor.close();
     }
 
-    public static void handleByTypeAndBySpecificNotification(WPSLocation location) {
+    public static void handleByTypeAndBySpecificNotification(LocStruct locStruct) {
         TaskService taskService = new TaskService();
         TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
                 Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
@@ -94,30 +94,30 @@ public class Notificator {
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToNext();
                 task.readFromCursor(cursor);
-                notifyAboutLocationIfNeeded(task,location, false);
+                notifyAboutLocationIfNeeded(task,locStruct, false);
             }
         } finally {
             cursor.close();
         }
     }
 
-    private static void notifyAboutLocationIfNeeded(Task task,WPSLocation location, boolean inDriveMode) {
+    private static void notifyAboutLocationIfNeeded(Task task,LocStruct locStruct, boolean inDriveMode) {
         //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
         int radius;
         if (inDriveMode)
             radius = locationService.getCarRadius(task.getId());
         else
             radius = locationService.getFootRadius(task.getId());
-        if (!(notifyAboutSpecificLocationNeeded(task, location, radius) ||
-                notifyAboutTypeOfLocationNeeded(task, location, radius)))
+        if (!(notifyAboutSpecificLocationNeeded(task, locStruct, radius) ||
+                notifyAboutTypeOfLocationNeeded(task, locStruct, radius)))
             Notifications.cancelLocationNotification(task.getId());
         else
             ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
     }
 
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
-            WPSLocation location, int radius) {
-        DPoint loc = new DPoint(location.getLatitude(),location.getLongitude());
+            LocStruct locStruct, int radius) {
+        DPoint loc = new DPoint(locStruct.getLatitude(),locStruct.getLongitude());
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
                 Map<String, DPoint> places = Misc.googlePlacesQuery(str,loc,radius);
@@ -143,13 +143,13 @@ public class Notificator {
     }
 
     private static boolean notifyAboutSpecificLocationNeeded(Task task,
-            WPSLocation location, int radius) {
+            LocStruct locStruct, int radius) {
         for (String str: locationService.getLocationsBySpecificAsArray(task.getId())){
             DPoint dp = new DPoint(str);
             float[] arr = new float[1];
             Location.distanceBetween(
-                    location.getLatitude(),
-                    location.getLongitude(),
+                    locStruct.getLatitude(),
+                    locStruct.getLongitude(),
                     dp.getX(),dp.getY(), arr);
             if (arr[0]<=radius)
                 return true;
