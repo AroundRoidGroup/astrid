@@ -10,18 +10,18 @@ import android.util.Log;
 
 public class AroundroidDbAdapter {
 
-    public static final String KEY_MAIL = "mail";
-    public static final String KEY_LAT = "lat";
-    public static final String KEY_LON= "lon";
-    public static final String KEY_TIME= "time";
-    public static final String KEY_CONTACTID= "contactid";
-    public static final String KEY_VALIDS = "valids";
+    public static final String KEY_MAIL = "mail"; //$NON-NLS-1$
+    public static final String KEY_LAT = "lat"; //$NON-NLS-1$
+    public static final String KEY_LON= "lon"; //$NON-NLS-1$
+    public static final String KEY_TIME= "time"; //$NON-NLS-1$
+    public static final String KEY_CONTACTID= "contactid"; //$NON-NLS-1$
+    public static final String KEY_VALIDS = "valids"; //$NON-NLS-1$
 
-    public static final String KEY_ROWID = "_id";
+    public static final String KEY_ROWID = "_id"; //$NON-NLS-1$
 
     public static final long CONTACTID_INVALID_CONTACT = -2L;
 
-    private static final String TAG = "AroundroidDbAdapter";
+    private static final String TAG = "AroundroidDbAdapter"; //$NON-NLS-1$
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;
 
@@ -29,12 +29,12 @@ public class AroundroidDbAdapter {
      * Database creation sql statement
      */
     private static final String DATABASE_CREATE =
-        "create table peopleloc (_id integer primary key autoincrement, "
-        + "mail text not null, contactid long not null, valids text not null, "
-        + "lon double , lat double , time long "+");";
+        "create table peopleloc (_id integer primary key autoincrement, " //$NON-NLS-1$
+        + "mail text not null, contactid long not null, valids text not null, " //$NON-NLS-1$
+        + "lon double , lat double , time long "+");"; //$NON-NLS-1$ //$NON-NLS-2$
 
-    private static final String DATABASE_NAME = "aroundroiddata";
-    private static final String DATABASE_TABLE = "peopleloc";
+    private static final String DATABASE_NAME = "aroundroiddata"; //$NON-NLS-1$
+    private static final String DATABASE_TABLE = "peopleloc"; //$NON-NLS-1$
     private static final int DATABASE_VERSION = 2;
 
     private final Context mCtx;
@@ -57,14 +57,14 @@ public class AroundroidDbAdapter {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
-                    + newVersion + ", which will destroy all old data");
-            db.execSQL("DROP TABLE IF EXISTS peopleloc");
+            Log.w(TAG, "Upgrading database from version " + oldVersion + " to " //$NON-NLS-1$ //$NON-NLS-2$
+                    + newVersion + ", which will destroy all old data"); //$NON-NLS-1$
+            db.execSQL("DROP TABLE IF EXISTS peopleloc"); //$NON-NLS-1$
             onCreate(db);
         }
 
         public void kill(SQLiteDatabase db) {
-            db.execSQL("DROP TABLE IF EXISTS peopleloc");
+            db.execSQL("DROP TABLE IF EXISTS peopleloc"); //$NON-NLS-1$
             onCreate(db);
         }
 
@@ -118,12 +118,8 @@ public class AroundroidDbAdapter {
         else{
             initialValues.put(KEY_CONTACTID, contactId);
         }
-        initialValues.put(KEY_VALIDS,"Unregistered");
+        initialValues.put(KEY_VALIDS,"Unregistered"); //$NON-NLS-1$
         long l = mDb.insert(DATABASE_TABLE, null, initialValues);
-        //TODO remove debug
-        if (l==-1L){
-            int x  = 5;
-        }
         return l;
     }
 
@@ -146,7 +142,7 @@ public class AroundroidDbAdapter {
      */
     public boolean deletePeople(long rowId) {
 
-        return mDb.delete(DATABASE_TABLE, KEY_ROWID + "=" + rowId, null) > 0;
+        return mDb.delete(DATABASE_TABLE, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
     /**
@@ -166,7 +162,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeopleWContact() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, KEY_CONTACTID + ">=0", null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, KEY_CONTACTID + ">=0", null, null, null, null); //$NON-NLS-1$
     }
 
     /**
@@ -176,7 +172,7 @@ public class AroundroidDbAdapter {
      */
     public Cursor fetchAllPeopleWContactRegistered() {
 
-        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, "("+ KEY_VALIDS +"<>'Unregistered') AND (" + KEY_CONTACTID + ">=0)", null, null, null, null);
+        return mDb.query(DATABASE_TABLE, new String[] {KEY_ROWID, KEY_MAIL,KEY_LAT,KEY_LON,KEY_TIME, KEY_CONTACTID , KEY_VALIDS}, "("+ KEY_VALIDS +"<>'Unregistered') AND (" + KEY_CONTACTID + ">=0)", null, null, null, null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
@@ -190,7 +186,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID, KEY_VALIDS}, KEY_MAIL + "=" + "'"+mail.toLowerCase()+"'", null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID, KEY_VALIDS}, KEY_MAIL + "=" + "'"+mail.toLowerCase()+"'", null,  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$
                     null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
@@ -210,7 +206,7 @@ public class AroundroidDbAdapter {
         Cursor mCursor =
 
             mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
-                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID , KEY_VALIDS}, KEY_ROWID + "=" + rowId, null,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID , KEY_VALIDS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
                     null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();
@@ -228,11 +224,7 @@ public class AroundroidDbAdapter {
     public boolean updatePeople(long rowId ,long contactId ) {
         ContentValues args = new ContentValues();
         args.put(KEY_CONTACTID, contactId);
-        boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
-        //TODO remove debug
-        if (!ef){
-            int z  =  2;
-        }
+        boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
         return ef;
     }
 
@@ -254,12 +246,7 @@ public class AroundroidDbAdapter {
         }
 
 
-        boolean ef =  mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0;
-        //TODO remove debug
-        if (!ef){
-            int z  =  2;
-        }
-        return ef;
+        return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
     /**
      * Update the people using the details provided.
@@ -277,19 +264,19 @@ public class AroundroidDbAdapter {
     }
 
     private long createSpecialUser(){
-        long rowID = this.createPeople("me", -1L);
+        long rowID = this.createPeople("me", -1L); //$NON-NLS-1$
         if (rowID==-1){
             return -1;
         }
         //begining of time!
-        this.updatePeople(rowID, 0.0, 0.0, 21600L, null,"No");
+        this.updatePeople(rowID, 0.0, 0.0, 21600L, null,"No"); //$NON-NLS-1$
         return rowID;
     }
 
     //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
-        c = fetchByMail("me");
+        c = fetchByMail("me"); //$NON-NLS-1$
         if (c!=null && c.moveToFirst()){
             return c;
         }

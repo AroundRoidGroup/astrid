@@ -104,7 +104,7 @@ public class GPSService extends Service{
     private static final int DONE_MESSAGE = 3;
     private XPS _xps;
     private final MyLocationCallback _callback = new MyLocationCallback();
-    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid");
+    WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid"); //$NON-NLS-1$ //$NON-NLS-2$
     int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
@@ -351,7 +351,7 @@ public class GPSService extends Service{
         if (cur!=null){
             if (cur.moveToFirst()){
                 long l = cur.getLong(0);
-                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes");
+                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes"); //$NON-NLS-1$
             }
             cur.close();
         }

@@ -46,9 +46,9 @@
 	<string name="DLG_not_registered_title">Friend not registered</string>
 
 	<!-- Rescan dialog -->
-	<string name="DLG_rescan_title">The contact list has been scanned already. Would
+	<string name="DLG_rescan_text">The contact list has been scanned already. Would
 		you like to skip the scanning process?</string>
-	<string name="DLG_rescan_text">Contacts Aready Scanned!</string>
+	<string name="DLG_rescan_title">Contacts Already Scanned!</string>
 
 	<!-- Friend is already in the list dialog -->
 	<string name="DLG_friend_already_exist_title">Already in the List!</string>
@@ -61,13 +61,23 @@
 		People Location Service. You must connected to procced. would you like
 		to do that now?</string>
 
+	<!-- no friends dialog -->
+	<string name="DLG_friendless_text">None of your contacts are using Aroundroid.\n:(</string>
+	<string name="DLG_friendless_title">Oh no!</string>
+
+	<!-- valid/invalid email toast -->
+	<string name="invalid_email">Not a valid email address.</string>
+	<string name="valid_email">Please enter email address.</string>
+
 	<!-- Pick contacts to track -->
 	<string name="pick_contacts">Pick contacts to track</string>
 
 	<!--scanning the contact list dialog -->
 	<string name="contacts_scan_title">Looking for contacts</string>
-	<string name="scaning_contacts_text">Scanning you Contact List to find friends that use
-		AroundRoid. This may take a while...</string>
+	<string name="contacts_scan_text">Scanning you Contact List to find friends that use AroundRoid. This may take a while...</string>
+
+    <!-- exit dialog-->
+	<string name="DLG_exit_title">Are you sure you want to exit?</string>
 
 	<!-- Checking if your friend is using Aroundroid -->
 	<string name="checking_friend_title">Checking friend</string>

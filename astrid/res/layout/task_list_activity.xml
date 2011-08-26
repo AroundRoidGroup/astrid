@@ -40,19 +40,6 @@
     
     <!-- Body goes here -->
     
-    
-    <!-- Use Pepople-Base Reminder Button -->
-    <LinearLayout
-        android:id="@+id/peopleBaseFooter"
-        android:layout_width="fill_parent" 
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal">
-        
-       
-        
-    </LinearLayout>
-        
     <!-- Footer -->
     <LinearLayout
         android:id="@+id/taskListFooter"

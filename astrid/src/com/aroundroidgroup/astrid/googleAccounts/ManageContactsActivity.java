@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -56,6 +57,7 @@ public class ManageContactsActivity extends ListActivity{
 
     //TODO doesnt scan agian for people in list because they are not in locationService.getAllLocationByPeople
 
+    Resources r = getResources();
 
     private AroundroidDbAdapter mDbHelper;
 
@@ -66,7 +68,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
-    private final String emailRegularExpression = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    private final String emailRegularExpression = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"; //$NON-NLS-1$
 
     private static boolean alreadyScannedSometime = false;
 
@@ -140,16 +142,16 @@ public class ManageContactsActivity extends ListActivity{
     private Dialog createNotConnectedDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("You are not connected right now to Aroundroid People Location Service. You must connected to procced. would you like to do that now?")
-        .setTitle("Not Connected!")
-        .setPositiveButton("Yes (recommanded)", new DialogInterface.OnClickListener() {
+        builder.setMessage(r.getString(R.string.DLG_connecting_text))
+        .setTitle(r.getString(R.string.DLG_connecting_title))
+        .setPositiveButton(r.getString(R.string.DLG_yes_recommanded), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //TODO move to connection screen here
                 Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
                 startActivity(intent);
             }
         })
-        .setNegativeButton("Hell, No!", new DialogInterface.OnClickListener() {
+        .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
             }
@@ -161,9 +163,9 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createNoFriendsDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Oh no!");
-        builder.setMessage("Non of your contacts are using Aroundroid.\n:(");
-        builder.setNeutralButton("Ok...",  new DialogInterface.OnClickListener() {
+        builder.setTitle(r.getString(R.string.DLG_friendless_title));
+        builder.setMessage(r.getString(R.string.DLG_friendless_text));
+        builder.setNeutralButton(r.getString(R.string.DLG_ok),  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //do nothing
             }
@@ -175,9 +177,9 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createHurrayDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Hurray!");
-        builder.setMessage("Your friend is registered and was added to your tracking list.");
-        builder.setNeutralButton("Ok",  new DialogInterface.OnClickListener() {
+        builder.setTitle(r.getString(R.string.DLG_hurray));
+        builder.setMessage(r.getString(R.string.registered_added));
+        builder.setNeutralButton(r.getString(R.string.DLG_ok),  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //do nothing
             }
@@ -188,9 +190,9 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createHurray2Dialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Hurray!");
-        builder.setMessage("Your friend was added to your tracking list.");
-        builder.setNeutralButton("Ok",  new DialogInterface.OnClickListener() {
+        builder.setTitle(r.getString(R.string.DLG_hurray));
+        builder.setMessage(r.getString(R.string.unregistered_added));
+        builder.setNeutralButton(r.getString(R.string.DLG_ok),  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //do nothing
             }
@@ -201,9 +203,9 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createAlreadyAddedDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Already in the List!");
-        builder.setMessage("Your friend is already in your list!");
-        builder.setNeutralButton("Ok",  new DialogInterface.OnClickListener() {
+        builder.setTitle(r.getString(R.string.DLG_friend_already_exist_title));
+        builder.setMessage(r.getString(R.string.DLG_friend_already_exist_text));
+        builder.setNeutralButton(r.getString(R.string.DLG_ok),  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //do nothing
             }
@@ -241,16 +243,16 @@ public class ManageContactsActivity extends ListActivity{
                 Long contactID = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
                 String displayName = conHel.oneDisplayName(contactID);
                 if (displayName==null){
-                    displayName = "*Contact information unavailable*";
+                    displayName = r.getString(R.string.no_contact_info);
                 }
-                displayMailList.add(displayName + "\n(" + mail + ")");
+                displayMailList.add(displayName + "\n(" + mail + ")"); //$NON-NLS-1$ //$NON-NLS-2$
             }while (cur.moveToNext());
         }
         cur.close();
 
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Pick contacts to track");
+        builder.setTitle(r.getString(R.string.pick_contacts));
         builder.setMultiChoiceItems(displayMailList.toArray(new String[0]), tickArray, new DialogInterface.OnMultiChoiceClickListener() {
 
             @Override
@@ -258,7 +260,7 @@ public class ManageContactsActivity extends ListActivity{
                 tickArray[which] = isChecked;
 
             }
-        }).setPositiveButton("Add All", new DialogInterface.OnClickListener() {
+        }).setPositiveButton(r.getString(R.string.DLG_add_all), new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -274,7 +276,7 @@ public class ManageContactsActivity extends ListActivity{
                 fillData();
 
             }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        }).setNegativeButton(r.getString(R.string.DLG_cancel), new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -309,14 +311,14 @@ public class ManageContactsActivity extends ListActivity{
             break;
         case DIALOG_CONTACT_METHOD:
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Are you sure you want to exit?")
+            builder.setMessage(r.getString(R.string.DLG_exit_title))
             .setCancelable(false)
-            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     ManageContactsActivity.this.finish();
                 }
             })
-            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+            .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     dialog.cancel();
                 }
@@ -344,14 +346,14 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createAlreadyScannedDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("The contact list has been scanned already. Would you like to skip the scanning process?")
-        .setTitle("Contacts Aready Scanned!")
-        .setPositiveButton("Yes (recommanded)", new DialogInterface.OnClickListener() {
+        builder.setMessage(r.getString(R.string.DLG_rescan_text))
+        .setTitle(r.getString(R.string.DLG_rescan_title))
+        .setPositiveButton(r.getString(R.string.DLG_yes_recommanded), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 createContactsDialog().show();
             }
         })
-        .setNegativeButton("No. I like scanning stuff.", new DialogInterface.OnClickListener() {
+        .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 new ScanContactsTask().execute(new Void[0]);
             }
@@ -365,14 +367,14 @@ public class ManageContactsActivity extends ListActivity{
         loginDialog.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-        loginDialog.setTitle("Friend not registered");
+        loginDialog.setTitle(r.getString(R.string.DLG_not_registered_title));
 
         LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View dialogView = li.inflate(R.layout.add_anyway_dialog, null);
         loginDialog.setContentView(dialogView);
 
         TextView tv = (TextView) dialogView.findViewById(R.id.mail_not_using);
-        tv.setText("It seems that your friend ( "+friendMail+" ) is not using Aroundroid. Would you like to add him anyway?");
+        tv.setText(r.getString(R.string.invitation_suggestion_before_mail)+friendMail+r.getString(R.string.invitation_suggestion_after_mail));
 
         Button addButton = (Button) dialogView.findViewById(R.id.add_anyway_button);
         Button cancelButton = (Button) dialogView
@@ -414,10 +416,10 @@ public class ManageContactsActivity extends ListActivity{
         @Override
         protected void onPostExecute(Boolean result) {
             if (result){
-                Toast.makeText(getApplicationContext(), "An invitation was sent to your friend!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), r.getString(R.string.invitation_sent), Toast.LENGTH_LONG).show();
             }
             else{
-                Toast.makeText(getApplicationContext(), "Did not send an invatation.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), r.getString(R.string.invitation_not_sent), Toast.LENGTH_LONG).show();
             }
         }
 
@@ -436,7 +438,7 @@ public class ManageContactsActivity extends ListActivity{
         loginDialog.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-        loginDialog.setTitle("Enter friend's e-mail address");
+        loginDialog.setTitle(r.getString(R.string.DLG_add_title));
 
         LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View dialogView = li.inflate(R.layout.add_friend_dialog, null);
@@ -451,11 +453,11 @@ public class ManageContactsActivity extends ListActivity{
             // @Override
             public void onClick(View v) {
                 String friendMail = et_email.getText().toString();
-                if (friendMail.compareTo("")==0){
-                    Toast.makeText(getBaseContext(), "Please enter email address.",
+                if (friendMail.compareTo("")==0){ //$NON-NLS-1$
+                    Toast.makeText(getBaseContext(), r.getString(R.string.valid_email),
                             Toast.LENGTH_LONG).show();
                 }else if (!friendMail.matches(emailRegularExpression)){
-                    Toast.makeText(getBaseContext(), "Not a valid email address.",
+                    Toast.makeText(getBaseContext(), r.getString(R.string.invalid_email),
                             Toast.LENGTH_LONG).show();
                 }else if (friendInList(friendMail)){
                     showDialog(DIALOG_ALREADY_FOUND);
@@ -493,15 +495,16 @@ public class ManageContactsActivity extends ListActivity{
     private Dialog createDeleteDialog(final String friendMail) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure that you want to delete " + friendMail + " from your tracking friend list?")
-        .setTitle("Delete friend")
-        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setMessage(r.getString(R.string.DLG_delete_text_before_mail) +
+                friendMail + r.getString(R.string.DLG_delete_text_after_mail))
+        .setTitle(r.getString(R.string.DLG_delete_title))
+        .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 peopleHashSet.remove(friendMail);
                 fillData();
             }
         })
-        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+        .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
             }
@@ -651,8 +654,8 @@ public class ManageContactsActivity extends ListActivity{
         protected void onPreExecute(){
             _progressDialog = ProgressDialog.show(
                     ManageContactsActivity.this,
-                    "Looking for contacts",
-                    "Scaning you Contact List to find friends that use AroundRoid. This may take a while...",
+                    r.getString(R.string.contacts_scan_title),
+                    r.getString(R.string.contacts_scan_text),
                     true,
                     true,
                     new DialogInterface.OnCancelListener(){
@@ -731,8 +734,8 @@ public class ManageContactsActivity extends ListActivity{
         protected void onPreExecute(){
             _progressDialog = ProgressDialog.show(
                     ManageContactsActivity.this,
-                    "Checking friend",
-                    "Finding out if your friend is using Aroundroid. Please wait...",
+                    r.getString(R.string.checking_friend_title),
+                    r.getString(R.string.checking_friend_text),
                     true,
                     true,
                     new DialogInterface.OnCancelListener(){
@@ -762,8 +765,6 @@ public class ManageContactsActivity extends ListActivity{
                     //friend is not using Aroundroid
                     createAddAnywayDialog(friend).show();
                 }
-            }else{
-
             }
             //TODO check for error
         }
