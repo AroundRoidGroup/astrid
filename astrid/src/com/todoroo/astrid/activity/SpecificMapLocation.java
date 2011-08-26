@@ -23,7 +23,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -98,6 +97,7 @@ public class SpecificMapLocation extends MapActivity{
     private AdjustedMap mMapView;
     private Thread previousThread;
     private int mPressedItemIndex;
+    private String mLastNullPeople;
     private DPoint mDeviceLocation;
     private static EditText mAddress;
     private List<String> mNullPeople;
@@ -151,14 +151,6 @@ public class SpecificMapLocation extends MapActivity{
             return;
         for (String s : lst)
             mAdapter.add(s);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.manage_locations_actionbar, menu);
-        return true;
     }
 
     @Override
@@ -264,9 +256,18 @@ public class SpecificMapLocation extends MapActivity{
         case MENU_PEOPLE_GROUP:
             mPressedItemExtras = null;
             if (item.getItemId() == -1) {
-                Toast.makeText(this, "Cannot retrieve person's locations !", Toast.LENGTH_LONG).show();
+                mLastNullPeople = item.getTitle().toString();
+                intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
+                    intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
+                    intent.putExtra(Focaccia.SHOW_TITLE, mLastNullPeople);
+                if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_ADDRESS))
+                    intent.putExtra(Focaccia.SHOW_ADDRESS, Focaccia.NO_ADDRESS_WARNING);
+                startActivityForResult(intent, MENU_PEOPLE_GROUP);
                 return true;
             }
+            mLastNullPeople = null;
             mPressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
             AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(mPressedItemIndex);
 
@@ -771,7 +772,11 @@ public class SpecificMapLocation extends MapActivity{
         }
         if (requestCode == MENU_PEOPLE_GROUP) {
             if (resultCode == RESULT_FIRST_USER) { /* DELETE was made */
-                mMapView.removeItemFromOverlay(PEOPLE_OVERLAY, mPressedItemIndex);
+                if (mLastNullPeople != null) {
+                    mNullPeople.remove(mLastNullPeople);
+                    mLastNullPeople = null;
+                }
+                else mMapView.removeItemFromOverlay(PEOPLE_OVERLAY, mPressedItemIndex);
             }
         }
 

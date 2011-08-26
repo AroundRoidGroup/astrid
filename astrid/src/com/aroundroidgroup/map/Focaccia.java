@@ -27,6 +27,7 @@ public class Focaccia extends Activity {
     public static final String READ_ONLY = "read_only"; //$NON-NLS-1$
     public static final String DELETE = "delete"; //$NON-NLS-1$
     public static final String DELETE_ALL = "delete_all"; //$NON-NLS-1$
+    public static final String NO_ADDRESS_WARNING = "warning"; //$NON-NLS-1$
 
     private TextView mType;
     private TextView mSnippet;
@@ -130,8 +131,11 @@ public class Focaccia extends Activity {
             mType.setText(Html.fromHtml("<b>" + mType.getText() + "</b> " + name)); //$NON-NLS-1$ //$NON-NLS-2$
         }
         else mType.setVisibility(View.GONE);
-        if (address != null)
-            mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b> " + address)); //$NON-NLS-1$ //$NON-NLS-2$
+        if (address != null) {
+            if (!address.equals(NO_ADDRESS_WARNING))
+                mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b> " + address)); //$NON-NLS-1$ //$NON-NLS-2$
+            else mAddress.setText(Html.fromHtml("<b>" + mAddress.getText() + "</b><font color='red'> No location found!</font>")); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         else mAddress.setVisibility(View.GONE);
         if (title != null)
             mName.setText(Html.fromHtml("<b>" + mName.getText() + "</b> " + title));  //$NON-NLS-1$//$NON-NLS-2$
