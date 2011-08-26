@@ -15,6 +15,7 @@ import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.sql.QueryTemplate;
+import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.activity.FilterListActivity;
 import com.todoroo.astrid.api.AstridApiConstants;
 import com.todoroo.astrid.api.Filter;
@@ -54,11 +55,13 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         recent.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_new)).getBitmap();
 
         // transmit filter list
-        FilterListItem[] list = new FilterListItem[4];
+        boolean showMapFilter = Preferences.getBoolean(R.string.p_aroundroid, false);
+        FilterListItem[] list = new FilterListItem[3+(showMapFilter?1:0)];
         list[0] = inbox;
         list[1] = recent;
         list[2] = searchFilter;
-        list[3] = mapFilter;
+        if (showMapFilter)
+            list[3] = mapFilter;
         Intent broadcastIntent = new Intent(AstridApiConstants.BROADCAST_SEND_FILTERS);
         broadcastIntent.putExtra(AstridApiConstants.EXTRAS_RESPONSE, list);
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);

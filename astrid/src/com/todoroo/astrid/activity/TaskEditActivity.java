@@ -74,6 +74,7 @@ import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.ExceptionService;
 import com.todoroo.andlib.utility.AndroidUtilities;
 import com.todoroo.andlib.utility.DateUtilities;
+import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.alarms.AlarmControlSet;
 import com.todoroo.astrid.api.AstridApiConstants;
 import com.todoroo.astrid.dao.Database;
@@ -258,8 +259,6 @@ public final class TaskEditActivity extends TabActivity {
         controls.add(new ImportanceControlSet(R.id.importance_container));
         controls.add(new UrgencyControlSet(R.id.urgency));
         notesEditText = (EditText) findViewById(R.id.notes);
-        specificCS = new LocationControlSet(TaskEditActivity.this);
-        controls.add(specificCS);
         // prepare and set listener for voice-button
         if(addOnService.hasPowerPack()) {
             voiceAddNoteButton = (ImageButton) findViewById(R.id.voiceAddNoteButton);
@@ -285,8 +284,15 @@ public final class TaskEditActivity extends TabActivity {
                         LinearLayout extrasAddons = (LinearLayout) findViewById(R.id.tab_extra_addons);
                         controls.add(new RepeatControlSet(TaskEditActivity.this, extrasAddons));
                         controls.add(new GCalControlSet(TaskEditActivity.this, extrasAddons));
-                        controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
 
+                        if (Preferences.getBoolean(R.string.p_aroundroid, false)){
+                            specificCS = new LocationControlSet(TaskEditActivity.this);
+                            controls.add(specificCS);
+                            controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));
+                        }else{
+                            findViewById(R.id.location).setVisibility(View.GONE);
+                            findViewById(R.id.location_title).setVisibility(View.GONE);
+                        }
 
 
 

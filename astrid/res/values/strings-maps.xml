@@ -7,8 +7,6 @@
 	<!-- Map Filter title -->
 	<string name="location_filter_title">Places Nearby</string>
 
-
-
 	<!-- in Focaccia activity -->
 	<string name="focaccia_snippet">Snippet:</string>
 	<string name="focaccia_type">Type:</string>

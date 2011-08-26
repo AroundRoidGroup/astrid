@@ -27,6 +27,7 @@ import android.preference.PreferenceScreen;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.PeopleLocationPreferneces;
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
@@ -58,7 +59,7 @@ public class EditPreferences extends TodorooPreferences {
 
     private static final int ABOUT_PREFERENCE = 0; // see preferences.xml for order of prefs
     private static final int POWER_PACK_PREFERENCE = 2;
-    private static final int CONNECTPEOPLE = 5;
+    private static final int CONNECTPEOPLE = 6;
 
     // --- instance variables
 
@@ -243,6 +244,18 @@ public class EditPreferences extends TodorooPreferences {
             }
         }
 
+        if (r.getString(R.string.p_aroundroid).equals(preference.getKey())) {
+            Preference loginButton = findPreference(r.getString(R.string.p_people_login_key));
+            Intent serviceIntent = new Intent(this,GPSService.class);
+            if (value != null && !(Boolean)value){
+                stopService(serviceIntent);
+                loginButton.setEnabled(false);
+            }
+            else{
+                startService(serviceIntent);
+                loginButton.setEnabled(true);
+            }
+        }
 
         // statistics service
         else if (r.getString(R.string.p_statistics).equals(preference.getKey())) {

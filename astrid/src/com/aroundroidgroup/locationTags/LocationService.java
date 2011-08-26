@@ -402,7 +402,7 @@ public class LocationService {
      * under the type locType that are blacklisted for the task who's
      * id is taskID
      */
-    public boolean syncLocationsByTypeSpecial(long taskID, String locType, DPoint[] arr){
+    public boolean syncLocationsByTypeBlacklist(long taskID, String locType, DPoint[] arr){
         String[] stringsArr = new String[arr.length];
         for (int i=0; i<arr.length;i++)
             stringsArr[i]=arr[i].toString();
