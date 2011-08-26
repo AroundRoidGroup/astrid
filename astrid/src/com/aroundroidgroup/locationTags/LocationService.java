@@ -23,28 +23,33 @@ import com.todoroo.astrid.service.MetadataService;
 public class LocationService {
 
     private static final String MOTI_DIVIDOR = "@"; //$NON-NLS-1$
-    private final String MOTI_DIVIDOR_BETWEEN_DOUBLES = "%"; //$NON-NLS-1$
 
-    //TODO : check synchronized??
-
+        /* returns an array of all the locations-by-type associated with
+         *  the task who's id is taskID */
     public String[] getLocationsByTypeAsArray(long taskID){
         return getLocationPropertyAsArray(taskID,LocationFields.locationsType,
                 LocationFields.METADATA_KEY_BY_TYPE);
     }
 
+    /* returns an array of all the locations-by-people associated with
+     *  the task who's id is taskID */
     public String[] getLocationsByPeopleAsArray(long taskID){
         return getLocationPropertyAsArray(taskID,LocationFields.peopleLocations,
                 LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
+    /* returns an array of all the specific locations associated with
+     *  the task who's id is taskID */
     public String[] getLocationsBySpecificAsArray(long taskID){
         return getLocationPropertyAsArray(taskID,LocationFields.specificLocations,
                 LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
-    private String[] getLocationPropertyAsArray(long taskId, StringProperty prop, String KEY){
+    /* returns an array of all the values of Property prop under the
+     * metadata key KEY  associated with the task who's id is taskID */
+    private String[] getLocationPropertyAsArray(long taskID, StringProperty prop, String KEY){
 
-        TodorooCursor<Metadata> cursor = getLocations(taskId, prop, KEY);
+        TodorooCursor<Metadata> cursor = getLocations(taskID, prop, KEY);
 
         try {
             String[] array = new String[cursor.getCount()];
@@ -58,22 +63,31 @@ public class LocationService {
         }
     }
 
-    public boolean syncLocationsByType(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.locationsType,
+    /* sets the locations-by-type associated with the task who's id is taskID
+     * returns true if the saving was successful */
+    public boolean syncLocationsByType(long taskID, LinkedHashSet<String> locations){
+        return syncLocations(taskID, locations, LocationFields.locationsType,
                 LocationFields.METADATA_KEY_BY_TYPE);
     }
 
-    public boolean syncLocationsBySpecific(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.specificLocations,
+    /* sets the specific location associated with the task who's id is taskID
+     * returns true if the saving was successful */
+    public boolean syncLocationsBySpecific(long taskID, LinkedHashSet<String> locations){
+        return syncLocations(taskID, locations, LocationFields.specificLocations,
                 LocationFields.METADATA_KEY_BY_SPECIFIC);
     }
 
-    public boolean syncLocationsByPeople(long taskId, LinkedHashSet<String> locations){
-        return syncLocations(taskId, locations, LocationFields.peopleLocations,
+    /* sets the locations-by-people associated with the task who's id is taskID
+     * returns true if the saving was successful */
+    public boolean syncLocationsByPeople(long taskID, LinkedHashSet<String> locations){
+        return syncLocations(taskID, locations, LocationFields.peopleLocations,
                 LocationFields.METADATA_KEY_BY_PEOPLE);
     }
 
-    private boolean syncLocations(long taskId, LinkedHashSet<String> locations,StringProperty prop, String KEY) {
+    /* sets the the values of Property prop under the metadata key KEY
+     * associated with the task who's id is taskID
+     * returns true if the saving was successful */
+    private boolean syncLocations(long taskID, LinkedHashSet<String> locations,StringProperty prop, String KEY) {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
@@ -84,7 +98,7 @@ public class LocationService {
             metadata.add(item);
         }
 
-        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(KEY)) > 0;
+        return service.synchronizeMetadata(taskID, metadata, Metadata.KEY.eq(KEY)) > 0;
     }
 
     public TodorooCursor<Metadata> getLocationsByType(long taskId){
