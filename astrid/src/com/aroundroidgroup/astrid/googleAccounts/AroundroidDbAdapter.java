@@ -20,6 +20,8 @@ public class AroundroidDbAdapter {
     public static final String KEY_ROWID = "_id"; //$NON-NLS-1$
 
     public static final long CONTACTID_INVALID_CONTACT = -2L;
+    public static final long CONTACTID_MY_ID = -1L;
+    public static final String MAIL_MY_FAKE_MAIL= "me";
 
     private static final String TAG = "AroundroidDbAdapter"; //$NON-NLS-1$
     private DatabaseHelper mDbHelper;
@@ -118,7 +120,7 @@ public class AroundroidDbAdapter {
         else{
             initialValues.put(KEY_CONTACTID, contactId);
         }
-        initialValues.put(KEY_VALIDS,"Unregistered"); //$NON-NLS-1$
+        initialValues.put(KEY_VALIDS,AroundRoidAppConstants.STATUS_UNREGISTERED);
         long l = mDb.insert(DATABASE_TABLE, null, initialValues);
         return l;
     }
@@ -195,6 +197,22 @@ public class AroundroidDbAdapter {
     }
 
     /**
+     * Return a Cursor over the contact id
+     * @param contactId
+     * @return Cursor over him
+     */
+    public Cursor fetchByContactId(long contactId) {
+        Cursor mCursor =
+            mDb.query(true, DATABASE_TABLE, new String[] {KEY_ROWID,
+                    KEY_MAIL, KEY_LAT, KEY_LON, KEY_TIME , KEY_CONTACTID, KEY_VALIDS}, KEY_CONTACTID + "=" + contactId, null,  //$NON-NLS-1$
+                    null, null, null, null);
+        if (mCursor != null) {
+            mCursor.moveToFirst();
+        }
+        return mCursor;
+    }
+
+    /**
      * Return a Cursor positioned at the people that matches the given rowId
      *
      * @param rowId id of note to retrieve
@@ -257,26 +275,22 @@ public class AroundroidDbAdapter {
         return updatePeople(rowId,lat, lon, time,null,null);
     }
 
-
-
     public void dropPeople(){
         mDbHelper.kill(mDb);
     }
 
     private long createSpecialUser(){
-        long rowID = this.createPeople("me", -1L); //$NON-NLS-1$
+        long rowID = this.createPeople(MAIL_MY_FAKE_MAIL, CONTACTID_MY_ID);
         if (rowID==-1){
             return -1;
         }
-        //begining of time!
-        this.updatePeople(rowID, 0.0, 0.0, 21600L, null,"No"); //$NON-NLS-1$
+        this.updatePeople(rowID, 0.0, 0.0,0L, null,AroundRoidAppConstants.STATUS_OFFLINE);
         return rowID;
     }
 
-    //TODO change to fetch by contact id
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
-        c = fetchByMail("me"); //$NON-NLS-1$
+        c = fetchByContactId(CONTACTID_MY_ID);
         if (c!=null && c.moveToFirst()){
             return c;
         }
@@ -288,7 +302,6 @@ public class AroundroidDbAdapter {
     }
 
     public FriendProps userToFP(long rowId){
-        //TODO deal with Timestamp
         Cursor cur = fetchPeople(rowId);
         if (cur==null || !cur.moveToFirst()){
             if (cur!=null) cur.close();
@@ -307,6 +320,12 @@ public class AroundroidDbAdapter {
         fp.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
         fp.setValid(cur.getString(cur.getColumnIndex(KEY_VALIDS)));
         return fp;
+    }
+
+    public static FriendPropsWithContactId userToFPWithContactId(Cursor cur){
+        FriendProps fp  = userToFP(cur);
+        FriendPropsWithContactId fpwci = new FriendPropsWithContactId(cur.getLong(cur.getColumnIndex(KEY_CONTACTID)), fp);
+        return fpwci;
     }
 
     public FriendProps specialUserToFP(){
