@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONException;
 
@@ -18,15 +17,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -51,6 +47,8 @@ import com.aroundroidgroup.map.MyEventClassListener;
 import com.aroundroidgroup.map.mapFunctions;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
+import com.markupartist.android.widget.ActionBar;
+import com.markupartist.android.widget.ActionBar.AbstractAction;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.ContextManager;
@@ -108,38 +106,6 @@ public class SpecificMapLocation extends MapActivity{
     private final AroundroidDbAdapter mPeopleDB = new AroundroidDbAdapter(this);
     private final LocationService mLocationService = new LocationService();
 
-    private final OnClickListener mViewAllListener = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            if (!hasPlaces()) {
-                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
-                dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("No locations for this task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                        new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dg, int which) {
-                        return;
-                    }
-                });
-                dialog.show();
-            }
-            else v.showContextMenu();
-            return;
-        }
-
-    };
-
-    private final OnLongClickListener mViewAllLongListener = new View.OnLongClickListener() {
-
-        @Override
-        public boolean onLongClick(View v) {
-            mViewAllListener.onClick(v);
-            return true;
-        }
-    };
-
     @Override
     protected boolean isRouteDisplayed() {
         return false;
@@ -151,6 +117,10 @@ public class SpecificMapLocation extends MapActivity{
             return;
         for (String s : lst)
             mAdapter.add(s);
+    }
+
+    public boolean hasPlaces() {
+        return mMapView.hasPlaces() || mNullPeople.size() > 0;
     }
 
     @Override
@@ -289,85 +259,158 @@ public class SpecificMapLocation extends MapActivity{
         }
     }
 
-    public boolean hasPlaces() {
-        return !(mMapView.getTappedPointsCount() == 0 && mMapView.getOverlaySize(SPECIFIC_OVERLAY) == 0 && mTypes.size() == 0 && mPeople.size() == 0);
-    }
-
     @Override
     protected void onResume() {
-        setUITimer();
+        mLocationDB.open();
+//        setUITimer();
         super.onResume();
     }
 
-    private final Handler mHan = new Handler();
-    final int mDelayMillis = 10 * 1000;
-    private final Runnable mUpdateTimeTask = new Runnable() {
-        public void run() {
-            /* my code */
-            mPeople.clear();
-            mNullPeople.clear();
-            mMapView.clearOverlay(TYPE_OVERLAY);
-            String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(mTaskID);
-            if (existedPeople != null) {
-                for (String person : existedPeople) {
-                    Cursor c = mPeopleDB.fetchByMail(person);
-                    if (c == null) {
-                        mNullPeople.add(person);
-                        continue;
-                    }
-                    if (!c.moveToFirst()) {
-                        mNullPeople.add(person);
-                        c.close();
-                        continue;
-                    }
-                    FriendProps fp = AroundroidDbAdapter.userToFP(c);
-                    if (fp != null) {
-                        if (fp.isValid())
-                            mPeople.put(person, new DPoint(fp.getDlat(), fp.getDlon()));
-                        else mNullPeople.add(person);
-                    }
-                    c.close();
-                }
-            }
-            for (Entry<String, DPoint> entry : mPeople.entrySet()) {
-                GeoPoint gp = Misc.degToGeo(entry.getValue());
-                String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
-                if (savedAddr == null) {
-                    try {
-                        savedAddr = Geocoding.reverseGeocoding(entry.getValue());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    if (savedAddr == null)
-                        savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
-                    if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
-                        savedAddr = entry.getValue().toString();
-                }
-                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
-            }
-
-            mMapView.updateDeviceLocation();
-
-            mHan.postDelayed(this, mDelayMillis);
-        }
-    };
-
+//    private final Handler mHan = new Handler();
+//    final int mDelayMillis = 10 * 1000;
+//    private final Runnable mUpdateTimeTask = new Runnable() {
+//        public void run() {
+//            /* my code */
+//            mPeople.clear();
+//            mNullPeople.clear();
+//            mMapView.clearOverlay(TYPE_OVERLAY);
+//            String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(mTaskID);
+//            if (existedPeople != null) {
+//                for (String person : existedPeople) {
+//                    Cursor c = mPeopleDB.fetchByMail(person);
+//                    if (c == null) {
+//                        mNullPeople.add(person);
+//                        continue;
+//                    }
+//                    if (!c.moveToFirst()) {
+//                        mNullPeople.add(person);
+//                        c.close();
+//                        continue;
+//                    }
+//                    FriendProps fp = AroundroidDbAdapter.userToFP(c);
+//                    if (fp != null) {
+//                        if (fp.isValid())
+//                            mPeople.put(person, new DPoint(fp.getDlat(), fp.getDlon()));
+//                        else mNullPeople.add(person);
+//                    }
+//                    c.close();
+//                }
+//            }
+//            for (Entry<String, DPoint> entry : mPeople.entrySet()) {
+//                GeoPoint gp = Misc.degToGeo(entry.getValue());
+//                String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
+//                if (savedAddr == null) {
+//                    try {
+//                        savedAddr = Geocoding.reverseGeocoding(entry.getValue());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                    if (savedAddr == null)
+//                        savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+//                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
+//                    if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
+//                        savedAddr = entry.getValue().toString();
+//                }
+//                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
+//            }
+//
+//            mMapView.updateDeviceLocation();
+//
+//            mHan.postDelayed(this, mDelayMillis);
+//        }
+//    };
+//
     private final LocationService locationService = new LocationService();
-    private void setUITimer(){
-        mHan.removeCallbacks(mUpdateTimeTask);
-        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+//    private void setUITimer(){
+//        mHan.removeCallbacks(mUpdateTimeTask);
+//        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+//
+//    }
+
+
+    private class ViewAll extends AbstractAction {
+
+        public ViewAll() {
+            super(R.drawable.ic_menu_list);
+        }
+
+        @Override
+        public void performAction(View view) {
+            if (!hasPlaces()) {
+                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle("Information");
+                dialog.setMessage("No locations for this task.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
+            else mViewAll.showContextMenu();
+            return;
+        }
 
     }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class DeviceLocation extends AbstractAction {
+
+        public DeviceLocation() {
+            super(R.drawable.ic_menu_mylocation);
+        }
+
+        @Override
+        public void performAction(View view) {
+            mDeviceLocation = mMapView.getDeviceLocation();
+            if (mDeviceLocation != null)
+                mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
+            return;
+        }
+
+    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@ Adding the button that allowing to add people to the task                             @@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class InvitePeople extends AbstractAction {
+
+        public InvitePeople() {
+            super(R.drawable.ic_menu_invite);
+        }
+
+        @Override
+        public void performAction(View view) {
+            Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
+            intent.putExtra(ManageContactsActivity.taskIDSTR, mTaskID);
+            intent.putExtra(ManageContactsActivity.peopleArraySTR, mLocationService.getLocationsByPeopleAsArray(mTaskID));
+            startActivityForResult(intent, CONTACTS_REQUEST_CODE);
+            return;
+        }
+    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.specific_map);
 
+        final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
+        actionBar.setTitle("Home");
 
+        actionBar.addAction(new ViewAll());
+        actionBar.addAction(new DeviceLocation());
+        actionBar.addAction(new InvitePeople());
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
         mRadius = 100;
@@ -380,7 +423,7 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public void handleMyEventClassEvent(EventObject e) {
-                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), Misc.geoToDeg(mMapView.getMapCenter()), mRadius, mTaskID);
+                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mRadius, mTaskID);
 
             }
 
@@ -400,21 +443,7 @@ public class SpecificMapLocation extends MapActivity{
             Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
         }, OVERLAY_PEOPLE_NAME);
 
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        Button focus = (Button)findViewById(R.id.focusDevLoc);
-        focus.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
-                mDeviceLocation = mMapView.getDeviceLocation();
-                if (mDeviceLocation != null)
-                    mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
-            }
-        });
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Adding the auto-complete mechanism                                                    @@@@@    */
@@ -573,13 +602,6 @@ public class SpecificMapLocation extends MapActivity{
             c.close();
         }
 
-//        String[] tomer = new String[1];
-//        tomer[0] = "tomer.keshet@gmail.com";
-//        DPoint[] coordTomer = new DPoint[1];
-//        coordTomer[0] = new DPoint(40.710215,-74.009013);
-//        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, tomer, coordTomer, mTaskID);
-//        mPeople.put(tomer[0], coordTomer[0]);
-//        mPeopleDB.updatePeople(mPeopleDB.createPeople(tomer[0]), 40.710215, -74.009013, 21600L);
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -587,9 +609,10 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@ Adding the button that displays all the locations that have been added to the task    @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         mViewAll = (Button)findViewById(R.id.viewAll);
+        mViewAll.setVisibility(View.GONE);
         registerForContextMenu(mViewAll);
-        mViewAll.setOnClickListener(mViewAllListener);
-        mViewAll.setOnLongClickListener(mViewAllLongListener);
+//        mViewAll.setOnClickListener(mViewAllListener);
+//        mViewAll.setOnLongClickListener(mViewAllLongListener);
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -597,7 +620,7 @@ public class SpecificMapLocation extends MapActivity{
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
-        /* @@@@@ visible to the user.                                                                  @@@@@ */
+        /* @@@@@ visible to the user.                                                                  @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
         mDeviceLocation = mMapView.getDeviceLocation();
@@ -613,22 +636,6 @@ public class SpecificMapLocation extends MapActivity{
         mMapView.setZoomByAllLocations();
         mRadius = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
 
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@ Adding the button that allowing to add people to the task                             @@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        ((Button)findViewById(R.id.addPeople)).setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
-                intent.putExtra(ManageContactsActivity.taskIDSTR, mTaskID);
-                intent.putExtra(ManageContactsActivity.peopleArraySTR, mLocationService.getLocationsByPeopleAsArray(mTaskID));
-                startActivityForResult(intent, CONTACTS_REQUEST_CODE);
-            }
-        });
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -653,7 +660,7 @@ public class SpecificMapLocation extends MapActivity{
                     if (!mTypes.contains(text)) {
                         mLocationDB.close();
                         int degSuccess = mapFunctions.degreeOfSuccess(mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY,
-                                new String[] { text.replace(' ', '_') }, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, mTaskID));
+                                new String[] { text.replace(' ', '_') }, mRadius, mTaskID));
                         if (degSuccess == mapFunctions.ALL_GOOD)
                             Toast.makeText(SpecificMapLocation.this, "Location type '" + text + "' has been added successfully !", //$NON-NLS-1$ //$NON-NLS-2$
                                     Toast.LENGTH_LONG).show();
@@ -662,6 +669,9 @@ public class SpecificMapLocation extends MapActivity{
                         mMapView.invalidate();
                         mTypes.add(text);
                         mLocationDB.open();
+                        GeoPoint closetPoint = mMapView.getPointWithMinimalDistanceFromGivenPoint(TYPE_OVERLAY, text, Misc.geoToDeg(mMapView.getMapCenter()));
+                        if (closetPoint != null)
+                            mMapView.getController().setCenter(closetPoint);
                     }
                 }
                 else { /* input is an address */
@@ -699,7 +709,20 @@ public class SpecificMapLocation extends MapActivity{
                         else theAddr = savedAddr;
 
                         mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), theAddr);
-                        mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(theCoord)), OVERLAY_SPECIFIC_NAME, theAddr, theAddr, SPECIFIC_OVERLAY, mTaskID, null);
+                        if (false == mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(theCoord)), OVERLAY_SPECIFIC_NAME, theAddr, theAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
+                            AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                            dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                            dialog.setTitle("Information");
+                            dialog.setMessage("This location is already attached to task.");
+                            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dg, int which) {
+                                    return;
+                                }
+                            });
+                            dialog.show();
+                        }
+                        else mMapView.getController().setCenter(gp);
                         mMapView.invalidate();
                     }
                     else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
@@ -745,6 +768,7 @@ public class SpecificMapLocation extends MapActivity{
                                     mPeople.put(contact, dp);
                                     mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY,
                                             new String[] { contact }, new DPoint[] { dp }, mTaskID);
+                                    mMapView.getController().setCenter(Misc.degToGeo(dp));
                                 }
                                 else mNullPeople.add(contact);
                             }
@@ -769,7 +793,10 @@ public class SpecificMapLocation extends MapActivity{
         }
         if (requestCode == MENU_KIND_GROUP) {
             if (resultCode == Focaccia.RESULT_CODE_DELETE_ALL) {
-                mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, mPressedItemExtras);
+                if (mPressedItemExtras != null) {
+                    mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, mPressedItemExtras);
+                    mTypes.remove(mPressedItemExtras);
+                }
             }
         }
         if (requestCode == MENU_PEOPLE_GROUP) {
@@ -851,7 +878,7 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onPause() {
         super.onPause();
-        mHan.removeCallbacks(mUpdateTimeTask);
+//        mHan.removeCallbacks(mUpdateTimeTask);
         mLocationDB.close();
         saveAndQuit();
     }

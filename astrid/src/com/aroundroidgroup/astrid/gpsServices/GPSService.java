@@ -19,8 +19,10 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.googleAccounts.AroundRoidAppConstants;
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
+import com.aroundroidgroup.astrid.googleAccounts.FriendPropsWithContactId;
 import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
@@ -111,6 +113,8 @@ public class GPSService extends Service{
             gpsSetup();
             startUsingMockLocations();
         }
+
+        refreshData.start();
     }
 
     private static final int LOCATION_MESSAGE = 1;
@@ -176,9 +180,6 @@ public class GPSService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()
-        if (!refreshData.isAlive()){
-            refreshData.start();
-        }
         return START_STICKY;
     }
     @Override
@@ -188,14 +189,14 @@ public class GPSService extends Service{
     }
 
     @Override
-    public synchronized void onDestroy() {
+    public void onDestroy() {
         // The service is no longer used and is being destroyed
         if (refreshData.isAlive()){
             refreshData.setExit();
             try {
-                wait();
-            } catch (InterruptedException e) {
-                //do nothing!
+                refreshData.join();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
             }
         }
         if (USING_MOCK_LOCATIONS){
@@ -207,12 +208,6 @@ public class GPSService extends Service{
         }
         this.aDba.close();
     }
-
-    private synchronized void okDestroy(){
-        notifyAll();
-    }
-
-
 
     private final Handler mHandler = new Handler();
     private String mToastMsg;
@@ -248,14 +243,19 @@ public class GPSService extends Service{
             }
             if (cur.moveToFirst()){
                 do{
-                    String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                    boolean deleted = false;
+                    //String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
                     long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
-                    long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                    if (!holdDeletes && !hs.contains(mail) && contactId!=-1){
+                    FriendPropsWithContactId fpwci = AroundroidDbAdapter.userToFPWithContactId(cur);
+                    if (!holdDeletes && !hs.contains(fpwci.getMail()) && fpwci.getContactId()!=-AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
                         aDba.deletePeople(rowId);
+                        deleted = true;
                     }
-                    else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
+                    else if (hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0 && conHel.oneDisplayName(fpwci.getContactId())==null){
                         aDba.updatePeople(rowId, -2);
+                    }
+                    if (!deleted && fpwci.isValid() && !AroundRoidAppConstants.timeCheckValid(fpwci.getTimestamp())){
+                        aDba.updatePeople(rowId, fpwci.getDlat(), fpwci.getDlon(), fpwci.getTimestamp(),fpwci.getContactId(),AroundRoidAppConstants.STATUS_OFFLINE);
                     }
                 }while (cur.moveToNext());
             }
@@ -355,7 +355,6 @@ public class GPSService extends Service{
 
 
             }
-            okDestroy();
         }
 
 

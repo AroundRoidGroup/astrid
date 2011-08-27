@@ -21,16 +21,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-public class AroundRoidConnectionManager {
-    //TODO : cancel the AppInfo Activity and connect to PeopleRequest in the background
-
-    //TODO fix isconnecting problem when user clicks back / ignore prompted request
-
+public class ConnectionManager {
 
     private Account chosenAccount;
-
-
-
     private Context cont;
     private AccountManager accountManager;
 
@@ -41,6 +34,8 @@ public class AroundRoidConnectionManager {
     private boolean props;
 
     private String lastToken;
+
+    private final DefaultHttpClient http_client =  new DefaultHttpClient();;
 
     public synchronized HttpResponse executeOnHttp(HttpUriRequest hur) {
         if (!isConnected()){
@@ -65,9 +60,6 @@ public class AroundRoidConnectionManager {
         return null;
     }
 
-    private final DefaultHttpClient http_client =  new DefaultHttpClient();;
-
-
     public void setProps(Account account,Context c){
         if (isConnecting() || isConnecting()){
             return;
@@ -82,16 +74,13 @@ public class AroundRoidConnectionManager {
             return;
         }
         setConnecting(true);
-
         accountManager = AccountManager.get(cont.getApplicationContext());
         accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
-
     }
 
     public String getAccountString(){
         return chosenAccount.name;
     }
-
 
     public boolean reconnect(){
         if (isProps()){
@@ -99,6 +88,36 @@ public class AroundRoidConnectionManager {
             return true;
         }
         return false;
+    }
+
+    public void stop() {
+        this.setConnected(false);
+        this.setConnecting(false);
+    }
+
+    protected void onGetAuthToken(Bundle bundle) {
+        this.lastToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+        new GetCookieTask().execute(lastToken);
+    }
+
+    private void setConnecting(boolean isConnecting) {
+        this.isConnecting = isConnecting;
+    }
+
+    public boolean isConnecting() {
+        return isConnecting;
+    }
+
+    private void setConnected(boolean isConnected) {
+        this.isConnected = isConnected;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public boolean isProps() {
+        return props;
     }
 
     private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
@@ -128,31 +147,6 @@ public class AroundRoidConnectionManager {
 
     }
 
-
-    protected void onGetAuthToken(Bundle bundle) {
-        this.lastToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-        new GetCookieTask().execute(lastToken);
-    }
-
-    private void setConnecting(boolean isConnecting) {
-        this.isConnecting = isConnecting;
-    }
-
-    public boolean isConnecting() {
-        return isConnecting;
-    }
-
-    private void setConnected(boolean isConnected) {
-        this.isConnected = isConnected;
-    }
-
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    public boolean isProps() {
-        return props;
-    }
 
     //TODO change from async task to something real.
     private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
@@ -195,12 +189,6 @@ public class AroundRoidConnectionManager {
                 //accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
             }
         }
-    }
-
-
-    public void stop() {
-        this.setConnected(false);
-        this.setConnecting(false);
     }
 
 }

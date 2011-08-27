@@ -1,15 +1,10 @@
 package com.todoroo.astrid.activity;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.json.JSONException;
-
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.View;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -17,13 +12,13 @@ import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
-import com.aroundroidgroup.map.Geocoding;
 import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.mapFunctions;
-import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
+import com.markupartist.android.widget.ActionBar;
+import com.markupartist.android.widget.ActionBar.AbstractAction;
 import com.timsu.astrid.R;
 import com.todoroo.astrid.data.Task;
 
@@ -50,9 +45,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private AroundroidDbAdapter mPeopleDB;
     private LocationsDbAdapter mLocationDB;
 
-    private TextView mTaskTitleTV;
-    private TextView mTaskLocationsCountTV;
-
     @Override
     protected boolean isRouteDisplayed() {
         return false;
@@ -75,13 +67,89 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mLocationDB.close();
     }
 
+//    private class ViewAll extends AbstractAction {
+//
+//        public ViewAll() {
+//            super(R.drawable.ic_menu_list);
+//        }
+//
+//        @Override
+//        public void performAction(View view) {
+//            if (!mMapView.hasPlaces()) {
+//                AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+//                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+//                dialog.setTitle("Information");
+//                dialog.setMessage("No locations for this task.");
+//                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+//                        new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dg, int which) {
+//                        return;
+//                    }
+//                });
+//                dialog.show();
+//            }
+//            else mViewAll.showContextMenu();
+//            return;
+//        }
+//
+//    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class DeviceLocation extends AbstractAction {
+
+        public DeviceLocation() {
+            super(R.drawable.ic_menu_mylocation);
+        }
+
+        @Override
+        public void performAction(View view) {
+            DPoint deviceLocation = mMapView.getDeviceLocation();
+            if (deviceLocation != null)
+                mMapView.getController().setCenter(Misc.degToGeo(deviceLocation));
+            return;
+        }
+
+    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class InformationOnLocations extends AbstractAction {
+
+        public InformationOnLocations() {
+            super(R.drawable.ic_menu_info);
+        }
+
+        @Override
+        public void performAction(View view) {
+            String locationsCount = ""; //$NON-NLS-1$
+            if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
+                locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+            if (mMapView.getOverlaySize(TYPE_OVERLAY) > 0)
+                locationsCount += "Types: " + mMapView.getOverlaySize(TYPE_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+            if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
+                locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
+
+              AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+              dialog.setIcon(android.R.drawable.ic_dialog_alert);
+              dialog.setTitle("Information");
+              dialog.setMessage(locationsCount);
+              dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                      new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dg, int which) {
+                      return;
+                  }
+              });
+              dialog.show();
+            return;
+        }
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_of_task);
 
-        mTaskTitleTV = (TextView)findViewById(R.id.takeTitle);
-        mTaskLocationsCountTV = (TextView)findViewById(R.id.searchResults);
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
         mMapView.makeUneditable();
 
@@ -124,90 +192,34 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         /* Adding people that are related to the task */
         String[] people = locationService.getLocationsByPeopleAsArray(mTaskID);
-        DPoint[] coords = new DPoint[people.length];
-        for (int i = 0 ; i < people.length ; i++) {
-            Cursor c = mPeopleDB.fetchByMail(people[i]);
-            if (c != null && c.moveToFirst()) {
-                Double lat = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LAT));
-                Double lon = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LON));
-                coords[i] = new DPoint(lat, lon);
-                c.close();
+        if (people != null) {
+            DPoint[] coords = new DPoint[people.length];
+            for (int i = 0 ; i < people.length ; i++) {
+                Cursor c = mPeopleDB.fetchByMail(people[i]);
+                if (c != null && c.moveToFirst()) {
+                    Double lat = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LAT));
+                    Double lon = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LON));
+                    coords[i] = new DPoint(lat, lon);
+                    c.close();
+                }
             }
+            mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, mTaskID);
+            String[] specificLocations = locationService.getLocationsBySpecificAsArray(mTaskID);
+            /* Converting from location written as string to DPoint */
+            coords = new DPoint[specificLocations.length];
+            for (int i = 0 ; i < specificLocations.length ; i++)
+                coords[i] = new DPoint(specificLocations[i]);
+            mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mTaskID); //$NON-NLS-1$
         }
-        mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, mTaskID);
-
-        String[] specificLocations = locationService.getLocationsBySpecificAsArray(mTaskID);
-        /* Converting from location written as string to DPoint */
-        coords = new DPoint[specificLocations.length];
-        for (int i = 0 ; i < specificLocations.length ; i++)
-            coords[i] = new DPoint(specificLocations[i]);
-        mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mTaskID); //$NON-NLS-1$
 
         /* If the task is location-based, the following code will add the locations to the map */
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
-        mainLoop: for (String type : locationTags) {
-            List<String> locationByType = new ArrayList<String>();//locationService.getLocations(mTaskID, type);
-            Map<String, DPoint> data = null;
-            for (String location : locationByType) {
-                GeoPoint geoLocation = Misc.degToGeo(new DPoint(location));
-                String savedAddr = mLocationDB.fetchByCoordinateAsString(geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6());
-                if (savedAddr == null) {
-                    try {
-                        savedAddr = Geocoding.reverseGeocoding(new DPoint(location));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    if (savedAddr == null)
-                        savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                    mLocationDB.createTranslate(geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6(), savedAddr);
-                    if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
-                        savedAddr = location;
-                }
-                String savedBusiness = mLocationDB.fetchByCoordinateFromType(type, geoLocation.getLatitudeE6(), geoLocation.getLongitudeE6());
-                if (savedBusiness == null) {
-                    if (data == null) {
-                        try {
-                            data = Misc.googlePlacesQuery(type, deviceLocation, mRadius);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        if (data == null) { /* parse the next Type location */
-                            continue mainLoop;
-                        }
-                        for (Map.Entry<String, DPoint> element : data.entrySet()) {
-                            data.put(element.getKey(), new DPoint(element.getValue().toString()));
-                        }
-                    }
-                    DPoint p = new DPoint(location);
-                    for (Map.Entry<String, DPoint> pair : data.entrySet()) {
-                        DPoint s = pair.getValue();
-                        if (Misc.similarDegs(p, s))
-                            if (p.toString().equals(pair.getValue().toString()))
-                                savedBusiness = pair.getKey();
-                    }
-                }
-                mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(location)), savedBusiness, type, savedAddr, TYPE_OVERLAY, mTaskID, type);
-            }
-            data = null;
-        }
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, Misc.geoToDeg(mMapView.getMapCenter()), mRadius, mTaskID);
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mRadius, mTaskID);
 
-        /* Setting the text-view to hold the task title */
-        mTaskTitleTV.setText(mCurrentTask.getValue(Task.TITLE));
+        final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
+        actionBar.setTitle(mCurrentTask.getValue(Task.TITLE));
 
-        String locationsCount = ""; //$NON-NLS-1$
-        if (specificLocations.length > 0)
-            locationsCount += "Specifics: " + specificLocations.length + " "; //$NON-NLS-1$ //$NON-NLS-2$
-        if (locationTags.length > 0)
-            locationsCount += "Types: " + locationTags.length + " "; //$NON-NLS-1$ //$NON-NLS-2$
-        if (people.length > 0)
-            locationsCount += "People: " + people.length; //$NON-NLS-1$
-
-        /* Setting the text-view to hold the different locations types */
-        mTaskLocationsCountTV.setText(locationsCount);
+        actionBar.addAction(new InformationOnLocations());
+        actionBar.addAction(new DeviceLocation());
     }
 }

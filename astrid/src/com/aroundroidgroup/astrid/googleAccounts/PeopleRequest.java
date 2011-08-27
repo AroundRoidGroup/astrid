@@ -29,7 +29,6 @@ public class PeopleRequest {
         if (myFp!=null && myFp.isValid()){
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", myFp.getLat())); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("GPSLON", myFp.getLon())); //$NON-NLS-1$
-            //TODO : go back to userLastLocation
             nameValuePairs.add(new BasicNameValuePair("TIMESTAMP",myFp.getTime())); //$NON-NLS-1$
         }
         else{
@@ -41,13 +40,46 @@ public class PeopleRequest {
         return nameValuePairs;
     }
 
-    private static InputStream requestToStream(HttpUriRequest hr, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
+    private static InputStream requestToStream(HttpUriRequest hr, ConnectionManager arcm) throws ClientProtocolException, IOException{
         HttpResponse result = arcm.executeOnHttp(hr);
         InputStream is = result.getEntity().getContent();
         return is;
     }
 
-    public static List<FriendProps> requestPeople(FriendProps myFp,String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    private static List<NameValuePair> createMailPostData(String mail){
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail)); //$NON-NLS-1$
+        return nameValuePairs;
+    }
+
+    //TODO IMPORTANT FUNCTION
+    private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {
+        List<String[]> lfp = new ArrayList<String[]>();
+
+        for (int s = 0; s < nodeLst.getLength(); s++) {
+
+            Node fstNode = nodeLst.item(s);
+            String[] arr = new String[props.length];
+
+            if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                Element fstElmnt = (Element) fstNode;
+
+                for (int i =0 ; i<props.length;i++){
+                    NodeList fstNmElmntLst = fstElmnt.getElementsByTagName(props[i]);
+                    Element fstNmElmnt = (Element) fstNmElmntLst.item(0);
+                    NodeList fstNm = fstNmElmnt.getChildNodes();
+                    arr[i] = (((Node) fstNm.item(0)).getNodeValue());
+                }
+
+                lfp.add(arr);
+            }
+        }
+
+        return lfp;
+    }
+
+    public static List<FriendProps> requestPeople(FriendProps myFp,String people, ConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(myFp,people)));
@@ -63,6 +95,17 @@ public class PeopleRequest {
         //parsing complete!
         return fpl;
 
+    }
+
+    //TODO CHANGE
+    public static boolean inviteMail(String people, ConnectionManager arcm) throws ClientProtocolException, IOException{
+        // sending current location and request for users
+        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
+        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
+        InputStream is  = requestToStream(http_post,arcm);
+        byte[] buf = new byte[20];
+        is.read(buf, 0, 4);
+        return buf[0]=='s';
     }
 
     /*
@@ -94,51 +137,6 @@ public class PeopleRequest {
         }
     }
     */
-
-
-    private static List<NameValuePair> createMailPostData(String mail){
-        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-        nameValuePairs.add(new BasicNameValuePair("FRIEND",mail)); //$NON-NLS-1$
-        return nameValuePairs;
-    }
-
-    //TODO CHANGE
-    public static boolean inviteMail(String people, AroundRoidConnectionManager arcm) throws ClientProtocolException, IOException{
-        // sending current location and request for users
-        HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
-        http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
-        InputStream is  = requestToStream(http_post,arcm);
-        byte[] buf = new byte[20];
-        is.read(buf, 0, 4);
-        return buf[0]=='s';
-    }
-
-    //TODO IMPORTANT FUNCTION
-    private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {
-        List<String[]> lfp = new ArrayList<String[]>();
-
-        for (int s = 0; s < nodeLst.getLength(); s++) {
-
-            Node fstNode = nodeLst.item(s);
-            String[] arr = new String[props.length];
-
-            if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-
-                Element fstElmnt = (Element) fstNode;
-
-                for (int i =0 ; i<props.length;i++){
-                    NodeList fstNmElmntLst = fstElmnt.getElementsByTagName(props[i]);
-                    Element fstNmElmnt = (Element) fstNmElmntLst.item(0);
-                    NodeList fstNm = fstNmElmnt.getChildNodes();
-                    arr[i] = (((Node) fstNm.item(0)).getNodeValue());
-                }
-
-                lfp.add(arr);
-            }
-        }
-
-        return lfp;
-    }
 
 
 
