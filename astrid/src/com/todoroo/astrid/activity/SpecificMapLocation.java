@@ -793,8 +793,10 @@ public class SpecificMapLocation extends MapActivity{
         }
         if (requestCode == MENU_KIND_GROUP) {
             if (resultCode == Focaccia.RESULT_CODE_DELETE_ALL) {
-                if (mPressedItemExtras != null)
+                if (mPressedItemExtras != null) {
                     mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, mPressedItemExtras);
+                    mTypes.remove(mPressedItemExtras);
+                }
             }
         }
         if (requestCode == MENU_PEOPLE_GROUP) {

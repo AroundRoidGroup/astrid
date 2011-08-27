@@ -10,7 +10,7 @@
 	<!-- SpecificMapLocation buttons -->
 	<string name="addPeopleButton">Add People</string>
 	<string name="viewAllButton">View All</string>
-
+	
 	<!-- in Focaccia activity -->
 	<string name="focaccia_snippet">Snippet:</string>
 	<string name="focaccia_type">Type:</string>

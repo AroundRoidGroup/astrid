@@ -121,11 +121,10 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
 
             }
         });
-
     }
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
     private final Handler mHan = new Handler();
-    final int mDelayMillis = 1 * 1000;
+    final int mDelayMillis = 50;
     private final Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
             if (prs.isConnected()){

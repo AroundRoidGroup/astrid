@@ -1,58 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/EPr_title">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+	android:title="@string/EPr_title">
 
-    <PreferenceScreen android:title="" android:key="@string/p_about" />
-    <PreferenceCategory
-        android:title="@string/EPr_appearance_header">
-        <ListPreference
-            android:key="@string/p_fontSize"
-            android:entries="@array/EPr_font_size"
-            android:entryValues="@array/EPr_font_size"
-            android:title="@string/EPr_fontSize_title"
-            android:summary="@string/EPr_fontSize_desc" />
-            
-        <CheckBoxPreference
-            android:key="@string/p_showNotes"
-            android:title="@string/EPr_showNotes_title"
-            android:defaultValue="false" />
-    </PreferenceCategory>
-    
+	<PreferenceScreen android:title="" android:key="@string/p_about" />
+	<PreferenceCategory android:title="@string/EPr_appearance_header">
+		<ListPreference android:key="@string/p_fontSize"
+			android:entries="@array/EPr_font_size" android:entryValues="@array/EPr_font_size"
+			android:title="@string/EPr_fontSize_title" android:summary="@string/EPr_fontSize_desc" />
 
-    <PreferenceCategory
-        android:title="@string/EPr_powerpack_header">
-        <PreferenceScreen
-            android:title="@string/EPr_voice_header">
-            
-            <CheckBoxPreference
-                android:key="@string/p_voiceInputEnabled"
-                android:title="@string/EPr_voiceInputEnabled_title"
-                android:defaultValue="true" />
-            <CheckBoxPreference
-                android:key="@string/p_voiceInputCreatesTask"
-                android:title="@string/EPr_voiceInputCreatesTask_title"
-                android:dependency="@string/p_voiceInputEnabled"
-                android:defaultValue="false" />
-            <CheckBoxPreference
-                android:key="@string/p_voiceRemindersEnabled"
-                android:title="@string/EPr_voiceRemindersEnabled_title"
-                android:defaultValue="false" />
-            
-        </PreferenceScreen>
-    </PreferenceCategory>
+		<CheckBoxPreference android:key="@string/p_showNotes"
+			android:title="@string/EPr_showNotes_title" android:defaultValue="false" />
+	</PreferenceCategory>
 
-    <CheckBoxPreference
-        android:key="@string/p_statistics"
-        android:title="@string/EPr_statistics_title"
-        android:defaultValue="true" />
-    
-  <PreferenceCategory
-       android:title="@string/EPr_people_base_remainder">
-   </PreferenceCategory>
-        <PreferenceScreen
-            android:title="@string/EPr_connect"
-            android:key="gerbil">
-        </PreferenceScreen>
-   
+
+	<PreferenceCategory android:title="@string/EPr_powerpack_header">
+		<PreferenceScreen android:title="@string/EPr_voice_header">
+
+			<CheckBoxPreference android:key="@string/p_voiceInputEnabled"
+				android:title="@string/EPr_voiceInputEnabled_title"
+				android:defaultValue="true" />
+			<CheckBoxPreference android:key="@string/p_voiceInputCreatesTask"
+				android:title="@string/EPr_voiceInputCreatesTask_title"
+				android:dependency="@string/p_voiceInputEnabled"
+				android:defaultValue="false" />
+			<CheckBoxPreference android:key="@string/p_voiceRemindersEnabled"
+				android:title="@string/EPr_voiceRemindersEnabled_title"
+				android:defaultValue="false" />
+
+		</PreferenceScreen>
+	</PreferenceCategory>
+
+	<CheckBoxPreference android:key="@string/p_statistics"
+		android:title="@string/EPr_statistics_title" android:defaultValue="true" />
+
+	<PreferenceCategory android:title="@string/EPr_people_base_remainder">
+	</PreferenceCategory>
+
+	<CheckBoxPreference android:key="@string/p_aroundroid"
+		android:title="@string/use_aroundroid_title" android:defaultValue="false"
+		android:summary="@string/use_aroundroid_text" />
+
+	<PreferenceScreen android:title="@string/EPr_connect"
+	android:key="@string/p_people_login_key">
+	</PreferenceScreen>
+
 </PreferenceScreen>

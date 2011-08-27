@@ -1,15 +1,22 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import android.accounts.Account;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -17,7 +24,6 @@ import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.astrid.googleAccounts.PeopleRequestService;
 import com.aroundroidgroup.locationTags.LocationService;
-import com.aroundroidgroup.map.DPoint;
 import com.skyhookwireless.wps.IPLocation;
 import com.skyhookwireless.wps.IPLocationCallback;
 import com.skyhookwireless.wps.WPSAuthentication;
@@ -32,6 +38,8 @@ import com.todoroo.andlib.utility.DateUtilities;
 
 
 public class GPSService extends Service{
+
+    private final boolean USING_MOCK_LOCATIONS = true;
 
     private DataRefresher refreshData = null;
 
@@ -96,7 +104,13 @@ public class GPSService extends Service{
         cleanDataBase(threadLocationService.getAllLocationsByPeople());
 
 
-        skyhookSetup();
+        if (!USING_MOCK_LOCATIONS){
+            skyhookSetup();
+        }
+        else{
+            gpsSetup();
+            startUsingMockLocations();
+        }
     }
 
     private static final int LOCATION_MESSAGE = 1;
@@ -124,13 +138,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            //toastMe("WPS done");
+            toastMe("WPS done");
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            //toastMe("WPS handleError");
+            toastMe("WPS handleError");
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -139,14 +153,14 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            //toastMe("WPS handleIPLocation");
+            toastMe("WPS handleIPLocation");
 
         }
 
         public void handleWPSLocation(WPSLocation location)
         {
             // send a message to display the location
-            //toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
+            toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
             makeUseOfNewLocation(location);
         }
 
@@ -157,10 +171,6 @@ public class GPSService extends Service{
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
         }
-    }
-
-    public DPoint getNew() {
-        return new DPoint(50.0, 50.0);
     }
 
     @Override
@@ -179,7 +189,6 @@ public class GPSService extends Service{
 
     @Override
     public synchronized void onDestroy() {
-        this.aDba.close();
         // The service is no longer used and is being destroyed
         if (refreshData.isAlive()){
             refreshData.setExit();
@@ -189,6 +198,15 @@ public class GPSService extends Service{
                 //do nothing!
             }
         }
+        if (USING_MOCK_LOCATIONS){
+            LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            locationManager.removeUpdates(locationListener);
+            mockLocationCreator.requestStop();
+        }else{
+            _xps.abort();
+        }
+        this.aDba.close();
+
     }
 
     private synchronized void okDestroy(){
@@ -220,29 +238,29 @@ public class GPSService extends Service{
 
     private void cleanDataBase(String[] realPeople) {
         synchronized (deleteObj){
-        ManageContactsActivity.getAlreadyScannedSometime(false);
-        Set<String> hs = new TreeSet<String>();
-        for (String s : realPeople){
-            hs.add(s);
-        }
-        Cursor cur = aDba.fetchAllPeople();
-        if (cur==null){
-            return;
-        }
-        if (cur.moveToFirst()){
-            do{
-                String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
-                long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
-                long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                if (!holdDeletes && !hs.contains(mail) && contactId!=-1){
-                    aDba.deletePeople(rowId);
-                }
-                else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
-                    aDba.updatePeople(rowId, -2);
-                }
-            }while (cur.moveToNext());
-        }
-        cur.close();
+            ManageContactsActivity.getAlreadyScannedSometime(false);
+            Set<String> hs = new TreeSet<String>();
+            for (String s : realPeople){
+                hs.add(s);
+            }
+            Cursor cur = aDba.fetchAllPeople();
+            if (cur==null){
+                return;
+            }
+            if (cur.moveToFirst()){
+                do{
+                    String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                    long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
+                    long contactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                    if (!holdDeletes && !hs.contains(mail) && contactId!=-1){
+                        aDba.deletePeople(rowId);
+                    }
+                    else if (hs.contains(mail) && contactId>=0 && conHel.oneDisplayName(contactId)==null){
+                        aDba.updatePeople(rowId, -2);
+                    }
+                }while (cur.moveToNext());
+            }
+            cur.close();
 
         }
     }
@@ -329,7 +347,7 @@ public class GPSService extends Service{
                         FriendProps myFp = aDba.specialUserToFP();
                         List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
                         //TODO doesn't notify!?
-                        if (myFp!=null && myFp.isValid()){
+                        if (lfp!=null && myFp!=null && myFp.isValid()){
                             Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
                         }
                     }
@@ -345,57 +363,82 @@ public class GPSService extends Service{
 
     }
 
-    protected void makeUseOfNewLocation(WPSLocation location) {
-        //TODO fetch by other id
+    private void makeUseWithoutLocation(LocStruct ls){
         Cursor cur = aDba.createAndfetchSpecialUser();
         if (cur!=null){
             if (cur.moveToFirst()){
                 long l = cur.getLong(0);
-                aDba.updatePeople(l,location.getLatitude(), location.getLongitude(), location.getTime(),null, "Yes"); //$NON-NLS-1$
+                aDba.updatePeople(l,ls.getLatitude(), ls.getLongitude(), ls.getTime(),null, "Yes"); //$NON-NLS-1$
             }
             cur.close();
         }
+        this.mySpeed = ls.getSpeed();
+        Notificator.handleByTypeAndBySpecificNotification(ls);
 
+    }
 
-        this.mySpeed = location.getSpeed();
-        Notificator.handleByTypeAndBySpecificNotification(location);
+    public static class LocStruct{
+
+        private final double latitude;
+        private final double longitude;
+        private final double speed;
+        private final long time;
+
+        public LocStruct(double latitude, double longitude, double speed, long time){
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.time = time;
+            this.speed = speed;
+        }
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public double getSpeed() {
+            return speed;
+        }
+
+        public long getTime() {
+            return time;
+        }
+    }
+
+    protected void makeUseOfNewLocation(WPSLocation location) {
+        makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
             currMin = realMin;
             _xps.abort();
-            double speed = Math.min(location.getSpeed(),40);
+            double Xspeed = Math.min(location.getSpeed(),40);
             _xps.getXPSLocation(auth,
                     // note we convert _period to seconds
-                    (int)(location.getSpeed()<0.5?5*60:currMin/speed),
+                    (int)(location.getSpeed()<0.5?5*60:currMin/Xspeed),
                     currMin,
                     _callback);
         }
     }
 
-    /*
+    protected void makeUseOfNewLocation(Location location){
+        makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
+    }
+
+
     private void gpsSetup(){
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        String provider = locationManager.getBestProvider(criteria, true);
-        Location lastLoc = locationManager.getLastKnownLocation(provider);
-        if (lastLoc!=null){
-            //TODO fill
-            //makeUseOfNewLocation(lastLoc);
-        }
-        locationManager.requestLocationUpdates(provider, 2000, 10, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        locationManager.removeUpdates(locationListener);
     }
 
     private final LocationListener locationListener = new LocationListener() {
 
         public void onLocationChanged(Location location) {
-            // Called when a new location is found by the network location provider.
-            //TODO fill
-            //makeUseOfNewLocation(location);
+            toastMe("GPS location changed: " + location.hasSpeed());
+            makeUseOfNewLocation(location);
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -410,8 +453,28 @@ public class GPSService extends Service{
 
         }
     };
-     */
 
 
+    private MockLocationCreator mockLocationCreator;
+    private Thread mockLocationThread;
+    private void startUsingMockLocations(){
+        // start using mock locations
+        try {
+            mockLocationCreator = new MockLocationCreator(this.getApplicationContext());
+            try {
+                mockLocationCreator.openLocationList();
+                mockLocationThread = new Thread(mockLocationCreator);
+                mockLocationThread.start();
+                Toast.makeText(this.getApplicationContext(), "Mock locations are in use", Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                Toast.makeText(this.getApplicationContext(), "Error: Unable to open / read data file", Toast.LENGTH_LONG).show();
+                mockLocationCreator = null;
+            }
+        } catch(SecurityException e) {
+            Toast.makeText(this.getApplicationContext(), "Error: Insufficient Privileges", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "unable to use mock locations, insufficient privileges", e);
+        }
+
+    }
 
 }

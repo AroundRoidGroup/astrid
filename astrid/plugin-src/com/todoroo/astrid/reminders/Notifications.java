@@ -187,84 +187,6 @@ public class Notifications extends BroadcastReceiver {
         return true;
     }
 
-    private void setToBeNotifiedNotAboutLocation(long id) {
-        int stat = getLocationNotificationField(id);
-        if (stat==NotificationFields.locationAndOther || stat==NotificationFields.otherOnly)
-            setLocationNotificationField(id, NotificationFields.locationAndOther);
-        else
-            setLocationNotificationField(id, NotificationFields.otherOnly);
-
-    }
-
-    private static void setToBeNotifiedAboutLocation(long id) {
-        int stat = getLocationNotificationField(id);
-        if (stat==NotificationFields.none || stat==NotificationFields.locationOnly)
-            setLocationNotificationField(id, NotificationFields.locationOnly);
-        else
-            setLocationNotificationField(id, NotificationFields.locationAndOther);
-    }
-
-    private static boolean notifiedAboutLocation(long id) {
-        int stat = getLocationNotificationField(id);
-        return stat==NotificationFields.locationOnly || stat==NotificationFields.locationAndOther;
-    }
-
-    private static void setLocationNotificationField(long taskID, int stat){
-
-        Metadata item = new Metadata();
-        item.setValue(Metadata.KEY, NotificationFields.METADATA_KEY);
-        item.setValue(Metadata.TASK, taskID);
-        item.setValue(NotificationFields.notificationStatus, stat);
-
-        TodorooCursor<Metadata> cursor = metadatadao.query(
-                Query.select(Metadata.PROPERTIES).where(
-                        MetadataCriteria.byTaskAndwithKey(taskID,
-                                NotificationFields.METADATA_KEY)));
-        try {
-            if (cursor.isAfterLast())
-                metadatadao.createNew(item);
-            else
-                metadatadao.update(Criterion.and(Metadata.TASK.eq(taskID),Metadata.KEY.eq(NotificationFields.METADATA_KEY)),item);
-        } finally {
-            cursor.close();
-        }
-
-    }
-
-    private static int getLocationNotificationField(long taskID){
-        TodorooCursor<Metadata> cursor = metadatadao.query(
-                Query.select(Metadata.PROPERTIES).where(
-                        MetadataCriteria.byTaskAndwithKey(taskID,
-                                NotificationFields.METADATA_KEY)));
-        Metadata metadata = new Metadata();
-        try {
-            cursor.moveToFirst();
-            if (cursor.isAfterLast())
-                return NotificationFields.none;
-            metadata.readFromCursor(cursor);
-            return metadata.getValue(NotificationFields.notificationStatus);
-        } finally {
-            cursor.close();
-        }
-    }
-
-    public static void cancelLocationNotification(long taskID){
-        if (!notifiedAboutLocation(taskID)) //not sure i have to check
-            return;
-        int stat = getLocationNotificationField(taskID);
-        if (stat==NotificationFields.locationOnly){
-            cancelNotifications(taskID);
-            setLocationNotificationField(taskID, NotificationFields.none);
-        }else
-            setLocationNotificationField(taskID, NotificationFields.otherOnly);
-
-    }
-
-    public static void setToBeCancelledByUser(long taskID){
-        setLocationNotificationField(taskID, notifiedAboutLocation(taskID)?
-                NotificationFields.locationOnly:NotificationFields.none);
-    }
-
     /**
      * Shows an Astrid notification. Pulls in ring tone and quiet hour settings
      * from preferences. You can make it say anything you like.
@@ -437,5 +359,115 @@ public class Notifications extends BroadcastReceiver {
         Notifications.notificationManager = notificationManager;
     }
 
+    //######################################################################
+    // Functions used for AroundRoid's smart notification system           #
+    //######################################################################
+
+    /**
+     * Cancels the notification about the task, and also changes
+     * the task's notification status accordingly
+     */
+    public static void cancelLocationNotification(long taskID){
+        if (!notifiedAboutLocation(taskID))
+            return;
+        int stat = getLocationNotificationField(taskID);
+        if (stat==NotificationFields.locationOnly){
+            cancelNotifications(taskID);
+            setLocationNotificationField(taskID, NotificationFields.none);
+        }else
+            setLocationNotificationField(taskID, NotificationFields.otherOnly);
+
+    }
+
+    private static boolean notifiedAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        return stat==NotificationFields.locationOnly || stat==NotificationFields.locationAndOther;
+    }
+
+    /**
+     * Sets the status of the task's notification to show that the notifications
+     * was closed manually by the user
+     * @param taskID: The id of the task
+     */
+    public static void setToBeCancelledByUser(long taskID){
+        setLocationNotificationField(taskID, notifiedAboutLocation(taskID)?
+                NotificationFields.locationOnly:NotificationFields.none);
+    }
+
+    /**
+     * Sets the status of the task's notification to show that the notifications
+     * was popped, but that it is not about a location based reminder
+     * @param taskID: The id of the task
+     */
+    private void setToBeNotifiedNotAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.locationAndOther || stat==NotificationFields.otherOnly)
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
+        else
+            setLocationNotificationField(id, NotificationFields.otherOnly);
+
+    }
+
+    /**
+     * Sets the status of the task's notification to show that the notifications
+     * was popped and that it is about a location based reminder
+     * @param taskID: The id of the task
+     */
+    private static void setToBeNotifiedAboutLocation(long id) {
+        int stat = getLocationNotificationField(id);
+        if (stat==NotificationFields.none || stat==NotificationFields.locationOnly)
+            setLocationNotificationField(id, NotificationFields.locationOnly);
+        else
+            setLocationNotificationField(id, NotificationFields.locationAndOther);
+    }
+
+    /**
+     * Sets the notification status of the task to the status stat
+     * @param taskID: The id of the task
+     * @param stat: The status to set
+     */
+    private static void setLocationNotificationField(long taskID, int stat){
+
+        Metadata item = new Metadata();
+        item.setValue(Metadata.KEY, NotificationFields.METADATA_KEY);
+        item.setValue(Metadata.TASK, taskID);
+        item.setValue(NotificationFields.notificationStatus, stat);
+
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
+        try {
+            if (cursor.isAfterLast())
+                metadatadao.createNew(item);
+            else
+                metadatadao.update(Criterion.and(Metadata.TASK.eq(taskID),Metadata.KEY.eq(NotificationFields.METADATA_KEY)),item);
+        } finally {
+            cursor.close();
+        }
+
+    }
+
+    /**
+     * Returns the status of the task's notification.
+     * @param taskID: The id of the task
+     * @return The status of the task's notification
+     */
+    private static int getLocationNotificationField(long taskID){
+        TodorooCursor<Metadata> cursor = metadatadao.query(
+                Query.select(Metadata.PROPERTIES).where(
+                        MetadataCriteria.byTaskAndwithKey(taskID,
+                                NotificationFields.METADATA_KEY)));
+        Metadata metadata = new Metadata();
+        try {
+            cursor.moveToFirst();
+            if (cursor.isAfterLast())
+                return NotificationFields.none;
+            metadata.readFromCursor(cursor);
+            return metadata.getValue(NotificationFields.notificationStatus);
+        } finally {
+            cursor.close();
+        }
+    }
 
 }

@@ -339,15 +339,20 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         // set mapbutton invisible when there is no @location tag
         final Button mapButton = viewHolder.mapbutton; {
-            if (!(new LocationService()).isLocationTask(task.getId())){
-                //mapButton.setVisibility(View.INVISIBLE);
-                mapButton.setEnabled(false);
-                mapButton.setBackgroundResource(R.drawable.google_gray_64);
-            }
+            if(!Preferences.getBoolean(R.string.p_aroundroid, false))
+                mapButton.setVisibility(View.GONE);
             else{
-                mapButton.setEnabled(true);
-                mapButton.setBackgroundResource(R.drawable.google_64);
-                //mapButton.setVisibility(View.VISIBLE);
+                //TODO when using aroundroid decide what to do
+                if (!(new LocationService()).isLocationTask(task.getId())){
+                    //mapButton.setVisibility(View.INVISIBLE);
+                    mapButton.setEnabled(false);
+                    mapButton.setBackgroundResource(R.drawable.google_gray_64);
+                }
+                else{
+                    mapButton.setEnabled(true);
+                    mapButton.setBackgroundResource(R.drawable.google_64);
+                    //mapButton.setVisibility(View.VISIBLE);
+                }
             }
         }
 
@@ -364,7 +369,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                 while(details.startsWith(DETAIL_SEPARATOR))
                     details = details.substring(DETAIL_SEPARATOR.length());
                 viewHolder.details.setText(convertToHtml(details.trim().replace("\n", //$NON-NLS-1$
-                        "<br>"), detailImageGetter, null)); //$NON-NLS-1$
+                "<br>"), detailImageGetter, null)); //$NON-NLS-1$
             }
         }
 
@@ -464,8 +469,8 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                         continue;
                     } else if(Constants.DEBUG) {
                         System.err.println("Forced loading of details: " + task.getId() + //$NON-NLS-1$
-                        		"\n  details: " + new Date(task.getValue(Task.DETAILS_DATE)) + //$NON-NLS-1$
-                        		"\n  modified: " + new Date(task.getValue(Task.MODIFICATION_DATE))); //$NON-NLS-1$
+                                "\n  details: " + new Date(task.getValue(Task.DETAILS_DATE)) + //$NON-NLS-1$
+                                "\n  modified: " + new Date(task.getValue(Task.MODIFICATION_DATE))); //$NON-NLS-1$
                     }
                     addTaskToLoadingArray(task);
 
@@ -484,7 +489,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         private boolean detailsAreRecentAndUpToDate(Task task) {
             return task.getValue(Task.DETAILS_DATE) >= task.getValue(Task.MODIFICATION_DATE) &&
-                !TextUtils.isEmpty(task.getValue(Task.DETAILS));
+            !TextUtils.isEmpty(task.getValue(Task.DETAILS));
         }
 
         private void addTaskToLoadingArray(Task task) {
@@ -540,8 +545,8 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                 return null;
             Drawable d;
             if(!cache.containsKey(drawable)) {
-                 d = r.getDrawable(drawable);
-                 d.setBounds(0,0,d.getIntrinsicWidth(),d.getIntrinsicHeight());
+                d = r.getDrawable(drawable);
+                d.setBounds(0,0,d.getIntrinsicWidth(),d.getIntrinsicHeight());
                 cache.put(drawable, d);
             } else
                 d = cache.get(drawable);
