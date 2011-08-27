@@ -2,8 +2,10 @@
 <LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
-	<TextView android:id="@+id/takeTitle" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:textSize="10pt" />
+	<com.markupartist.android.widget.ActionBar
+        android:id="@+id/actionbar"
+        style="@style/ActionBar"
+        />
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent" android:layout_height="match_parent">
 
@@ -11,7 +13,9 @@
 			android:text="@string/map_textbox_hint" android:textColor="#C0C0C0"
 			android:textSize="6pt" android:layout_weight="1"
 			android:completionThreshold="1" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:layout_margin="0dip"/>
+			android:layout_height="wrap_content" android:layout_margin="0dip"
+			android:drawableLeft="@drawable/ic_menu_search"
+			android:selectAllOnFocus="true"/>
 		<Button android:id="@+id/specificAddAddressButton"
 			android:text="@string/DLG_add"
 			android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_margin="0dip"/>
@@ -19,18 +23,10 @@
 	<LinearLayout android:id="@+id/linearLayout1"
 		android:orientation="horizontal" android:layout_width="match_parent"
 		android:layout_height="match_parent">
-		<Button android:layout_width="fill_parent" android:text="@string/viewAllButton"
+		<Button android:layout_width="fill_parent"
 		android:padding="0dip"
 			android:id="@+id/viewAll" android:layout_weight="1"
 			android:layout_height="match_parent" android:paddingBottom="0dip" android:paddingTop="0dip"></Button>
-		<Button android:layout_width="fill_parent" android:text="@string/addPeopleButton"
-		android:padding="0dip"
-			android:id="@+id/addPeople" android:layout_weight="1"
-			android:layout_height="match_parent"></Button>
-		<Button android:layout_width="fill_parent"
-		android:padding="0dip"
-			android:layout_height="match_parent" android:layout_weight="1"
-			android:id="@+id/focusDevLoc" android:text="DL"></Button>
 	</LinearLayout>
 	<LinearLayout android:id="@+id/linearLayout1"
 		android:orientation="horizontal" android:layout_width="match_parent"

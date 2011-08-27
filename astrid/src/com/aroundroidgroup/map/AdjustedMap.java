@@ -98,6 +98,8 @@ public class AdjustedMap extends MapView {
     }
 
     public boolean hasPlaces() {
+        if (getTappedPointsCount() > 0)
+            return true;
         for (Map.Entry<Integer, MapItemizedOverlay> p : overlays.entrySet())
             if (p.getValue().size() > 0)
                 return true;
@@ -256,19 +258,6 @@ public class AdjustedMap extends MapView {
                 mapOverlays.add(overlay);
                 invalidate();
                 return true;
-            }
-            else { // item with this coordinates allready exists, informing about it
-                AlertDialog dialog = new AlertDialog.Builder(mContext).create();
-                dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("This location is already attached to task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                        new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dg, int which) {
-                        return;
-                    }
-                });
-                dialog.show();
             }
         }
         return false;

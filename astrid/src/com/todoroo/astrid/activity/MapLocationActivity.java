@@ -1,8 +1,10 @@
 package com.todoroo.astrid.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.View;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -15,6 +17,8 @@ import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.mapFunctions;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
+import com.markupartist.android.widget.ActionBar;
+import com.markupartist.android.widget.ActionBar.AbstractAction;
 import com.timsu.astrid.R;
 import com.todoroo.astrid.data.Task;
 
@@ -41,9 +45,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private AroundroidDbAdapter mPeopleDB;
     private LocationsDbAdapter mLocationDB;
 
-    private TextView mTaskTitleTV;
-    private TextView mTaskLocationsCountTV;
-
     @Override
     protected boolean isRouteDisplayed() {
         return false;
@@ -66,13 +67,89 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mLocationDB.close();
     }
 
+//    private class ViewAll extends AbstractAction {
+//
+//        public ViewAll() {
+//            super(R.drawable.ic_menu_list);
+//        }
+//
+//        @Override
+//        public void performAction(View view) {
+//            if (!mMapView.hasPlaces()) {
+//                AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+//                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+//                dialog.setTitle("Information");
+//                dialog.setMessage("No locations for this task.");
+//                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+//                        new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dg, int which) {
+//                        return;
+//                    }
+//                });
+//                dialog.show();
+//            }
+//            else mViewAll.showContextMenu();
+//            return;
+//        }
+//
+//    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class DeviceLocation extends AbstractAction {
+
+        public DeviceLocation() {
+            super(R.drawable.ic_menu_mylocation);
+        }
+
+        @Override
+        public void performAction(View view) {
+            DPoint deviceLocation = mMapView.getDeviceLocation();
+            if (deviceLocation != null)
+                mMapView.getController().setCenter(Misc.degToGeo(deviceLocation));
+            return;
+        }
+
+    }
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+    /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+    private class InformationOnLocations extends AbstractAction {
+
+        public InformationOnLocations() {
+            super(R.drawable.ic_menu_info);
+        }
+
+        @Override
+        public void performAction(View view) {
+            String locationsCount = ""; //$NON-NLS-1$
+            if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
+                locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+            if (mMapView.getOverlaySize(TYPE_OVERLAY) > 0)
+                locationsCount += "Types: " + mMapView.getOverlaySize(TYPE_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+            if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
+                locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
+
+              AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+              dialog.setIcon(android.R.drawable.ic_dialog_alert);
+              dialog.setTitle("Information");
+              dialog.setMessage(locationsCount);
+              dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                      new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dg, int which) {
+                      return;
+                  }
+              });
+              dialog.show();
+            return;
+        }
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_of_task);
 
-        mTaskTitleTV = (TextView)findViewById(R.id.takeTitle);
-        mTaskLocationsCountTV = (TextView)findViewById(R.id.searchResults);
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
         mMapView.makeUneditable();
 
@@ -139,18 +216,10 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
         mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mRadius, mTaskID);
 
-        /* Setting the text-view to hold the task title */
-        mTaskTitleTV.setText(mCurrentTask.getValue(Task.TITLE));
+        final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
+        actionBar.setTitle(mCurrentTask.getValue(Task.TITLE));
 
-        String locationsCount = ""; //$NON-NLS-1$
-        if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
-            locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-        if (mMapView.getOverlaySize(TYPE_OVERLAY) > 0)
-            locationsCount += "Types: " + mMapView.getOverlaySize(TYPE_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-        if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
-            locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
-
-        /* Setting the text-view to hold the different locations types */
-        mTaskLocationsCountTV.setText(locationsCount);
+        actionBar.addAction(new InformationOnLocations());
+        actionBar.addAction(new DeviceLocation());
     }
 }
