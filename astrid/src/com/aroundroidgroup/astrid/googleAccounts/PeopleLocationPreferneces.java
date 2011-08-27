@@ -20,11 +20,6 @@ import com.timsu.astrid.R;
 
 public class PeopleLocationPreferneces extends PreferenceActivity {
 
-    /*
-     private final CharSequence[] calListEntries = null;
-
-     private final CharSequence[] calListEntryValues = null;
-     */
     protected AccountManager accountManager;
 
     private ListPreference loginList;
@@ -35,16 +30,11 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
         addPreferencesFromResource(R.xml.preferences_people_location);
-
         r = getResources();
         loginList = (ListPreference) findPreference(r.getString(R.string.login_list_preference_key));
         Logout =  findPreference(r.getString(R.string.logout_preference_key));
         status = findPreference(r.getString(R.string.sync_SPr_status_key));
-
-
         accountManager = AccountManager.get(getApplicationContext());
         final Account[] accounts = accountManager.getAccountsByType("com.google"); //$NON-NLS-1$
         final String[] strArray =new String[accounts.length ];
@@ -60,20 +50,6 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
 
         loginList.setEntries(strArray);
         loginList.setEntryValues(strArray);
-
-/*
-        status.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference p) {
-                if(!(prs.isConnected() || prs.isConnecting()))
-
-
-                    return true;
-
-            }
-        });
-
-*/
-
         loginList.setOnPreferenceChangeListener(new OnPreferenceChangeListener(){
 
             @Override

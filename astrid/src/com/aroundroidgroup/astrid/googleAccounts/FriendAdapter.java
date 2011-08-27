@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
 import com.timsu.astrid.R;
-import com.todoroo.andlib.service.ContextManager;
 
 /***
  * This is an adapter for the list in ManageContactsActivity.
@@ -70,12 +69,14 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         if (conId!=AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
             String displayName = conHel.oneDisplayName(conId);
             if (displayName==null){
-                displayName = ""; //$NON-NLS-1$
+                displayName = context.getResources().getString(R.string.no_contact_info);;
             }
             holder.secondaryTextView.setText(displayName);
+            holder.secondaryTextView.setVisibility(View.VISIBLE);
         }
         else{
-            holder.secondaryTextView.setText(ContextManager.getContext().getResources().getString(R.string.no_contact_info));
+            holder.secondaryTextView.setVisibility(View.GONE);
+            //holder.secondaryTextView.setText(context.getResources().getString(R.string.no_contact_info));
         }
         // Change the icon for online, offline and non registered users
         if (currectFP.isValid()){
@@ -83,7 +84,7 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         } else if (currectFP.isRegistered()) {
             holder.imageView.setImageResource(R.drawable.btn_red_button);
         } else {
-            holder.imageView.setImageResource(R.drawable.btn_sry_sign);
+            holder.imageView.setImageResource(R.drawable.btn_gray_button);
         }
         return rowView;
     }
