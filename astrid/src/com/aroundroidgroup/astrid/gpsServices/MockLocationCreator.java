@@ -43,7 +43,7 @@ public class MockLocationCreator implements Runnable {
      * private class level constants
      */
     private final boolean V_LOG = true;
-    private final String TAG = "ServalMaps-MLC";
+    private final String TAG = "ServalMaps-MLC"; //$NON-NLS-1$
 
     /*
      * private class level variables
@@ -64,7 +64,7 @@ public class MockLocationCreator implements Runnable {
     public MockLocationCreator (Context context) {
 
         if(context == null) {
-            throw new IllegalArgumentException("the context parameter cannot be null");
+            throw new IllegalArgumentException("the context parameter cannot be null"); //$NON-NLS-1$
         }
 
         this.context = context;
@@ -76,7 +76,7 @@ public class MockLocationCreator implements Runnable {
         locationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, false, false, false, false, true, true, 0, 5);
 
         if(V_LOG) {
-            Log.v(TAG, "object has been constructed");
+            Log.v(TAG, "object has been constructed"); //$NON-NLS-1$
         }
     }
 
@@ -88,13 +88,13 @@ public class MockLocationCreator implements Runnable {
     public void openLocationList() throws IOException {
 
         try {
-            input = context.getAssets().open("test-locations.txt");
+            input = context.getAssets().open("test-locations.txt"); //$NON-NLS-1$
             reader = new BufferedReader(new InputStreamReader(input));
         } catch (IOException e) {
-            Log.e(TAG, "unable to open the 'test-locations.txt' file", e);
+            Log.e(TAG, "unable to open the 'test-locations.txt' file", e); //$NON-NLS-1$
             // TODO update to this when API level 9 is default level
             //throw new IOException("unable to open the required file", e);
-            throw new IOException("unable to open the locations list file");
+            throw new IOException("unable to open the locations list file"); //$NON-NLS-1$
         }
     }
 
@@ -106,7 +106,7 @@ public class MockLocationCreator implements Runnable {
     public void run() {
 
         if(V_LOG) {
-            Log.v(TAG, "thread is running");
+            Log.v(TAG, "thread is running"); //$NON-NLS-1$
         }
 
         String mLine = null;
@@ -134,41 +134,41 @@ public class MockLocationCreator implements Runnable {
                     break; // exit the loop
                 }
             } catch (IOException e) {
-                Log.e(TAG, "unable to read a line from the 'test-locations.txt file", e);
+                Log.e(TAG, "unable to read a line from the 'test-locations.txt file", e); //$NON-NLS-1$
                 break; // exit the loop
             }
 
             // make sure this isn't a comment line
-            if(mLine.startsWith("#") == true) {
+            if(mLine.startsWith("#") == true) { //$NON-NLS-1$
                 continue;
             }
 
             // process the line
-            mTokens = mLine.split("\\|");
+            mTokens = mLine.split("\\|"); //$NON-NLS-1$
 
             if(mTokens.length != 3 && mTokens.length != 4) {
-                Log.e(TAG, "expected 3 data elements found '" + mTokens.length + "' on line: " + mLineCount);
+                Log.e(TAG, "expected 3 data elements found '" + mTokens.length + "' on line: " + mLineCount); //$NON-NLS-1$ //$NON-NLS-2$
                 continue;
             }
 
             try {
                 mSleepTime = Integer.parseInt(mTokens[0]);
             } catch (NumberFormatException e) {
-                Log.e(TAG, "unable to parse the sleep time element on line: " + mLineCount);
+                Log.e(TAG, "unable to parse the sleep time element on line: " + mLineCount); //$NON-NLS-1$
                 continue;
             }
 
             try {
                 mLatitude = Double.parseDouble(mTokens[1]);
             } catch (NumberFormatException e) {
-                Log.e(TAG, "unable to parse the latitude element on line: " + mLineCount);
+                Log.e(TAG, "unable to parse the latitude element on line: " + mLineCount); //$NON-NLS-1$
                 continue;
             }
 
             try {
                 mLongitude = Double.parseDouble(mTokens[2]);
             } catch (NumberFormatException e) {
-                Log.e(TAG, "unable to parse the longitude element on line: " + mLineCount);
+                Log.e(TAG, "unable to parse the longitude element on line: " + mLineCount); //$NON-NLS-1$
                 continue;
             }
 
@@ -183,7 +183,7 @@ public class MockLocationCreator implements Runnable {
                 try {
                     mSpeed = Float.parseFloat(mTokens[3]);
                 } catch (NumberFormatException e) {
-                    Log.e(TAG, "unable to parse the speed element on line: " + mLineCount);
+                    Log.e(TAG, "unable to parse the speed element on line: " + mLineCount); //$NON-NLS-1$
                     continue;
                 }
             }
@@ -198,7 +198,7 @@ public class MockLocationCreator implements Runnable {
             // sleep the thread
             try {
                 Thread.sleep(mSleepTime * 1000);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException e) {//
             }
         }
 
@@ -208,7 +208,7 @@ public class MockLocationCreator implements Runnable {
         }
 
         if(V_LOG) {
-            Log.v(TAG, "thread has stopped");
+            Log.v(TAG, "thread has stopped"); //$NON-NLS-1$
         }
 
     }
@@ -218,7 +218,7 @@ public class MockLocationCreator implements Runnable {
             reader.close();
             input.close();
         } catch (IOException e) {
-            Log.e(TAG, "unable to close the 'test-locations.txt file", e);
+            Log.e(TAG, "unable to close the 'test-locations.txt file", e); //$NON-NLS-1$
         }
     }
 

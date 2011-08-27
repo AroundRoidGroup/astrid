@@ -206,7 +206,6 @@ public class GPSService extends Service{
             _xps.abort();
         }
         this.aDba.close();
-
     }
 
     private synchronized void okDestroy(){
@@ -431,7 +430,6 @@ public class GPSService extends Service{
     private void gpsSetup(){
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
-        locationManager.removeUpdates(locationListener);
     }
 
     private final LocationListener locationListener = new LocationListener() {
