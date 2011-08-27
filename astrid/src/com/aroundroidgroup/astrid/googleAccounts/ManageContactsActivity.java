@@ -1,6 +1,7 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -45,9 +46,7 @@ public class ManageContactsActivity extends ListActivity{
 
     public static final String PEOPLE_BACK = "peopleBack"; //$NON-NLS-1$
 
-
     private static final int DIALOG_MAIL_METHOD = 0;
-    private static final int DIALOG_CONTACT_METHOD = 1;
     private static final int DIALOG_ALREADY_SCANNED = 2;
     private static final int DIALOG_HURRAY = 3;
     private static final int DIALOG_HURRAY2 = 4;
@@ -65,8 +64,6 @@ public class ManageContactsActivity extends ListActivity{
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
-    private final String emailRegularExpression = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"; //$NON-NLS-1$
-
     private static boolean alreadyScannedSometime = false;
 
     public static synchronized boolean getAlreadyScannedSometime(Boolean bool){
@@ -79,11 +76,9 @@ public class ManageContactsActivity extends ListActivity{
 
     private ContactsHelper conHel;
 
-
     private String[] originalPeople;
 
-    //TODO make list parallel
-    private final LinkedHashSet<String> peopleHashSet = new LinkedHashSet<String>();
+    private final Set<String> peopleHashSet =  Collections.synchronizedSet(new LinkedHashSet<String>());
 
     private final LocationService myLocationService = new LocationService();
 
@@ -143,7 +138,7 @@ public class ManageContactsActivity extends ListActivity{
         .setTitle(r.getString(R.string.DLG_connecting_title))
         .setPositiveButton(r.getString(R.string.DLG_yes_recommanded), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //TODO move to connection screen here
+                //directs to connection screen here
                 Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
                 startActivity(intent);
             }
@@ -306,23 +301,6 @@ public class ManageContactsActivity extends ListActivity{
         case DIALOG_MAIL_METHOD:
             dialog = createAddDialog();
             break;
-        case DIALOG_CONTACT_METHOD:
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(r.getString(R.string.DLG_exit_title))
-            .setCancelable(false)
-            .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    ManageContactsActivity.this.finish();
-                }
-            })
-            .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alert = builder.create();
-            dialog = alert;
-            break;
         case DIALOG_NOT_CONNECTED:
             dialog = createNotConnectedDialog();
             break;
@@ -453,7 +431,7 @@ public class ManageContactsActivity extends ListActivity{
                 if (friendMail.compareTo("")==0){ //$NON-NLS-1$
                     Toast.makeText(getBaseContext(), r.getString(R.string.valid_email),
                             Toast.LENGTH_LONG).show();
-                }else if (!friendMail.matches(emailRegularExpression)){
+                }else if (!friendMail.matches(AroundRoidAppConstants.emailRegularExpression)){
                     Toast.makeText(getBaseContext(), r.getString(R.string.invalid_email),
                             Toast.LENGTH_LONG).show();
                 }else if (friendInList(friendMail)){
@@ -479,13 +457,14 @@ public class ManageContactsActivity extends ListActivity{
 
     private void fillData(){
         //sync data before
+        LinkedHashSet<String> copySet = copySetSafe();
         if (taskId!=null){
-            myLocationService.syncLocationsByPeople(taskId, peopleHashSet);
+            myLocationService.syncLocationsByPeople(taskId,copySet);
         }
         // Create a list of FriendPropsWithContactId, that will be put to our ListActivity.
         // Refreshing the list
         ArrayAdapter<FriendPropsWithContactId> adapter = new FriendAdapter(this,conHel,
-                getProps(peopleHashSet));
+                getProps(copySet));
         setListAdapter(adapter);
     }
 
@@ -583,12 +562,11 @@ public class ManageContactsActivity extends ListActivity{
 
     }
 
-    private List<FriendPropsWithContactId> getProps(LinkedHashSet<String> peopleHashSet2) {
-
+    private List<FriendPropsWithContactId> getProps(Set<String> peopleHashSet2) {
         //TODO deal with error
         List<FriendPropsWithContactId> list = new ArrayList<FriendPropsWithContactId>();
         for (String mail : peopleHashSet2){
-            list.add(get(mail));
+                list.add(get(mail));
         }
         return list;
     }
@@ -817,24 +795,32 @@ public class ManageContactsActivity extends ListActivity{
         }
     }
 
+
+    private LinkedHashSet<String> copySetSafe(){
+        LinkedHashSet <String> retSet = null;
+        synchronized (peopleHashSet) {
+            retSet =  new LinkedHashSet<String>(peopleHashSet);
+        }
+        return retSet;
+    }
+
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-        intent.putExtra(PEOPLE_BACK, peopleHashSet);
+        intent.putExtra(PEOPLE_BACK,copySetSafe());
         setResult(RESULT_OK, intent);
         super.onBackPressed();
     }
 
     @Override
     protected void onPause() {
-        // TODO Auto-generated method stub
         super.onPause();
         mHan.removeCallbacks(mUpdateTimeTask);
+        fillData();
     }
 
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         setUITimer();
     }

@@ -1,5 +1,10 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
+/***
+ * Like friend props, but with contactId (for advanced cursor use)
+ * @author Tomer
+ *
+ */
 public class FriendPropsWithContactId extends FriendProps{
     private long contactId;
 
@@ -15,8 +20,6 @@ public class FriendPropsWithContactId extends FriendProps{
         this.setMail(fp.getMail());
         this.setTime(fp.getTime());
         this.setValid(fp.getValid());
-
-
     }
 
     public void setContactId(long contactId) {
