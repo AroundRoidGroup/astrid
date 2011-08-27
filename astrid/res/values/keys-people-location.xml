@@ -6,4 +6,9 @@
     <!-- Preference Key (do not translate) -->
     <string name="logout_preference_key">Logout</string>
     
+  <!-- allow AroundRoid key -->
+  <string name="p_aroundroid">aroundRoid</string> 
+  <!-- login button in preferences key -->
+  <string name="p_people_login_key">peopleLogin</string>
+    
  </resources>

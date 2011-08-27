@@ -56,6 +56,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.aroundroidgroup.astrid.gpsServices.GPSEnablingDialog;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.Property;
@@ -218,11 +219,11 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         database.openForWriting();
         setUpUiComponents();
         onNewIntent(getIntent());
-
-
-        Intent serviceIntent = new Intent(this,GPSService.class);
-        Toast.makeText(getApplicationContext(), "GPSService is on:"+(startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
-
+        if (Preferences.getBoolean(R.string.p_aroundroid, false)){
+            Intent serviceIntent = new Intent(this,GPSService.class);
+            Toast.makeText(getApplicationContext(), "GPSService is on:"+(startService(serviceIntent)!=null)+"", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
+            GPSEnablingDialog.checkGPSEnabled(TaskListActivity.this);
+        }
 
         Eula.showEula(this);
     }
@@ -808,7 +809,7 @@ public class TaskListActivity extends ListActivity implements OnScrollListener,
         AdapterContextMenuInfo adapterInfo = (AdapterContextMenuInfo)menuInfo;
         Task task = ((ViewHolder)adapterInfo.targetView.getTag()).task;
         int id = (int)task.getId();
-        menu.setHeaderTitle(task.getValue(Task.TITLE) + " gerbil");
+        menu.setHeaderTitle(task.getValue(Task.TITLE));
 
         if(task.isDeleted()) {
             menu.add(id, CONTEXT_MENU_UNDELETE_TASK_ID, Menu.NONE,

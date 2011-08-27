@@ -191,7 +191,6 @@ public class GPSService extends Service{
 
     @Override
     public synchronized void onDestroy() {
-        this.aDba.close();
         // The service is no longer used and is being destroyed
         if (refreshData.isAlive()){
             refreshData.setExit();
@@ -201,6 +200,15 @@ public class GPSService extends Service{
                 //do nothing!
             }
         }
+        if (USING_MOCK_LOCATIONS){
+            LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            locationManager.removeUpdates(locationListener);
+            mockLocationCreator.requestStop();
+        }else{
+            _xps.abort();
+        }
+        this.aDba.close();
+
     }
 
     private synchronized void okDestroy(){
@@ -430,6 +438,7 @@ public class GPSService extends Service{
     private void gpsSetup(){
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        locationManager.removeUpdates(locationListener);
     }
 
     private final LocationListener locationListener = new LocationListener() {

@@ -16,10 +16,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -56,34 +54,25 @@ public class AdjustedMap extends MapView {
 
     private MapItemizedOverlay lastPressedOverlay = null;
     private int lastPressedIndex = -1;
+    private GeoPoint lastDeviceLocation;
 
-    private static final String DEVICE_TYPE_FIELD_TEXT = "Your Location"; //$NON-NLS-1$
-    private static final String SPECIFIC_TYPE_FIELD_TEXT = "Specific Location"; //$NON-NLS-1$
+    private static final String DEVICE_TYPE_NAME = "Your Location";
+    private static final String TAP_TYPE_NAME = "Specific Location";
+    private static final String TASK_NAME_HEADER_OF_DEVICE_ITEM = "Astrid !!!";
 
 
-    public static final String TASK_NAME = "Task_Name_For_POPUP_HEADER";
-    public static final String READ_ONLY = "0";
-    public static final String DELETE = "1";
+    public static final String TASK_NAME = "Task_Name_For_POPUP_HEADER"; //$NON-NLS-1$
 
-    public static final String AM_TAPPED_LOCATION = "tap";
-    public static final String AM_KIND_LOCATION = "kind";
-    public static final String AM_PEOPLE_LOCATION = "people";
-    public static final String AM_DEVICE_LOCATION = "device";
+    public static final String AM_TAPPED_LOCATION = "tap"; //$NON-NLS-1$
+    public static final String AM_KIND_LOCATION = "kind"; //$NON-NLS-1$
+    public static final String AM_PEOPLE_LOCATION = "people"; //$NON-NLS-1$
+    public static final String AM_DEVICE_LOCATION = "device"; //$NON-NLS-1$
 
     public static final int AM_REQUEST_CODE = 1000;
 
     /* identifiers for content to be shown when touching the overlay */
-    public static final String SHOW_NAME = "name";
-    public static final String SHOW_ADDRESS = "address";
-    public static final String SHOW_TITLE = "title";
-    public static final String SHOW_SNIPPET = "snippet";
-    public static final String SHOW_AMOUNT_BY_EXTRAS = "amount";
-
-    public static final String OVERLAY_DEVICE = "oDevice";
-    public static final String OVERLAY_TAP = "oTap";
-
-
-    private static final int SHOW_INFO = 1;
+    public static final String OVERLAY_DEVICE = "oDevice"; //$NON-NLS-1$
+    public static final String OVERLAY_TAP = "oTap"; //$NON-NLS-1$
 
     private AroundroidDbAdapter db;
     private LocationsDbAdapter locDB;
@@ -115,6 +104,15 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    public boolean associateMapWithTask(long taskID) {
+        if (currentTaskID == -1) {
+            currentTaskID = taskID;
+            return true;
+        }
+        currentTaskID = taskID;
+        return false;
+    }
+
     public void makeEditable() {
         editable = true;
     }
@@ -128,11 +126,11 @@ public class AdjustedMap extends MapView {
             DPoint deviceLocation = getDeviceLocation();
             if (deviceLocation != null) {
                 mDeviceOverlay = new MapItemizedOverlay(getResources().getDrawable(R.drawable.device_location));
-                mConfigurations.put(mDeviceOverlay, new String[] { SHOW_NAME, SHOW_ADDRESS });
-                mNames.put(mDeviceOverlay, DEVICE_TYPE_FIELD_TEXT);
+                mConfigurations.put(mDeviceOverlay, new String[] { Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS });
+                mNames.put(mDeviceOverlay, DEVICE_TYPE_NAME);
                 GeoPoint lastDeviceLocation = Misc.degToGeo(deviceLocation);
                 DPoint lastDeviceLocationAsDPoint = Misc.geoToDeg(lastDeviceLocation);
-                String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocationAsDPoint.toString());
+                String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
                 if (savedAddr == null) {
                     try {
                         savedAddr = Geocoding.reverseGeocoding(lastDeviceLocationAsDPoint);
@@ -143,11 +141,11 @@ public class AdjustedMap extends MapView {
                     }
                     if (savedAddr == null)
                         savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                    locDB.createTranslate(lastDeviceLocationAsDPoint.toString(), savedAddr);
+                    locDB.createTranslate(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6(), savedAddr);
                     if (savedAddr.equals(LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE))
                         savedAddr = lastDeviceLocationAsDPoint.toString();
                 }
-                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_FIELD_TEXT, null, savedAddr, -1, null, -1));
+                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_NAME, null, savedAddr, -1, null, -1));
                 mapOverlays.add(mDeviceOverlay);
             }
         }
@@ -155,10 +153,39 @@ public class AdjustedMap extends MapView {
 
     public DPoint getDeviceLocation() {
         FriendProps fp = db.specialUserToFP();
-        if (fp!=null && fp.isValid())
-            return new DPoint(fp.getDlat(), fp.getDlon());
+        if (fp != null && fp.isValid()) {
+            DPoint d = new DPoint(fp.getDlat(), fp.getDlon());
+            lastDeviceLocation = Misc.degToGeo(d);
+            return d;
+        }
         else
             return null;
+    }
+
+    public void updateDeviceLocation() {
+        if (mDeviceOverlay == null)
+            return;
+        DPoint potentialNewLocation = getDeviceLocation();
+        if (potentialNewLocation != null && !mDeviceOverlay.getItem(mDeviceOverlay.getIndexOf(lastDeviceLocation)).getPoint().equals(lastDeviceLocation)) {
+            mDeviceOverlay.clear();
+            String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
+            if (savedAddr == null) {
+                try {
+                    savedAddr = Geocoding.reverseGeocoding(Misc.geoToDeg(lastDeviceLocation));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (savedAddr == null)
+                    savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+                locDB.createTranslate(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6(), savedAddr);
+                if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
+                    savedAddr = Misc.geoToDeg(lastDeviceLocation).toString();
+            }
+            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_NAME, null, savedAddr, currentTaskID, null, -1));
+        }
+
     }
 
     public void removeDeviceLocation() {
@@ -212,14 +239,12 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
-    public MapItemizedOverlay getOverlay(String id) {
-        for (Map.Entry<MapItemizedOverlay, String> pair : mNames.entrySet())
-            if (pair.getValue().equals(id))
-                return pair.getKey();
-        return null;
+    public MapItemizedOverlay getOverlay(int id) {
+        return overlays.get(id);
     }
 
     public boolean addItemToOverlay(GeoPoint g, String title, String snippet, String addr, int identifier, long taskID, String extras) {
+        currentTaskID = taskID;
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && g != null && title != null && snippet != null) {
             overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
@@ -263,10 +288,6 @@ public class AdjustedMap extends MapView {
         return iOver.size();
     }
 
-    public void associateMapWithTask(long taskID) {
-        currentTaskID = taskID;
-    }
-
     public void setZoomByAllLocations() {
         int minLat = Integer.MAX_VALUE;
         int maxLat = Integer.MIN_VALUE;
@@ -285,10 +306,11 @@ public class AdjustedMap extends MapView {
             maxLon = Math.max(lon, maxLon);
             minLon = Math.min(lon, minLon);
         }
-
-        getController().zoomToSpan(Math.abs(maxLat - minLat), Math.abs(maxLon - minLon));
-        getController().animateTo(new GeoPoint( (maxLat + minLat)/2,
-                (maxLon + minLon)/2 ));
+        if (!allItemsLocations.isEmpty()) {
+            getController().zoomToSpan(Math.abs(maxLat - minLat), Math.abs(maxLon - minLon));
+            getController().animateTo(new GeoPoint( (maxLat + minLat)/2,
+                    (maxLon + minLon)/2 ));
+        }
     }
 
     private List<GeoPoint> getAllLocations() {
@@ -333,19 +355,16 @@ public class AdjustedMap extends MapView {
         mapOverlays = getOverlays();
         showDeviceLocation();
         getController().setZoom(18);
-        if (getDeviceLocation() == null) /* in case device location cannot be obtained, center the map on google headquarters */
-            getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
         lastCenter = getMapCenter();
     }
 
     /* calling this function will automatically add an overlay for specific locations */
     public void enableAddByTap() {
         mTappedOverlay = new MapItemizedOverlay(this.getResources().getDrawable(R.drawable.icon_tap));
-        //        createOverlay(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER,
-        //                this.getResources().getDrawable(R.drawable.icon_specific));
         mapOverlays.add(mTappedOverlay);
-        mConfigurations.put(mTappedOverlay, new String[] { SHOW_NAME, SHOW_ADDRESS });
-        mNames.put(mTappedOverlay, "Specific Location");
+        overlays.put(0, mTappedOverlay);
+        mConfigurations.put(mTappedOverlay, new String[] { Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS });
+        mNames.put(mTappedOverlay, TAP_TYPE_NAME);
     }
 
     public void diableAddByTap() {
@@ -355,26 +374,24 @@ public class AdjustedMap extends MapView {
 
     private void addTappedLocation(GeoPoint g, String addr, long taskID) {
         if (mTappedOverlay != null) {
-            //            locDB.createTranslate(Misc.geoToDeg(g).toString(), ((addr != null) ? addr : LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE));
-            //            addItemToOverlay(g, "Specific Location", addr, addr, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, taskID); //$NON-NLS-1$
-            mTappedOverlay.addOverlay(new AdjustedOverlayItem(g, SPECIFIC_TYPE_FIELD_TEXT, addr, addr, taskID, null, -1));
+            mTappedOverlay.addOverlay(new AdjustedOverlayItem(g, TAP_TYPE_NAME, addr, addr, taskID, null, -1));
             mapOverlays.add(mTappedOverlay);
         }
     }
 
-    private void removeTappedLocation(int index) {
-        //        removePoint(UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, index);
-        mTappedOverlay.removeOverlayByIndex(index);
-    }
-
-    public boolean clearOverlay(String id) {
-        MapItemizedOverlay overlay = null;
-        for (Map.Entry<MapItemizedOverlay, String> pair : mNames.entrySet())
-            if (pair.getValue().equals(id))
-                overlay = pair.getKey();
+    public boolean clearOverlay(int id) {
+        MapItemizedOverlay overlay = overlays.get(id);
         if (overlay == null)
             return false;
         overlay.clear();
+        return true;
+    }
+
+    public boolean removeTapItem(int index) {
+        if (mTappedOverlay == null)
+            return false;
+        mTappedOverlay.removeOverlayByIndex(index);
+        invalidate();
         return true;
     }
 
@@ -424,15 +441,17 @@ public class AdjustedMap extends MapView {
     public int removeItemFromOverlayByExtras(int id, String extras) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null) {
-            if (overlay.getFocus() != null) /* had focus in the past, return the focus to the first item */
-                while (overlay.nextFocus(false) != null);
-            if (overlay.getFocus() == null) { /* none of the items in the overlay is focused */
-                AdjustedOverlayItem item = overlay.nextFocus(true); /* gives the first item */
-                while (item != null) { /* as long the overlay isn't empty or not reaching the end */
-                    if (item.getExtras().equals(extras)) {
-                        overlay.removeOverlayByItem(item);
+            if (lastPressedOverlay == overlay) {
+                if (overlay.getFocus() != null) /* had focus in the past, return the focus to the first item */
+                    while (overlay.nextFocus(false) != null);
+                if (overlay.getFocus() == null) { /* none of the items in the overlay is focused */
+                    AdjustedOverlayItem item = overlay.nextFocus(true); /* gives the first item */
+                    while (item != null) { /* as long the overlay isn't empty or not reaching the end */
+                        if (item.getExtras().equals(extras)) {
+                            overlay.removeOverlayByItem(item);
+                        }
+                        item = overlay.nextFocus(true);
                     }
-                    item = overlay.nextFocus(true);
                 }
             }
         }
@@ -449,22 +468,10 @@ public class AdjustedMap extends MapView {
                 GeoPoint pdf = getMapCenter();
                 if (!pdf.equals(lastCenter)) {
                     /* map center changed */
-                    AdjustedMap mMapView = (AdjustedMap) findViewById(R.id.mapview);
-                    int lon = mMapView.getLongitudeSpan();
-                    int lat = mMapView.getLatitudeSpan();
-                    float[] hight = new float[1], width = new float[1];
-                    if (lat==0 || lon==0){
-                        hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
-                        width[0]=241; //initialized map width. need to be changed if initial zoom level changes
-                    }else{
-                    Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
-                    Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
-                    }
-                        Toast.makeText(mContext, "hopa"+", hight= "+ hight[0] +", width= "+ width[0], Toast.LENGTH_SHORT).show();
-                        fireEvent();
+                    fireEvent();
                     lastCenter = getMapCenter();
                 }
-
+                // hopa
                 if (event.getEventTime() - event.getDownTime() > 1500) {
                     GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
 
@@ -481,7 +488,7 @@ public class AdjustedMap extends MapView {
                     /* wants to add the tapped location to the task, so the task will be specific- */
                     /* location based */
 
-                    String savedAddr = locDB.fetchByCoordinateAsString(lastPointedLocation.toString());
+                    String savedAddr = locDB.fetchByCoordinateAsString(p.getLatitudeE6(), p.getLongitudeE6());
                     if (savedAddr == null) { /* if no previous geocoding has been made, lets do one */
                         try {
                             address = Geocoding.reverseGeocoding(lastPointedLocation);
@@ -495,7 +502,7 @@ public class AdjustedMap extends MapView {
                         address = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
 
                     /* adding the pair of coordinate and address to DB */
-                    locDB.createTranslate(lastPointedLocation.toString(), address);
+                    locDB.createTranslate(p.getLatitudeE6(), p.getLongitudeE6(), address);
 
                     address = (address != LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE) ? address : lastPointedLocation.toString();
                     dialog.setMessage("Would you like to add the following location:\n" + address); //$NON-NLS-1$
@@ -511,11 +518,6 @@ public class AdjustedMap extends MapView {
                             for (int i = 0 ; i < allSpecific.length ; i++)
                                 la.add(allSpecific[i]);
                             la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
-
-                            //TODO consider remove this line because when this close, all points are saved
-                            x.syncLocationsBySpecific(currentTaskID, la);
-                            //                            addItemToOverlay(Misc.degToGeo(lastPointedLocation), "Specific Location", currentTaskID + "",
-                            //                                    address, UNIQUE_SPECIFIC_OVERLAY_IDENTIFIER, currentTaskID);
                             addTappedLocation(Misc.degToGeo(lastPointedLocation), address, currentTaskID);
                             refresh();
                         }
@@ -551,9 +553,19 @@ public class AdjustedMap extends MapView {
         invalidate();
     }
 
+    private void removeTappedPoint(int index) {
+        mTappedOverlay.removeOverlayByIndex(index);
+        invalidate();
+    }
+
     public AdjustedOverlayItem removeLastPressedItem() {
         if (lastPressedOverlay == mDeviceOverlay)
             return null;
+        if (lastPressedOverlay == mTappedOverlay) {
+            AdjustedOverlayItem removedCopy = mTappedOverlay.createItem(lastPressedIndex);
+            removeTappedPoint(lastPressedIndex);
+            return removedCopy;
+        }
         for (Map.Entry<Integer, MapItemizedOverlay> pair : overlays.entrySet())
             if (pair.getValue() == lastPressedOverlay) {
                 AdjustedOverlayItem removedCopy = pair.getValue().createItem(lastPressedIndex);
@@ -584,6 +596,8 @@ public class AdjustedMap extends MapView {
     }
 
     public String[] getTappedAddress() {
+        if (mTappedOverlay == null)
+            return new String[0];
         String[] tapAddr = new String[mTappedOverlay.size()];
         for (int i = 0 ; i < tapAddr.length ; i++)
             tapAddr[i] = mTappedOverlay.getItem(i).getAddress();
@@ -591,6 +605,8 @@ public class AdjustedMap extends MapView {
     }
 
     public DPoint[] getTappedCoords() {
+        if (mTappedOverlay == null)
+            return new DPoint[0];
         DPoint[] tapAddr = new DPoint[mTappedOverlay.size()];
         for (int i = 0 ; i < tapAddr.length ; i++)
             tapAddr[i] = Misc.geoToDeg(mTappedOverlay.getItem(i).getPoint());
@@ -625,13 +641,8 @@ public class AdjustedMap extends MapView {
         return mTappedOverlay.createItem(index);
     }
 
-    public int getItemID(String id, DPoint coords) {
-        if (id == null)
-            return -1;
-        MapItemizedOverlay overlay = null;
-        for (Map.Entry<MapItemizedOverlay, String> x : mNames.entrySet())
-            if (x.getValue().equals(id))
-                overlay = x.getKey();
+    public int getItemID(int id, DPoint coords) {
+        MapItemizedOverlay overlay = overlays.get(id);
         if (overlay == null || coords == null)
             return -1;
         return overlay.getIndexOf(Misc.degToGeo(coords));
@@ -647,9 +658,11 @@ public class AdjustedMap extends MapView {
 
         @Override
         protected AdjustedOverlayItem createItem(int i) {
+            if (i < 0 || i >= mOverlays.size())
+                return null;
             AdjustedOverlayItem item = mOverlays.get(i);
-            return new AdjustedOverlayItem(item.getPoint(), item.getTitle(),
-                    item.getSnippet(), item.getAddress(), item.getTaskID(), item.getExtras(), i);
+            item.setUniqueID(i);
+            return item;
         }
 
         @Override
@@ -688,7 +701,7 @@ public class AdjustedMap extends MapView {
                 for (int i = 0; i < cursor.getCount(); i++) {
                     cursor.moveToNext();
                     task.readFromCursor(cursor);
-                    intent.putExtra(TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                    intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
                     break;
                 }
             } finally {
@@ -701,19 +714,19 @@ public class AdjustedMap extends MapView {
             else addr = item.getAddress();
             if (mTappedOverlay == this) {
                 if (editable)
-                    intent.putExtra(DELETE, DELETE);
-                intent.putExtra(SHOW_ADDRESS, addr);
-                intent.putExtra(SHOW_NAME, SPECIFIC_TYPE_FIELD_TEXT);
+                    intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
+                intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
+                intent.putExtra(Focaccia.SHOW_NAME, TAP_TYPE_NAME);
             }
             else if (mDeviceOverlay == this) {
-                intent.putExtra(READ_ONLY, READ_ONLY);
-                intent.putExtra(SHOW_ADDRESS, addr);
-                intent.putExtra(SHOW_NAME, DEVICE_TYPE_FIELD_TEXT);
-                intent.putExtra(TASK_NAME, "Astrid !!!");
+                intent.putExtra(Focaccia.READ_ONLY, Focaccia.READ_ONLY);
+                intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
+                intent.putExtra(Focaccia.SHOW_NAME, DEVICE_TYPE_NAME);
+                intent.putExtra(Focaccia.TASK_NAME, TASK_NAME_HEADER_OF_DEVICE_ITEM);
             }
             else {
                 if (editable)
-                    intent.putExtra(DELETE, DELETE);
+                    intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
                 MapItemizedOverlay currentOverlay = null;
                 for (Map.Entry<Integer, MapItemizedOverlay> pair : overlays.entrySet()) {
                     if (pair.getValue() == this) {
@@ -726,27 +739,27 @@ public class AdjustedMap extends MapView {
                     if (configs == null)
                         return true;
                     for (String cfg : configs) {
-                        if (cfg.equals(SHOW_ADDRESS)) {
-                            intent.putExtra(SHOW_ADDRESS, addr);
+                        if (cfg.equals(Focaccia.SHOW_ADDRESS)) {
+                            intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
                             continue;
                         }
-                        if (cfg.equals(SHOW_AMOUNT_BY_EXTRAS)) {
+                        if (cfg.equals(Focaccia.SHOW_AMOUNT_BY_EXTRAS)) {
                             int counter = 0;
                             for (int i = 0 ; i < this.size() ; i++)
                                 counter += (this.getItem(i).getExtras().equals(item.getExtras())) ? 1 : 0;
-                            intent.putExtra(SHOW_AMOUNT_BY_EXTRAS, counter);
+                            intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, counter);
                             continue;
                         }
-                        if (cfg.equals(SHOW_NAME)) {
-                            intent.putExtra(SHOW_NAME, mNames.get(this));
+                        if (cfg.equals(Focaccia.SHOW_NAME)) {
+                            intent.putExtra(Focaccia.SHOW_NAME, mNames.get(this));
                             continue;
                         }
-                        if (cfg.equals(SHOW_SNIPPET)) {
-                            intent.putExtra(SHOW_SNIPPET, item.getSnippet());
+                        if (cfg.equals(Focaccia.SHOW_SNIPPET)) {
+                            intent.putExtra(Focaccia.SHOW_SNIPPET, item.getSnippet());
                             continue;
                         }
-                        if (cfg.equals(SHOW_TITLE))
-                            intent.putExtra(SHOW_TITLE, item.getTitle());
+                        if (cfg.equals(Focaccia.SHOW_TITLE))
+                            intent.putExtra(Focaccia.SHOW_TITLE, item.getTitle());
                     }
                 }
             }
@@ -770,9 +783,7 @@ public class AdjustedMap extends MapView {
         }
 
         public void removeOverlayByIndex(int index) {
-            //TODO check if index is not out of borders
             mOverlays.remove(createItem(index));
-            //            mOverlays.clear();
             setLastFocusedIndex(-1);
             populate();
         }
@@ -785,18 +796,18 @@ public class AdjustedMap extends MapView {
     }
     private final List<MyEventClassListener> _listeners = new ArrayList<MyEventClassListener>();
     public synchronized void addEventListener(MyEventClassListener listener)  {
-      _listeners.add(listener);
+        _listeners.add(listener);
     }
     public synchronized void removeEventListener(MyEventClassListener listener)   {
-      _listeners.remove(listener);
+        _listeners.remove(listener);
     }
- // call this method whenever you want to notify
+    // call this method whenever you want to notify
     //the event listeners of the particular event
     private synchronized void fireEvent() {
-      MyEventClass event = new MyEventClass(this);
-      Iterator<MyEventClassListener> i = _listeners.iterator();
-      while(i.hasNext())  {
-        i.next().handleMyEventClassEvent(event);
-      }
+        MyEventClass event = new MyEventClass(this);
+        Iterator<MyEventClassListener> i = _listeners.iterator();
+        while(i.hasNext())  {
+            i.next().handleMyEventClassEvent(event);
+        }
     }
 }

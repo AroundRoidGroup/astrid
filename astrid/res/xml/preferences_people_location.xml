@@ -18,14 +18,12 @@
         android:title="@string/sync_SPr_group_actions">
         
            <ListPreference  
-            android:key="listPref"  
+            android:key="@string/login_list_preference_key"  
             android:title="@string/people_location_login" />
               <Preference 
-            android:key="Logout"
+            android:key="@string/logout_preference_key"
             android:title="@string/people_location_logout" />
-    
 
-       
     </PreferenceCategory>
             
 </PreferenceScreen>  

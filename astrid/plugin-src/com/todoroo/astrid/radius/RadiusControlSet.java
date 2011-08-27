@@ -19,6 +19,10 @@ import com.todoroo.astrid.activity.TaskEditActivity.TaskEditControlSet;
 import com.todoroo.astrid.api.R;
 import com.todoroo.astrid.data.Task;
 
+/**
+ * The control set for the car radius and the foot radius
+ *
+ */
 public class RadiusControlSet implements TaskEditControlSet{
     private final CheckBox enabled;
     private final LinearLayout radiusContainer;
@@ -27,8 +31,6 @@ public class RadiusControlSet implements TaskEditControlSet{
     private final TextView footValue;
     private final TextView carValue;
     private final LocationService locService= new LocationService();
-    String defaultSettingCarRadius;
-    String defaultSettingFootRadius;
 
 
     public RadiusControlSet(final Activity activity, ViewGroup parent) {
@@ -51,18 +53,17 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                     // TODO Auto-generated method stub
                         carValue.setText(String.valueOf(progress));
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                       //
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                       //
                     }
                         });
                 footRadiusSelector.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -70,18 +71,17 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                     // TODO Auto-generated method stub
                         footValue.setText(String.valueOf(progress));
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                        //
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                     // TODO Auto-generated method stub
+                        //
                     }
                 });
             }
@@ -95,12 +95,10 @@ public class RadiusControlSet implements TaskEditControlSet{
         int  carRadius = locService.getCarRadius(task.getId());
         // Get current value from settings
 
-        if(footRadius== -1){
+        if(footRadius== -1)
             footRadius = Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_foot_radius_key));
-        }
-        if(carRadius== -1){
+        if(carRadius== -1)
             carRadius = Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_car_radius_key));
-        }
 
         // Setup footRadiusSelector/carRadiusSelector and the view text
            footRadiusSelector.setProgress(footRadius);
