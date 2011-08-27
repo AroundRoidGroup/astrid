@@ -121,7 +121,7 @@ public class Notificator {
         for (String str: locationService.getLocationsByTypeAsArray(task.getId()))
             try {
                 Map<String, DPoint> places = Misc.googlePlacesQuery(str,loc,radius);
-                List<DPoint> blackList = locationService.getLocationsByTypeSpecial(task.getId(), str);
+                List<DPoint> blackList = locationService.getLocationsByTypeBlacklist(task.getId(), str);
                 outer_loop: for (DPoint d: places.values())
                     for (DPoint badD: blackList){
                         if (Double.compare(d.getX(), badD.getX())==0 && Double.compare(d.getY(), badD.getY())==0)
