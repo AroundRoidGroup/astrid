@@ -163,7 +163,7 @@ public class AroundgpsServlet extends HttpServlet {
 				pm.deletePersistentAll(gpses2);
 				pm.makePersistent(gpsP);
 				if (cache!=null){
-					cache.put(user.getEmail(), gpsP);
+					cache.put(user.getEmail().toLowerCase(), gpsP);
 				}				
 			}
 		} finally {
