@@ -14,8 +14,7 @@
 			android:textSize="6pt" android:layout_weight="1"
 			android:completionThreshold="1" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:layout_margin="0dip"
-			android:drawableLeft="@drawable/ic_menu_search"
-			android:selectAllOnFocus="true"/>
+			android:drawableLeft="@drawable/ic_menu_search"/>
 		<Button android:id="@+id/specificAddAddressButton"
 			android:text="@string/DLG_add"
 			android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_margin="0dip"/>

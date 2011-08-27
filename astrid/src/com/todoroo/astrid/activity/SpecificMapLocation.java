@@ -669,6 +669,9 @@ public class SpecificMapLocation extends MapActivity{
                         mMapView.invalidate();
                         mTypes.add(text);
                         mLocationDB.open();
+                        GeoPoint closetPoint = mMapView.getPointWithMinimalDistanceFromGivenPoint(TYPE_OVERLAY, text, Misc.geoToDeg(mMapView.getMapCenter()));
+                        if (closetPoint != null)
+                            mMapView.getController().setCenter(closetPoint);
                     }
                 }
                 else { /* input is an address */
@@ -719,6 +722,7 @@ public class SpecificMapLocation extends MapActivity{
                             });
                             dialog.show();
                         }
+                        else mMapView.getController().setCenter(gp);
                         mMapView.invalidate();
                     }
                     else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
@@ -764,6 +768,7 @@ public class SpecificMapLocation extends MapActivity{
                                     mPeople.put(contact, dp);
                                     mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY,
                                             new String[] { contact }, new DPoint[] { dp }, mTaskID);
+                                    mMapView.getController().setCenter(Misc.degToGeo(dp));
                                 }
                                 else mNullPeople.add(contact);
                             }
@@ -788,7 +793,8 @@ public class SpecificMapLocation extends MapActivity{
         }
         if (requestCode == MENU_KIND_GROUP) {
             if (resultCode == Focaccia.RESULT_CODE_DELETE_ALL) {
-                mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, mPressedItemExtras);
+                if (mPressedItemExtras != null)
+                    mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, mPressedItemExtras);
             }
         }
         if (requestCode == MENU_PEOPLE_GROUP) {

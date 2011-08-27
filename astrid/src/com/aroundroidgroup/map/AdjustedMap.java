@@ -338,14 +338,20 @@ public class AdjustedMap extends MapView {
     }
 
     public GeoPoint getPointWithMinimalDistanceFromDeviceLocation(int id, String extras) {
+        if (mDeviceOverlay == null)
+            return null;
+        return getPointWithMinimalDistanceFromGivenPoint(id, extras, getDeviceLocation());
+    }
+
+    public GeoPoint getPointWithMinimalDistanceFromGivenPoint(int id, String extras, DPoint point) {
         MapItemizedOverlay overlay = overlays.get(id);
-        if (overlay == null || mDeviceOverlay == null)
+        if (overlay == null)
             return null;
         double delta = Double.MAX_VALUE;
         GeoPoint minimalItem = null;
         for (AdjustedOverlayItem item : overlay) {
             if ((item.getExtras().equals(extras)) &&(delta > Misc.distance(getDeviceLocation(), Misc.geoToDeg(item.getPoint())))) {
-                delta = Misc.distance(getDeviceLocation(), Misc.geoToDeg(item.getPoint()));
+                delta = Misc.distance(point, Misc.geoToDeg(item.getPoint()));
                 minimalItem = item.getPoint();
             }
         }
@@ -449,19 +455,11 @@ public class AdjustedMap extends MapView {
     public int removeItemFromOverlayByExtras(int id, String extras) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null) {
-            if (lastPressedOverlay == overlay) {
-                if (overlay.getFocus() != null) /* had focus in the past, return the focus to the first item */
-                    while (overlay.nextFocus(false) != null);
-                if (overlay.getFocus() == null) { /* none of the items in the overlay is focused */
-                    AdjustedOverlayItem item = overlay.nextFocus(true); /* gives the first item */
-                    while (item != null) { /* as long the overlay isn't empty or not reaching the end */
-                        if (item.getExtras().equals(extras)) {
-                            overlay.removeOverlayByItem(item);
-                        }
-                        item = overlay.nextFocus(true);
-                    }
-                }
+            for (AdjustedOverlayItem item : overlay) {
+                if (item.getExtras().equals(extras))
+                    overlay.removeOverlayByItem(item);
             }
+
         }
         invalidate();
         return getItemsByExtrasCount(id, extras);
