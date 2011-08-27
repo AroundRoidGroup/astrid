@@ -17,6 +17,7 @@
   
   <!-- for GPS use -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
   
   <!-- for using contacts-->
   <uses-permission android:name="android.permission.READ_CONTACTS" />
