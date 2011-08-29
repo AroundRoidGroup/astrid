@@ -50,6 +50,15 @@ public class AroundgpsServlet extends HttpServlet {
 		resp.sendRedirect("welcome.jsp");
 	}
 
+	private boolean arrayHasEmpty(String[] usersArr) {
+		for (String s  : usersArr){
+			if (s.compareTo("")==0){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	//"select from "+ GPSProps.class.getName()+" where mail == ' '(");
 
 	@Override
@@ -66,27 +75,30 @@ public class AroundgpsServlet extends HttpServlet {
 
 		String lat = req.getParameter(GPSLat);
 		String lon = req.getParameter(GPSLon);
+		String timeStamp = req.getParameter(TIMESTAMP);
 
-		Double dLat = Double.parseDouble(lat),dLon = Double.parseDouble(lon);
+		long lTimeStamp = 0;
+		double dLat = 0;
+		double dLon = 0;
 
-		//TODO when no people are asked, get's some werird shit
-		String users = req.getParameter(USERS);
-
-		String[] usersArr;
-		if (users==null || users==""){
-			usersArr = new String[0];
-		}
-		else{
-			usersArr = users.split(DEL);
-			for(int i =0; i < usersArr.length ; i++){
-				usersArr[i] = usersArr[i].toLowerCase();
+		if (timeStamp!=null && lat !=null && lon != null){
+			try {
+				lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());
+				dLat = Double.parseDouble(lat);
+				dLon = Double.parseDouble(lon);
+			} catch (NumberFormatException e){
+				lTimeStamp = 0;
+				dLat = 0;
+				dLon = 0;
 			}
 		}
 
-		Arrays.sort(usersArr);
+		String[] usersArr = req.getParameterValues(USERS);
+		if (usersArr==null || arrayHasEmpty(usersArr)){
+			usersArr = new String[0];
+		}
 
-		String timeStamp = req.getParameter(TIMESTAMP);
-		Long lTimeStamp = Math.min(Long.parseLong(timeStamp),requestDate.getTime());
+		Arrays.sort(usersArr);
 
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 
