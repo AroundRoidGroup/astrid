@@ -241,7 +241,7 @@ public class mapFunctions {
             return new int[0];
         int[] feedback = new int[people.length];
         for (int i = 0 ; i < people.length ; i++) {
-            if (people[i] == null || locations[i] == null || locations[i].isNaN()) {
+            if (people[i] == null || locations[i] == null || locations[i].isNaN() || locations[i] == null) {
                 feedback[i] = FAILURE;
                 continue;
             }

@@ -1,17 +1,24 @@
 package com.todoroo.astrid.activity;
+import java.util.EventObject;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
+import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.MyEventClassListener;
 import com.aroundroidgroup.map.mapFunctions;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.markupartist.android.widget.ActionBar;
 import com.markupartist.android.widget.ActionBar.AbstractAction;
@@ -133,11 +140,10 @@ public class MapFilterActivity extends MapActivity {
             Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_TYPE_NAME);
         mMapView.createOverlay(PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
-            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS, Focaccia.SHOW_SNIPPET
         }, OVERLAY_PEOPLE_NAME);
 
-        TaskService taskService = new TaskService();
-        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
+        TodorooCursor<Task> cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                 TaskCriteria.isVisible())).
                 orderBy(SortHelper.defaultTaskOrder()).limit(100));
         mTaskNumber = cursor.getCount();
@@ -170,16 +176,24 @@ public class MapFilterActivity extends MapActivity {
                 /* Adding people that are related to the task */
                 String[] people = mLocationService.getLocationsByPeopleAsArray(taskID);
                 if (people != null) {
-                    mLocationNumber += people.length;
                     DPoint[] coords = new DPoint[people.length];
                     for (int i = 0 ; i < people.length ; i++) {
                         Cursor c = mPeopleDB.fetchByMail(people[i]);
-                        if (c != null && c.moveToFirst()) {
+                        if (c == null || !c.moveToFirst()) {
+                            coords[i] = null;
+                            if (c != null)
+                                c.close();
+                            continue;
+                        }
+                        FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                        if (fp != null) {
                             Double lat = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LAT));
                             Double lon = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LON));
                             coords[i] = new DPoint(lat, lon);
-                            c.close();
                         }
+                        else coords[i] = null;
+                        c.close();
+
                     }
                     mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, taskID);
                 }
@@ -194,7 +208,104 @@ public class MapFilterActivity extends MapActivity {
 
         actionBar.addAction(new InformationOnLocations());
         actionBar.addAction(new DeviceLocation());
+
+        mMapView.addEventListener(new MyEventClassListener() {
+
+            @Override
+            public void handleMyEventClassEvent(EventObject e) {
+                TodorooCursor<Task> c = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
+                        TaskCriteria.isVisible())).
+                        orderBy(SortHelper.defaultTaskOrder()).limit(100));
+                mTaskNumber = c.getCount();
+                try {
+
+                    Task task = new Task();
+                    for (int k = 0; k < c.getCount(); k++) {
+                        c.moveToNext();
+                        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, mLocationService.getLocationsByTypeAsArray(task.getId()), mRadius, task.getId());
+                    }
+
+                } finally {
+                    c.close();
+                }
+
+            }
+
+        });
+
+        mMapView.setZoomByAllLocations();
     }
-}
+
+    private final Handler mHan = new Handler();
+    final int mDelayMillis = 10 * 1000;
+    private final Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            Toast.makeText(MapFilterActivity.this, "now", Toast.LENGTH_LONG).show();
+            /* my code */
+            mMapView.clearOverlay(PEOPLE_OVERLAY);
+            mMapView.invalidate();
+            TodorooCursor<Task> c = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
+                    TaskCriteria.isVisible())).
+                    orderBy(SortHelper.defaultTaskOrder()).limit(100));
+            mTaskNumber = c.getCount();
+            try {
+
+                Task task = new Task();
+                for (int k = 0; k < c.getCount(); k++) {
+                    c.moveToNext();
+                    String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(task.getId());
+                    if (existedPeople != null) {
+                        for (String person : existedPeople) {
+                            Cursor cur = mPeopleDB.fetchByMail(person);
+                            if (cur == null) {
+                                continue;
+                            }
+                            if (!cur.moveToFirst()) {
+                                cur.close();
+                                continue;
+                            }
+                            FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+                            if (fp != null) {
+                                if (fp.isValid()) {
+                                    GeoPoint gp = Misc.degToGeo(new DPoint(fp.getDlat(), fp.getDlon()));
+                                    String savedAddr = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
+                                    mMapView.addItemToOverlay(gp, OVERLAY_PEOPLE_NAME, person, savedAddr, PEOPLE_OVERLAY, task.getId(), person);
+                                }
+                            }
+                            cur.close();
+                        }
+                    }
+                }
+            } finally {
+                c.close();
+            }
+
+                mMapView.updateDeviceLocation();
+
+                mHan.postDelayed(this, mDelayMillis);
+            }
+        };
+
+        private void setUITimer(){
+            mHan.removeCallbacks(mUpdateTimeTask);
+            mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+
+        }
+
+        @Override
+        protected void onPause() {
+            mPeopleDB.close();
+            mHan.removeCallbacks(mUpdateTimeTask);
+            super.onPause();
+        }
+
+        @Override
+        protected void onResume() {
+            mPeopleDB.open();
+            setUITimer();
+            super.onResume();
+        }
+
+    }
 
 

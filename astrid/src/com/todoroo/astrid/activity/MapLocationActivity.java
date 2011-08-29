@@ -8,10 +8,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
+import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
+import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.DPoint;
@@ -20,6 +23,7 @@ import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
 import com.aroundroidgroup.map.MyEventClassListener;
 import com.aroundroidgroup.map.mapFunctions;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.markupartist.android.widget.ActionBar;
@@ -73,32 +77,32 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mLocationDB.close();
     }
 
-//    private class ViewAll extends AbstractAction {
-//
-//        public ViewAll() {
-//            super(R.drawable.ic_menu_list);
-//        }
-//
-//        @Override
-//        public void performAction(View view) {
-//            if (!mMapView.hasPlaces()) {
-//                AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
-//                dialog.setIcon(android.R.drawable.ic_dialog_alert);
-//                dialog.setTitle("Information");
-//                dialog.setMessage("No locations for this task.");
-//                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-//                        new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dg, int which) {
-//                        return;
-//                    }
-//                });
-//                dialog.show();
-//            }
-//            else mViewAll.showContextMenu();
-//            return;
-//        }
-//
-//    }
+    //    private class ViewAll extends AbstractAction {
+    //
+    //        public ViewAll() {
+    //            super(R.drawable.ic_menu_list);
+    //        }
+    //
+    //        @Override
+    //        public void performAction(View view) {
+    //            if (!mMapView.hasPlaces()) {
+    //                AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+    //                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+    //                dialog.setTitle("Information");
+    //                dialog.setMessage("No locations for this task.");
+    //                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+    //                        new DialogInterface.OnClickListener() {
+    //                    public void onClick(DialogInterface dg, int which) {
+    //                        return;
+    //                    }
+    //                });
+    //                dialog.show();
+    //            }
+    //            else mViewAll.showContextMenu();
+    //            return;
+    //        }
+    //
+    //    }
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -137,17 +141,17 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
                 locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
 
-              AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
-              dialog.setIcon(android.R.drawable.ic_dialog_alert);
-              dialog.setTitle("Information");
-              dialog.setMessage(locationsCount);
-              dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                      new DialogInterface.OnClickListener() {
-                  public void onClick(DialogInterface dg, int which) {
-                      return;
-                  }
-              });
-              dialog.show();
+            AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
+            dialog.setIcon(android.R.drawable.ic_dialog_alert);
+            dialog.setTitle("Information");
+            dialog.setMessage(locationsCount);
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                    new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dg, int which) {
+                    return;
+                }
+            });
+            dialog.show();
             return;
         }
     }
@@ -193,7 +197,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
         }, OVERLAY_TYPE_NAME);
         mMapView.createOverlay(PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
-            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
+            Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS, Focaccia.SHOW_SNIPPET
         }, OVERLAY_PEOPLE_NAME);
 
         /* Adding people that are related to the task */
@@ -202,21 +206,31 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             DPoint[] coords = new DPoint[people.length];
             for (int i = 0 ; i < people.length ; i++) {
                 Cursor c = mPeopleDB.fetchByMail(people[i]);
-                if (c != null && c.moveToFirst()) {
+                if (c == null || !c.moveToFirst()) {
+                    coords[i] = null;
+                    if (c != null)
+                        c.close();
+                    continue;
+                }
+                FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                if (fp != null) {
                     Double lat = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LAT));
                     Double lon = c.getDouble(c.getColumnIndex(AroundroidDbAdapter.KEY_LON));
                     coords[i] = new DPoint(lat, lon);
-                    c.close();
                 }
+                else coords[i] = null;
+                c.close();
+
             }
             mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, mTaskID);
-            String[] specificLocations = locationService.getLocationsBySpecificAsArray(mTaskID);
-            /* Converting from location written as string to DPoint */
-            coords = new DPoint[specificLocations.length];
-            for (int i = 0 ; i < specificLocations.length ; i++)
-                coords[i] = new DPoint(specificLocations[i]);
-            mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mTaskID); //$NON-NLS-1$
         }
+        String[] specificLocations = locationService.getLocationsBySpecificAsArray(mTaskID);
+        /* Converting from location written as string to DPoint */
+        DPoint[] coords = new DPoint[specificLocations.length];
+        for (int i = 0 ; i < specificLocations.length ; i++)
+            coords[i] = new DPoint(specificLocations[i]);
+        mapFunctions.addLocationSetToMap(mMapView, SPECIFIC_OVERLAY, coords, "Specific Location", mTaskID); //$NON-NLS-1$
+
 
         /* If the task is location-based, the following code will add the locations to the map */
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
@@ -241,5 +255,62 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             }
 
         });
+
+        mMapView.setZoomByAllLocations();
+    }
+
+    private final Handler mHan = new Handler();
+    final int mDelayMillis = 10 * 1000;
+    private final Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            Toast.makeText(MapLocationActivity.this, "now", Toast.LENGTH_LONG).show();
+            /* my code */
+            mMapView.clearOverlay(PEOPLE_OVERLAY);
+            mMapView.invalidate();
+            String[] existedPeople = locationService.getLocationsByPeopleAsArray(mTaskID);
+            if (existedPeople != null) {
+                for (String person : existedPeople) {
+                    Cursor c = mPeopleDB.fetchByMail(person);
+                    if (c == null) {
+                        continue;
+                    }
+                    if (!c.moveToFirst()) {
+                        c.close();
+                        continue;
+                    }
+                    FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                    if (fp != null) {
+                        if (fp.isValid()) {
+                            GeoPoint gp = Misc.degToGeo(new DPoint(fp.getDlat(), fp.getDlon()));
+                            String savedAddr = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
+                            mMapView.addItemToOverlay(gp, OVERLAY_PEOPLE_NAME, person, savedAddr, PEOPLE_OVERLAY, mTaskID, person);
+                        }
+                    }
+                    c.close();
+                }
+            }
+
+            mMapView.updateDeviceLocation();
+
+            mHan.postDelayed(this, mDelayMillis);
+        }
+    };
+
+    private void setUITimer(){
+        mHan.removeCallbacks(mUpdateTimeTask);
+        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+
+    }
+
+    @Override
+    protected void onPause() {
+        mHan.removeCallbacks(mUpdateTimeTask);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        setUITimer();
+        super.onResume();
     }
 }

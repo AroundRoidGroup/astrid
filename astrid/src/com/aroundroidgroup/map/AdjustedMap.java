@@ -254,12 +254,12 @@ public class AdjustedMap extends MapView {
         currentTaskID = taskID;
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && g != null && title != null && snippet != null) {
-            if (overlay.getIndexOf(g) == -1) {
+//            if (overlay.getIndexOf(g) == -1) {
                 overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
                 mapOverlays.add(overlay);
                 invalidate();
                 return true;
-            }
+//            }
         }
         return false;
     }
@@ -446,6 +446,18 @@ public class AdjustedMap extends MapView {
         return counter;
     }
 
+    public List<AdjustedOverlayItem> selectItemFromOverlayByExtrasAsAjustedItem(int id, String extras) {
+        MapItemizedOverlay overlay = overlays.get(id);
+        List<AdjustedOverlayItem> xtraLst = new ArrayList<AdjustedOverlayItem>();
+        if (overlay != null) {
+            for (AdjustedOverlayItem item : overlay) {
+                if (item.getExtras().equals(extras))
+                    xtraLst.add(item);
+            }
+        }
+        return xtraLst;
+    }
+
     public List<String> selectItemFromOverlayByExtras(int id, String extras) {
         MapItemizedOverlay overlay = overlays.get(id);
         List<String> xtraLst = new ArrayList<String>();
@@ -556,6 +568,16 @@ public class AdjustedMap extends MapView {
     private void removeTappedPoint(int index) {
         mTappedOverlay.removeOverlayByIndex(index);
         invalidate();
+    }
+
+    public AdjustedOverlayItem getItemByExtras(int id, String extras) {
+        MapItemizedOverlay overlay = overlays.get(id);
+        if (overlay != null && extras != null) {
+            int index = overlay.getIndexOf(extras);
+            if (index != -1)
+                return overlay.getItem(index);
+        }
+        return null;
     }
 
     public AdjustedOverlayItem removeLastPressedItem() {
@@ -681,7 +703,12 @@ public class AdjustedMap extends MapView {
             return -1;
         }
 
-
+        public int getIndexOf(String extras) {
+            for (AdjustedOverlayItem item : mOverlays)
+                if (item.getExtras().equals(extras))
+                    return mOverlays.indexOf(item);
+            return -1;
+        }
 
         @Override
         protected boolean onTap(int index) {
