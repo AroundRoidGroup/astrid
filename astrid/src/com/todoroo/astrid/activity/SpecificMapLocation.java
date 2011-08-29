@@ -8,18 +8,23 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -91,6 +97,7 @@ public class SpecificMapLocation extends MapActivity{
     private long mTaskID;
     private double mRadius;
     private Button mViewAll;
+    private ListView mListView;
     private List<String> mTypes;
     private AdjustedMap mMapView;
     private Thread previousThread;
@@ -102,6 +109,7 @@ public class SpecificMapLocation extends MapActivity{
     private String mPressedItemExtras;
     private Map<String, DPoint> mPeople;
     private LocationsDbAdapter mLocationDB;
+    private AutoCompleteTextView mAutoTextView;
     private static ArrayAdapter<String> mAdapter;
     private final AroundroidDbAdapter mPeopleDB = new AroundroidDbAdapter(this);
     private final LocationService mLocationService = new LocationService();
@@ -109,14 +117,6 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected boolean isRouteDisplayed() {
         return false;
-    }
-
-    public static void updateSuggestions(List<String> lst) {
-        mAdapter.clear();
-        if (lst == null)
-            return;
-        for (String s : lst)
-            mAdapter.add(s);
     }
 
     public boolean hasPlaces() {
@@ -214,8 +214,10 @@ public class SpecificMapLocation extends MapActivity{
                 mMapView.getController().setCenter(closestType);
 
             intent.putExtra(Focaccia.DELETE_ALL, Focaccia.DELETE_ALL);
-            if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_AMOUNT_BY_EXTRAS))
-                intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, mMapView.getItemsByExtrasCount(TYPE_OVERLAY, item.getTitle().toString()));
+            if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_AMOUNT_BY_EXTRAS)) {
+                int bla = mMapView.getItemsByExtrasCount(TYPE_OVERLAY, item.getTitle().toString());
+                intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, bla + ""); //$NON-NLS-1$
+            }
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_NAME))
                 intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_TYPE_NAME);
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_TITLE))
@@ -238,7 +240,7 @@ public class SpecificMapLocation extends MapActivity{
                 return true;
             }
             mLastNullPeople = null;
-            mPressedItemIndex = item.getItemId() - MENU_PEOPLE_GROUP;
+            mPressedItemIndex = item.getItemId();
             AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(mPressedItemIndex);
 
             DPoint da = mPeople.get(item.getTitle());
@@ -262,72 +264,73 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onResume() {
         mLocationDB.open();
-//        setUITimer();
+        setUITimer();
         super.onResume();
     }
 
-//    private final Handler mHan = new Handler();
-//    final int mDelayMillis = 10 * 1000;
-//    private final Runnable mUpdateTimeTask = new Runnable() {
-//        public void run() {
-//            /* my code */
-//            mPeople.clear();
-//            mNullPeople.clear();
-//            mMapView.clearOverlay(TYPE_OVERLAY);
-//            String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(mTaskID);
-//            if (existedPeople != null) {
-//                for (String person : existedPeople) {
-//                    Cursor c = mPeopleDB.fetchByMail(person);
-//                    if (c == null) {
-//                        mNullPeople.add(person);
-//                        continue;
-//                    }
-//                    if (!c.moveToFirst()) {
-//                        mNullPeople.add(person);
-//                        c.close();
-//                        continue;
-//                    }
-//                    FriendProps fp = AroundroidDbAdapter.userToFP(c);
-//                    if (fp != null) {
-//                        if (fp.isValid())
-//                            mPeople.put(person, new DPoint(fp.getDlat(), fp.getDlon()));
-//                        else mNullPeople.add(person);
-//                    }
-//                    c.close();
-//                }
-//            }
-//            for (Entry<String, DPoint> entry : mPeople.entrySet()) {
-//                GeoPoint gp = Misc.degToGeo(entry.getValue());
-//                String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
-//                if (savedAddr == null) {
-//                    try {
-//                        savedAddr = Geocoding.reverseGeocoding(entry.getValue());
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//                    if (savedAddr == null)
-//                        savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-//                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
-//                    if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
-//                        savedAddr = entry.getValue().toString();
-//                }
-//                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
-//            }
-//
-//            mMapView.updateDeviceLocation();
-//
-//            mHan.postDelayed(this, mDelayMillis);
-//        }
-//    };
-//
+    private final Handler mHan = new Handler();
+    final int mDelayMillis = 10 * 1000;
+    private final Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+                Toast.makeText(SpecificMapLocation.this, "now", Toast.LENGTH_LONG).show();
+                        /* my code */
+                        mPeople.clear();
+                        mNullPeople.clear();
+                        mMapView.clearOverlay(PEOPLE_OVERLAY);
+                        String[] existedPeople = mLocationService.getLocationsByPeopleAsArray(mTaskID);
+                        if (existedPeople != null) {
+                            for (String person : existedPeople) {
+                                Cursor c = mPeopleDB.fetchByMail(person);
+                                if (c == null) {
+                                    mNullPeople.add(person);
+                                    continue;
+                                }
+                                if (!c.moveToFirst()) {
+                                    mNullPeople.add(person);
+                                    c.close();
+                                    continue;
+                                }
+                                FriendProps fp = AroundroidDbAdapter.userToFP(c);
+                                if (fp != null) {
+                                    if (fp.isValid())
+                                        mPeople.put(person, new DPoint(fp.getDlat(), fp.getDlon()));
+                                    else mNullPeople.add(person);
+                                }
+                                c.close();
+                            }
+                        }
+                        for (Entry<String, DPoint> entry : mPeople.entrySet()) {
+                            GeoPoint gp = Misc.degToGeo(entry.getValue());
+                            String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
+                            if (savedAddr == null) {
+                                try {
+                                    savedAddr = Geocoding.reverseGeocoding(entry.getValue());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                if (savedAddr == null)
+                                    savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+                                mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
+                                if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
+                                    savedAddr = entry.getValue().toString();
+                            }
+                            mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
+                        }
+
+            mMapView.updateDeviceLocation();
+
+            mHan.postDelayed(this, mDelayMillis);
+        }
+    };
+    //
     private final LocationService locationService = new LocationService();
-//    private void setUITimer(){
-//        mHan.removeCallbacks(mUpdateTimeTask);
-//        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
-//
-//    }
+    private void setUITimer(){
+        mHan.removeCallbacks(mUpdateTimeTask);
+        mHan.postDelayed(mUpdateTimeTask, mDelayMillis);
+
+    }
 
 
     private class ViewAll extends AbstractAction {
@@ -448,29 +451,44 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Adding the auto-complete mechanism                                                    @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        final AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
-        mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, new String[0]);
-        textView.setAdapter(mAdapter);
+        mAutoTextView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
+        mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, Misc.types);
+        mAutoTextView.setAdapter(mAdapter);
+        mAutoTextView.addTextChangedListener(new TextWatcher() {
 
-        textView.setOnKeyListener(new View.OnKeyListener() {
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            List<String> c = null;
+          try {
+              String searchText = mAutoTextView.getText().toString();
+              DPoint center = Misc.geoToDeg(mMapView.getMapCenter());
+              c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
+          } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+          } catch (JSONException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+          }
+          if (c != null) {
+              mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, c);
+              mAutoTextView.setAdapter(mAdapter);
+          }
 
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                if (previousThread != null) {
-//                    if (previousThread.isAlive())
-//                        previousThread.destroy();
-//                    previousThread = null;
-//                }
-//                TextView t = (TextView) v;
-//                if (t != null) {
-//                    previousThread = new Thread(new AsyncAutoComplete(t.getText().toString()));
-//                    previousThread.run();
-//                }
-                //                AutoComplete x = new AutoComplete(SpecificMapLocation.this);
-                //                x.execute(textView.getText().toString());
-                return false;
-            }
-        });
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count,
+                int after) {
+            return;
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            return;
+        }
+    });
+
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
@@ -494,96 +512,84 @@ public class SpecificMapLocation extends MapActivity{
                 address = existedSpecific[i + 1];
             else {
                 GeoPoint gp = Misc.degToGeo(d);
-                address = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
-                if (address == null) { /* such mapping does not exist, lets make one */
-                    try {
-                        address = Geocoding.reverseGeocoding(d);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    if (address == null)
-                        address = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
-                    mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), address);
-                }
-                /* mapping exists but previous trial to geocode failed */
-                if (address != null && address.equals(LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE))
-                    address = d.toString();
+                address = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
             }
             mMapView.addItemToOverlay(Misc.degToGeo(d), "Specific Location", address, address, SPECIFIC_OVERLAY, mTaskID, null); //$NON-NLS-1$
         }
 
         mTypes = new ArrayList<String>();
-        int i = 0;
-        mainLoop: while (i < existedTypes.length) {
-            int len = 0;
-            String[] typeAndSize = Misc.extractType(existedTypes[i++]);
-            if (!mTypes.contains(typeAndSize[0])) {
-                mTypes.add(typeAndSize[0]);
-                len = Integer.parseInt(typeAndSize[1]);
-                Map<String, DPoint> data = null;
-                for (int k = 0 ; k < len ; k++) {
-                    GeoPoint gp = Misc.degToGeo(new DPoint(existedTypes[i]));
-                    String savedBusiness = mLocationDB.fetchByCoordinateFromType(typeAndSize[0], gp.getLatitudeE6(), gp.getLongitudeE6());
-                    String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
-                    if (savedAddr == null) {
-                        try {
-                            savedAddr = Geocoding.reverseGeocoding(new DPoint(existedTypes[i]));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        if (savedAddr == null)
-                            savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
-                        mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
-                    }
-                    if (savedBusiness != null) {
-                        mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(existedTypes[i + k])),
-                                savedBusiness,
-                                typeAndSize[0],
-                                (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE) ? existedTypes[i + k] : savedAddr,
-                                        TYPE_OVERLAY,
-                                        mTaskID,
-                                        typeAndSize[0]);
-                    }
-                    else {
-                        if (data == null) {
-                            try {
-                                data = Misc.googlePlacesQuery(typeAndSize[0], Misc.geoToDeg(mMapView.getMapCenter()), mRadius);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            if (data == null) { /* parse the next Type location */
-                                i += len;
-                                continue mainLoop;
-                            }
-                            for (Map.Entry<String, DPoint> element : data.entrySet()) {
-                                data.put(element.getKey(), new DPoint(element.getValue().toString()));
-                            }
-                        }
-                        DPoint p = new DPoint(existedTypes[i + k]);
-                        for (Map.Entry<String, DPoint> pair : data.entrySet()) {
-                            DPoint s = pair.getValue();
-                            if (Misc.similarDegs(p, s))
-                                if (p.toString().equals(pair.getValue().toString()))
-                                    savedBusiness = pair.getKey();
-                        }
-                        mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(existedTypes[i + k])),
-                                (savedBusiness != null) ? savedBusiness : "Untitled", //$NON-NLS-1$
-                                        typeAndSize[0],
-                                        (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE) ? existedTypes[i + k] : savedAddr,
-                                                TYPE_OVERLAY,
-                                                mTaskID,
-                                                typeAndSize[0]);
-                    }
-                }
-            }
-            i += len;
-        }
+        for (String type : existedTypes)
+            mTypes.add(type);
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, existedTypes, mRadius, mTaskID);
+//        int i = 0;
+//        mainLoop: while (i < existedTypes.length) {
+//            int len = 0;
+//            String[] typeAndSize = Misc.extractType(existedTypes[i++]);
+//            if (!mTypes.contains(typeAndSize[0])) {
+//                mTypes.add(typeAndSize[0]);
+//                len = Integer.parseInt(typeAndSize[1]);
+//                Map<String, DPoint> data = null;
+//                for (int k = 0 ; k < len ; k++) {
+//                    GeoPoint gp = Misc.degToGeo(new DPoint(existedTypes[i]));
+//                    String savedBusiness = mLocationDB.fetchByCoordinateFromType(typeAndSize[0], gp.getLatitudeE6(), gp.getLongitudeE6());
+//                    String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
+//                    if (savedAddr == null) {
+//                        try {
+//                            savedAddr = Geocoding.reverseGeocoding(new DPoint(existedTypes[i]));
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                        if (savedAddr == null)
+//                            savedAddr = LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE;
+//                        mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), savedAddr);
+//                    }
+//                    if (savedBusiness != null) {
+//                        mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(existedTypes[i + k])),
+//                                savedBusiness,
+//                                typeAndSize[0],
+//                                (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE) ? existedTypes[i + k] : savedAddr,
+//                                        TYPE_OVERLAY,
+//                                        mTaskID,
+//                                        typeAndSize[0]);
+//                    }
+//                    else {
+//                        if (data == null) {
+//                            try {
+//                                data = Misc.googlePlacesQuery(typeAndSize[0], Misc.geoToDeg(mMapView.getMapCenter()), mRadius);
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
+//                            if (data == null) { /* parse the next Type location */
+//                                i += len;
+//                                continue mainLoop;
+//                            }
+//                            for (Map.Entry<String, DPoint> element : data.entrySet()) {
+//                                data.put(element.getKey(), new DPoint(element.getValue().toString()));
+//                            }
+//                        }
+//                        DPoint p = new DPoint(existedTypes[i + k]);
+//                        for (Map.Entry<String, DPoint> pair : data.entrySet()) {
+//                            DPoint s = pair.getValue();
+//                            if (Misc.similarDegs(p, s))
+//                                if (p.toString().equals(pair.getValue().toString()))
+//                                    savedBusiness = pair.getKey();
+//                        }
+//                        mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(existedTypes[i + k])),
+//                                (savedBusiness != null) ? savedBusiness : "Untitled", //$NON-NLS-1$
+//                                        typeAndSize[0],
+//                                        (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE) ? existedTypes[i + k] : savedAddr,
+//                                                TYPE_OVERLAY,
+//                                                mTaskID,
+//                                                typeAndSize[0]);
+//                    }
+//                }
+//            }
+//            i += len;
+//        }
 
         mPeople = new HashMap<String, DPoint>();
         mNullPeople = new ArrayList<String>();
@@ -611,8 +617,8 @@ public class SpecificMapLocation extends MapActivity{
         mViewAll = (Button)findViewById(R.id.viewAll);
         mViewAll.setVisibility(View.GONE);
         registerForContextMenu(mViewAll);
-//        mViewAll.setOnClickListener(mViewAllListener);
-//        mViewAll.setOnLongClickListener(mViewAllLongListener);
+        //        mViewAll.setOnClickListener(mViewAllListener);
+        //        mViewAll.setOnLongClickListener(mViewAllLongListener);
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -656,78 +662,12 @@ public class SpecificMapLocation extends MapActivity{
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mAddress.getWindowToken(), 0);
 
-                if (Misc.isType(text)) { /* input is one of the 'Type locations' */
-                    if (!mTypes.contains(text)) {
-                        mLocationDB.close();
-                        int degSuccess = mapFunctions.degreeOfSuccess(mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY,
-                                new String[] { text.replace(' ', '_') }, mRadius, mTaskID));
-                        if (degSuccess == mapFunctions.ALL_GOOD)
-                            Toast.makeText(SpecificMapLocation.this, "Location type '" + text + "' has been added successfully !", //$NON-NLS-1$ //$NON-NLS-2$
-                                    Toast.LENGTH_LONG).show();
-                        else if (degSuccess == mapFunctions.ALL_BAD)
-                            Toast.makeText(SpecificMapLocation.this, "Failed to add location type '" + text + "' !", Toast.LENGTH_LONG).show(); //$NON-NLS-1$ //$NON-NLS-2$
-                        mMapView.invalidate();
-                        mTypes.add(text);
-                        mLocationDB.open();
-                        GeoPoint closetPoint = mMapView.getPointWithMinimalDistanceFromGivenPoint(TYPE_OVERLAY, text, Misc.geoToDeg(mMapView.getMapCenter()));
-                        if (closetPoint != null)
-                            mMapView.getController().setCenter(closetPoint);
-                    }
+
+                if (Misc.isType(text)) {
+                    if (!mTypes.contains(text))
+                        new AsyncGooglePlacesQuery().execute(text, Misc.geoToDeg(mMapView.getMapCenter()).toString(), (new Double(mRadius).toString()));
                 }
-                else { /* input is an address */
-                    String savedCoordinate = mLocationDB.fetchByAddressAsString(text);
-                    if (savedCoordinate == null) {
-                        try {
-                            d = Geocoding.geocoding(text);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    String theCoord;
-                    if (d != null)
-                        theCoord = d.toString();
-                    else theCoord = savedCoordinate;
-
-                    if (d != null) {
-                        String addr = null;
-                        GeoPoint gp = Misc.degToGeo(new DPoint(theCoord));
-                        String savedAddr = mLocationDB.fetchByCoordinateAsString(gp.getLatitudeE6(), gp.getLongitudeE6());
-                        if (savedAddr == null) {
-                            try {
-                                addr = Geocoding.reverseGeocoding(d);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        String theAddr;
-                        if (addr != null)
-                            theAddr = addr;
-                        else theAddr = savedAddr;
-
-                        mLocationDB.createTranslate(gp.getLatitudeE6(), gp.getLongitudeE6(), theAddr);
-                        if (false == mMapView.addItemToOverlay(Misc.degToGeo(new DPoint(theCoord)), OVERLAY_SPECIFIC_NAME, theAddr, theAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
-                            AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
-                            dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                            dialog.setTitle("Information");
-                            dialog.setMessage("This location is already attached to task.");
-                            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                                    new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dg, int which) {
-                                    return;
-                                }
-                            });
-                            dialog.show();
-                        }
-                        else mMapView.getController().setCenter(gp);
-                        mMapView.invalidate();
-                    }
-                    else Toast.makeText(SpecificMapLocation.this, "Address not found!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
-                }
+                else new AsyncLocationResolver().execute(text);
             }
         });
 
@@ -738,6 +678,14 @@ public class SpecificMapLocation extends MapActivity{
             public void onClick(View v) {
                 mAddress.setText(""); //$NON-NLS-1$
                 mAddress.setOnClickListener(null);
+            }
+        });
+
+        mAddress.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                mAddress.selectAll();
             }
         });
     }
@@ -842,11 +790,11 @@ public class SpecificMapLocation extends MapActivity{
         i = 0;
         String[] types = new String[mTypes.size()];
         for (String t : mTypes) {
-            List<String> items = mMapView.selectItemFromOverlayByExtras(TYPE_OVERLAY, t);
-            int j = 0;
-            t += "$$"; //$NON-NLS-1$
-            while (j < items.size())
-                t += items.get(j++) + "%"; //$NON-NLS-1$
+//            List<String> items = mMapView.selectItemFromOverlayByExtras(TYPE_OVERLAY, t);
+//            int j = 0;
+//            t += "$$"; //$NON-NLS-1$
+//            while (j < items.size())
+//                t += items.get(j++) + "%"; //$NON-NLS-1$
             types[i++] = t;
         }
         intent.putExtra(TYPE_TO_SEND, types);
@@ -878,8 +826,136 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onPause() {
         super.onPause();
-//        mHan.removeCallbacks(mUpdateTimeTask);
+        //        mHan.removeCallbacks(mUpdateTimeTask);
         mLocationDB.close();
         saveAndQuit();
     }
+
+    private class AsyncGooglePlacesQuery extends AsyncTask<String, Void, Map<String, DPoint>> {
+        private ProgressDialog pDialog = null;
+        private String searchType;
+        private DPoint center;
+        @Override
+        protected void onPreExecute() {
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, "Searching...", true);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Map<String, DPoint> doInBackground(String... params) {
+            searchType = params[0];
+            double searchRadius = new Double(params[2]);
+            center = new DPoint(params[1]);
+            GeoPoint searchCenter = Misc.degToGeo(center);
+            Map<String, DPoint> data = null;
+            Cursor cursor = mLocationDB.fetchByTypeComplex(searchType, searchCenter.getLatitudeE6(), searchCenter.getLongitudeE6(), searchRadius);
+            if (cursor == null || !cursor.moveToFirst()) {
+                if (cursor != null)
+                    cursor.close();
+                try {
+                    data = Misc.googlePlacesQuery(searchType, center, searchRadius);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                data = new HashMap<String, DPoint>();
+                while (!cursor.isAfterLast()) {
+                    data.put(cursor.getString(cursor.getColumnIndex(LocationsDbAdapter.KEY_BUSINESS_NAME)),
+                            Misc.geoToDeg(new GeoPoint(cursor.getInt(cursor.getColumnIndex(LocationsDbAdapter.KEY_LATITUDE)),
+                                    cursor.getInt(cursor.getColumnIndex(LocationsDbAdapter.KEY_LONGITUDE)))));
+                    cursor.moveToNext();
+                }
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, DPoint> result) {
+            pDialog.cancel();
+            for (Entry<String, DPoint> element : result.entrySet()) {
+                GeoPoint gp = Misc.degToGeo(element.getValue());
+                String savedAddr = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
+                mMapView.addItemToOverlay(gp, element.getKey(), searchType, savedAddr, TYPE_OVERLAY, mTaskID, searchType);
+            }
+            mMapView.invalidate();
+            mTypes.add(searchType);
+            mLocationDB.open();
+            GeoPoint closetPoint = mMapView.getPointWithMinimalDistanceFromGivenPoint(TYPE_OVERLAY, searchType, center);
+            if (closetPoint != null)
+                mMapView.getController().setCenter(closetPoint);
+            super.onPostExecute(result);
+        }
+
+    }
+
+    private class AsyncLocationResolver extends AsyncTask<String, Void, GeoPoint> {
+        private ProgressDialog pDialog = null;
+        private String resolvedAddr = null;
+
+        @Override
+        protected void onPreExecute() {
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, "Searching...", true);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected GeoPoint doInBackground(String... params) {
+            DPoint savedCoords = mapFunctions.getSavedCoordinateAndUpdate(params[0]);
+            GeoPoint gp = Misc.degToGeo(savedCoords);
+            if (savedCoords != null) {
+                String savedAddr = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
+                if (savedAddr != null)
+                    resolvedAddr = savedAddr;
+                return gp;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(GeoPoint result) {
+            if (result == null) {
+                pDialog.cancel();
+                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle("Information");
+                dialog.setMessage("This location cannot be resolved.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+                super.onPostExecute(result);
+                return;
+            }
+            if (false == mMapView.addItemToOverlay(result, OVERLAY_SPECIFIC_NAME, resolvedAddr, resolvedAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
+                pDialog.cancel();
+                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle("Information");
+                dialog.setMessage("This location is already attached to task.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+                super.onPostExecute(result);
+                return;
+            }
+            else mMapView.getController().setCenter(result);
+            mMapView.invalidate();
+            pDialog.cancel();
+            super.onPostExecute(result);
+        }
+
+    }
+
 }
