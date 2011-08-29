@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -44,9 +45,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private static final int PEOPLE_OVERLAY = 3;
 
     /* overlays' names */
-    private static final String OVERLAY_TYPE_NAME = "Type Location";
-    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location";
-    private static final String OVERLAY_PEOPLE_NAME = "People Location";
+    private static final String OVERLAY_TYPE_NAME = "Type Location"; //$NON-NLS-1$
+    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location"; //$NON-NLS-1$
+    private static final String OVERLAY_PEOPLE_NAME = "People Location"; //$NON-NLS-1$
 
     private AroundroidDbAdapter mPeopleDB;
     private LocationsDbAdapter mLocationDB;
@@ -129,6 +130,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         @Override
         public void performAction(View view) {
+            Resources r = getResources();
             String locationsCount = ""; //$NON-NLS-1$
             if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
                 locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
@@ -139,9 +141,9 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
               AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
               dialog.setIcon(android.R.drawable.ic_dialog_alert);
-              dialog.setTitle("Information");
+              dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
               dialog.setMessage(locationsCount);
-              dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+              dialog.setButton(DialogInterface.BUTTON_POSITIVE,r.getString(R.string.DLG_ok),
                       new DialogInterface.OnClickListener() {
                   public void onClick(DialogInterface dg, int which) {
                       return;

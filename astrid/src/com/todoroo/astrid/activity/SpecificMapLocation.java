@@ -17,6 +17,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,7 +34,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -79,15 +79,15 @@ public class SpecificMapLocation extends MapActivity{
     private static final int MENU_PEOPLE_GROUP = 1048576;
     private static final int MENU_TAPPED_GROUP = 16777216;
 
+
     /* identifiers for the overlays in the mapView */
     private static final int SPECIFIC_OVERLAY = 1;
     private static final int TYPE_OVERLAY = 2;
     private static final int PEOPLE_OVERLAY = 3;
 
-    /* overlays' names */
-    private static final String OVERLAY_TYPE_NAME = "Type Location";
-    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location";
-    private static final String OVERLAY_PEOPLE_NAME = "People Location";
+    /* String resources */
+    private static Resources r;
+
 
     /* identifiers for the intent that is sent back to TaskEditActivity from SaveAndQuit function */
     public static final String SPECIFIC_TO_SEND = "specific"; //$NON-NLS-1$
@@ -97,10 +97,8 @@ public class SpecificMapLocation extends MapActivity{
     private long mTaskID;
     private double mRadius;
     private Button mViewAll;
-    private ListView mListView;
     private List<String> mTypes;
     private AdjustedMap mMapView;
-    private Thread previousThread;
     private int mPressedItemIndex;
     private String mLastNullPeople;
     private DPoint mDeviceLocation;
@@ -127,7 +125,8 @@ public class SpecificMapLocation extends MapActivity{
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("All Locations");
+        r = getResources();
+        menu.setHeaderTitle(r.getString(R.string.all_locations));
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -158,7 +157,6 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         Intent intent = new Intent(this, Focaccia.class);
-
         /* getting task's title by its ID */
         TaskService taskService = new TaskService();
         TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(mTaskID),
@@ -219,7 +217,7 @@ public class SpecificMapLocation extends MapActivity{
                 intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, bla + ""); //$NON-NLS-1$
             }
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_NAME))
-                intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_TYPE_NAME);
+                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_type));
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_TITLE))
                 intent.putExtra(Focaccia.SHOW_TITLE, item.getTitle().toString());
 
@@ -231,7 +229,7 @@ public class SpecificMapLocation extends MapActivity{
                 mLastNullPeople = item.getTitle().toString();
                 intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, mLastNullPeople);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_ADDRESS))
@@ -248,7 +246,7 @@ public class SpecificMapLocation extends MapActivity{
                 mMapView.getController().setCenter(Misc.degToGeo(da));
                 intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, peopleItem.getSnippet());
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_ADDRESS))
@@ -267,7 +265,6 @@ public class SpecificMapLocation extends MapActivity{
         setUITimer();
         super.onResume();
     }
-
     private final Handler mHan = new Handler();
     final int mDelayMillis = 10 * 1000;
     private final Runnable mUpdateTimeTask = new Runnable() {
@@ -316,7 +313,7 @@ public class SpecificMapLocation extends MapActivity{
                                 if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
                                     savedAddr = entry.getValue().toString();
                             }
-                            mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), OVERLAY_PEOPLE_NAME, entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
+                            mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), r.getString(R.string.kind_people), entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
                         }
 
             mMapView.updateDeviceLocation();
@@ -344,9 +341,9 @@ public class SpecificMapLocation extends MapActivity{
             if (!hasPlaces()) {
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("No locations for this task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
+                dialog.setMessage(r.getString(R.string.no_location_for_task));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -406,8 +403,8 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        r = getResources();
         setContentView(R.layout.specific_map);
-
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
         actionBar.setTitle("Home");
 
@@ -438,13 +435,13 @@ public class SpecificMapLocation extends MapActivity{
 
         mMapView.createOverlay(SPECIFIC_OVERLAY, this.getResources().getDrawable(R.drawable.icon_specific), new String[] {
             Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, OVERLAY_SPECIFIC_NAME);
+        }, r.getString(R.string.kind_specific));
         mMapView.createOverlay(TYPE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_type), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, OVERLAY_TYPE_NAME);
+        }, r.getString(R.string.kind_type));
         mMapView.createOverlay(PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS
-        }, OVERLAY_PEOPLE_NAME);
+        }, r.getString(R.string.kind_people));
 
 
 
@@ -655,7 +652,6 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public void onClick(View v) {
-                DPoint d = null;
                 String text = mAddress.getText().toString();
 
                 /* 2 following rows are for hiding the keyboard */
@@ -837,7 +833,7 @@ public class SpecificMapLocation extends MapActivity{
         private DPoint center;
         @Override
         protected void onPreExecute() {
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, "Searching...", true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.map_searching), true);
             super.onPreExecute();
         }
 
@@ -899,7 +895,7 @@ public class SpecificMapLocation extends MapActivity{
 
         @Override
         protected void onPreExecute() {
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, "Searching...", true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.map_searching), true);
             super.onPreExecute();
         }
 
@@ -922,9 +918,9 @@ public class SpecificMapLocation extends MapActivity{
                 pDialog.cancel();
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("This location cannot be resolved.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
+                dialog.setMessage(r.getString(R.string.unresolvable_location));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -934,13 +930,13 @@ public class SpecificMapLocation extends MapActivity{
                 super.onPostExecute(result);
                 return;
             }
-            if (false == mMapView.addItemToOverlay(result, OVERLAY_SPECIFIC_NAME, resolvedAddr, resolvedAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
+            if (false == mMapView.addItemToOverlay(result, r.getString(R.string.kind_specific), resolvedAddr, resolvedAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
                 pDialog.cancel();
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("This location is already attached to task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
+                dialog.setMessage(r.getString(R.string.location_already_attached));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE,  r.getString(R.string.DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;

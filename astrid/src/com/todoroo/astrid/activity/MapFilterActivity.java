@@ -1,6 +1,7 @@
 package com.todoroo.astrid.activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -81,6 +82,7 @@ public class MapFilterActivity extends MapActivity {
 
         @Override
         public void performAction(View view) {
+            Resources r = getResources();
             String locationsCount = ""; //$NON-NLS-1$
             if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
                 locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
@@ -91,9 +93,9 @@ public class MapFilterActivity extends MapActivity {
 
             AlertDialog dialog = new AlertDialog.Builder(MapFilterActivity.this).create();
             dialog.setIcon(android.R.drawable.ic_dialog_alert);
-            dialog.setTitle("Information");
-            dialog.setMessage("Tasks: " + mTaskNumber + "\nLocations: " + mLocationNumber);
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+            dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
+            dialog.setMessage(r.getString(R.string.alert_dialog_tasks) + mTaskNumber + r.getString(R.string.alert_dialog_locations) + mLocationNumber);
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
                     new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dg, int which) {
                     return;
@@ -106,6 +108,7 @@ public class MapFilterActivity extends MapActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Resources r = getResources();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_filter_activity);
 
@@ -190,7 +193,7 @@ public class MapFilterActivity extends MapActivity {
         }
 
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle("Places Nearby");
+        actionBar.setTitle(r.getString(R.string.location_filter_title));
 
         actionBar.addAction(new InformationOnLocations());
         actionBar.addAction(new DeviceLocation());
