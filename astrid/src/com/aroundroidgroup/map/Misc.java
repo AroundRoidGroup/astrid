@@ -131,11 +131,12 @@ public class Misc {
         return results;
     }
 
-    public static List<String> googleAutoCompleteQuery(String text, DPoint location) throws IOException, JSONException {
+    public static List<String> googleAutoCompleteQuery(String text, DPoint location, double radius) throws IOException, JSONException {
         URL googleAutoCompleteURL = new URL("https://maps.googleapis.com/maps/api/place/autocomplete/json?" + //$NON-NLS-1$
                 "input=" + text + //$NON-NLS-1$
                 "&types=geocode" + //$NON-NLS-1$
                 "&location=" + location.getX() + "," + location.getY() + //$NON-NLS-1$ //$NON-NLS-2$
+                "&radius=" + radius + //$NON-NLS-1$
                 "&sensor=false" + //$NON-NLS-1$
                 "&key=AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs"); //$NON-NLS-1$
 

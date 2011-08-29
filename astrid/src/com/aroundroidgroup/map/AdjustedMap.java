@@ -44,7 +44,7 @@ public class AdjustedMap extends MapView {
     private DPoint lastPointedLocation = null;
     private GeoPoint lastCenter = null;
     private long currentTaskID = -1;
-    private String address = null;
+    private final String address = null;
     private Map<Integer, MapItemizedOverlay> overlays;
     private Map<MapItemizedOverlay, String[]> mConfigurations;
     private Map<MapItemizedOverlay, String> mNames;
@@ -172,7 +172,7 @@ public class AdjustedMap extends MapView {
         if (mDeviceOverlay == null)
             return;
         DPoint potentialNewLocation = getDeviceLocation();
-        if (potentialNewLocation != null && !mDeviceOverlay.getItem(mDeviceOverlay.getIndexOf(lastDeviceLocation)).getPoint().equals(lastDeviceLocation)) {
+        if (potentialNewLocation != null && !mDeviceOverlay.getItem(0).getPoint().equals(lastDeviceLocation)) {
             mDeviceOverlay.clear();
             String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
             if (savedAddr == null) {
@@ -189,7 +189,8 @@ public class AdjustedMap extends MapView {
                 if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
                     savedAddr = Misc.geoToDeg(lastDeviceLocation).toString();
             }
-            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, DEVICE_TYPE_NAME, null, savedAddr, currentTaskID, null, -1));
+            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(Misc.degToGeo(potentialNewLocation), DEVICE_TYPE_NAME, null, savedAddr, currentTaskID, null, -1));
+            invalidate();
         }
 
     }
@@ -430,6 +431,11 @@ public class AdjustedMap extends MapView {
     }
 
     public int getItemsByExtrasCount(int id, String extras) {
+        MapItemizedOverlay yy = null;
+        for (MapItemizedOverlay x : overlays.values()) {
+            if (x.size() > 0)
+                yy = x;
+        }
         MapItemizedOverlay overlay = overlays.get(id);
         int counter = 0;
         if (overlay != null) {
@@ -467,17 +473,18 @@ public class AdjustedMap extends MapView {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (mTappedOverlay != null) {
-            int actionType = event.getAction();
-            switch (actionType) {
-            case MotionEvent.ACTION_UP:
-                GeoPoint pdf = getMapCenter();
-                if (!pdf.equals(lastCenter)) {
-                    /* map center changed */
-                    fireEvent();
-                    lastCenter = getMapCenter();
-                }
-                // hopa
+
+        int actionType = event.getAction();
+        switch (actionType) {
+        case MotionEvent.ACTION_UP:
+            GeoPoint pdf = getMapCenter();
+            if (!pdf.equals(lastCenter)) {
+                /* map center changed */
+                fireEvent();
+                lastCenter = getMapCenter();
+            }
+            // hopa
+            if (mTappedOverlay != null) {
                 if (event.getEventTime() - event.getDownTime() > 1500) {
                     GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
 
@@ -494,25 +501,11 @@ public class AdjustedMap extends MapView {
                     /* wants to add the tapped location to the task, so the task will be specific- */
                     /* location based */
 
-                    String savedAddr = locDB.fetchByCoordinateAsString(p.getLatitudeE6(), p.getLongitudeE6());
-                    if (savedAddr == null) { /* if no previous geocoding has been made, lets do one */
-                        try {
-                            address = Geocoding.reverseGeocoding(lastPointedLocation);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (address == null) /* geocode failed, has to be indicated so no further trials will be made*/
-                        address = LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE;
 
-                    /* adding the pair of coordinate and address to DB */
-                    locDB.createTranslate(p.getLatitudeE6(), p.getLongitudeE6(), address);
+                    final String savedAddr = mapFunctions.getSavedAddressAndUpdate(p.getLatitudeE6(), p.getLongitudeE6());
 
-                    address = (address != LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE) ? address : lastPointedLocation.toString();
-                    dialog.setMessage("Would you like to add the following location:\n" + address); //$NON-NLS-1$
-                    address = (address != LocationsDbAdapter.DATABASE_ADDRESS_GEOCODE_FAILURE) ? address : null;
+                    dialog.setMessage("Would you like to add the following location:\n" + savedAddr); //$NON-NLS-1$
+
                     /* setting the confirm button text and action to be executed if it has been chosen */
                     dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
                             new DialogInterface.OnClickListener() {
@@ -524,7 +517,7 @@ public class AdjustedMap extends MapView {
                             for (int i = 0 ; i < allSpecific.length ; i++)
                                 la.add(allSpecific[i]);
                             la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
-                            addTappedLocation(Misc.degToGeo(lastPointedLocation), address, currentTaskID);
+                            addTappedLocation(Misc.degToGeo(lastPointedLocation), savedAddr, currentTaskID);
                             refresh();
                         }
                     });
@@ -540,6 +533,7 @@ public class AdjustedMap extends MapView {
                 }
             }
         }
+
         return super.dispatchTouchEvent(event);
     }
 
