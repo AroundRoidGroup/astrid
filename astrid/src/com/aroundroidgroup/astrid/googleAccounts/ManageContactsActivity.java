@@ -797,9 +797,11 @@ public class ManageContactsActivity extends ListActivity{
 
 
     private LinkedHashSet<String> copySetSafe(){
-        LinkedHashSet <String> retSet = null;
+        LinkedHashSet <String> retSet =  new LinkedHashSet<String>();
         synchronized (peopleHashSet) {
-            retSet =  new LinkedHashSet<String>(peopleHashSet);
+            for (String s : peopleHashSet){
+                retSet.add(s);
+            }
         }
         return retSet;
     }
@@ -823,6 +825,7 @@ public class ManageContactsActivity extends ListActivity{
     protected void onResume() {
         super.onResume();
         setUITimer();
+        fillData();
     }
 
 
