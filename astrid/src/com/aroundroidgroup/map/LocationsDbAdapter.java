@@ -9,8 +9,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.google.android.maps.GeoPoint;
 import com.todoroo.andlib.utility.DateUtilities;
 
 public class LocationsDbAdapter {
@@ -37,8 +37,8 @@ public class LocationsDbAdapter {
     private static final String DATABASE_TABLE_TRANSLATIONS = "translations"; //$NON-NLS-1$
     private static final String DATABASE_TABLE_TYPES = "types"; //$NON-NLS-1$
     private static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_ADDRESS_GEOCODE_FAILURE = "$addrFailure$"; //$NON-NLS-1$
     public static final String DATABASE_COORDINATE_GEOCODE_FAILURE = "$coordFailure$"; //$NON-NLS-1$
+    public static final int DATABASE_COORDINATE_FAILURE_VALUE = Integer.MAX_VALUE;
 
     private final int mRadiusError = 5000;
     private final int mCoordinateError = 5000;
@@ -131,7 +131,7 @@ public class LocationsDbAdapter {
         initialValues.put(KEY_RADIUS, radius);
         initialValues.put(KEY_LAST_USE_TIME, DateUtilities.now());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
-        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+//        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
         String typeTableName = "_" + type; //$NON-NLS-1$
         if (data != null) {
             /* creating the table for the given type. the table contains business names and their coords */
@@ -146,7 +146,7 @@ public class LocationsDbAdapter {
                 pair.put(KEY_LATITUDE, Misc.degToGeo(p.getValue()).getLatitudeE6());
                 pair.put(KEY_LONGITUDE, Misc.degToGeo(p.getValue()).getLongitudeE6());
                 pair.put(KEY_TYPE_ID, rowID);
-                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+//                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
             }
         }
@@ -246,11 +246,12 @@ public class LocationsDbAdapter {
         return mCursor;
     }
 
-    public String fetchByAddressAsString(String address) throws SQLException {
+    public GeoPoint fetchByAddressAsString(String address) throws SQLException {
         Cursor mCursor = fetchByAddress(address);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
-                String data = mCursor.getString(mCursor.getColumnIndex(KEY_ADDRESS));
+                GeoPoint data = new GeoPoint(mCursor.getInt(mCursor.getColumnIndex(LocationsDbAdapter.KEY_LATITUDE)),
+                        mCursor.getInt(mCursor.getColumnIndex(LocationsDbAdapter.KEY_LONGITUDE)));
                 mCursor.close();
                 return data;
             }
@@ -315,7 +316,7 @@ public class LocationsDbAdapter {
                 null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
-                Toast.makeText(mCtx, "kjkj", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+//                Toast.makeText(mCtx, "kjkj", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 int rowID = mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID));
                 updateType(rowID,
                         mCursor.getString(mCursor.getColumnIndex(KEY_TYPE)),

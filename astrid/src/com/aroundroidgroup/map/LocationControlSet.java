@@ -22,10 +22,11 @@ import com.todoroo.astrid.data.Task;
 
 public class LocationControlSet implements TaskEditControlSet{
     private final Map<String, String> mSpecific = new HashMap<String, String>();
-    private final Map<String, List<String>> mTypes = new HashMap<String, List<String>>();
+    private final List<String> mTypes = new ArrayList<String>();
     private final LocationService locationService = new LocationService();
     private final Activity mActivity;
     private long mTaskID;
+    private boolean readTask = false;
 
     public static final String TASK_ID = "taskID"; //$NON-NLS-1$
     public static final String SPECIFIC_TO_LOAD = "specific"; //$NON-NLS-1$
@@ -34,6 +35,7 @@ public class LocationControlSet implements TaskEditControlSet{
 
     public LocationControlSet(Activity activity) {
         mActivity = activity;
+        readTask = false;
 
         Button b = (Button) activity.findViewById(R.id.location_button);
         b.setOnClickListener(new View.OnClickListener() {
@@ -57,16 +59,18 @@ public class LocationControlSet implements TaskEditControlSet{
 
                 /* Adding the kind locations to the intent */
                 i = 0;
-                for (Map.Entry<String, List<String>> pair : mTypes.entrySet())
-                    i += pair.getValue().size();
-                String[] types = new String[mTypes.size() + i];
-                i = 0;
-                for (Map.Entry<String, List<String>> pair : mTypes.entrySet()) {
-                    List<String> lst = pair.getValue();
-                    types[i++] = pair.getKey() + lst.size();
-                    for (int k = 0 ; k < lst.size() ; k++)
-                        types[i++] = lst.get(k);
-                }
+//                for (Map.Entry<String, List<String>> pair : mTypes.entrySet())
+//                    i += pair.getValue().size();
+                String[] types = new String[mTypes.size()];
+//                i = 0;
+//                for (Map.Entry<String, List<String>> pair : mTypes.entrySet()) {
+//                    List<String> lst = pair.getValue();
+//                    types[i++] = pair.getKey() + lst.size();
+//                    for (int k = 0 ; k < lst.size() ; k++)
+//                        types[i++] = lst.get(k);
+//                }
+                for (String type : mTypes)
+                    types[i++] = type;
                 intent.putExtra(TYPE_TO_LOAD, types);
 
                 LocationControlSet.this.mActivity.startActivityForResult(intent, TaskEditActivity.REQUEST_CODE_SpecificMapLocation);
@@ -82,31 +86,36 @@ public class LocationControlSet implements TaskEditControlSet{
         }
     }
 
-    public void updateTypes(Map<String, List<String>> typesToUpdate) {
+    public void updateTypes(String[] typesToUpdate) {
         if (typesToUpdate != null) {
             mTypes.clear();
-            mTypes.putAll(typesToUpdate);
+            for (String s : typesToUpdate)
+            mTypes.add(s);
         }
     }
 
     @Override
     public void readFromTask(Task task) {
-        mTaskID = task.getId();
+        if (!readTask) {
 
-        /* adding existed specific points */
-        String[] allSpecific =  locationService.getLocationsBySpecificAsArray(mTaskID);
-        firstLoop: for (String s : allSpecific) {
-            for (Map.Entry<String, String> pair : mSpecific.entrySet())
-                if (s.equalsIgnoreCase(pair.getKey().toString()))
-                    continue firstLoop;
-            mSpecific.put(s, null);
-        }
+            mTaskID = task.getId();
 
-        /* adding existed types */
-        String[] allTypes = locationService.getLocationsByTypeAsArray(mTaskID);
-        for (String type : allTypes) {
-            List<String> locations = new ArrayList<String>();//locationService.getLocationsByTypeSpecial(mTaskID, type);
-            mTypes.put(type, locations);
+            /* adding existed specific points */
+            String[] allSpecific =  locationService.getLocationsBySpecificAsArray(mTaskID);
+            firstLoop: for (String s : allSpecific) {
+                for (Map.Entry<String, String> pair : mSpecific.entrySet())
+                    if (s.equalsIgnoreCase(pair.getKey().toString()))
+                        continue firstLoop;
+                mSpecific.put(s, null);
+            }
+
+            /* adding existed types */
+            String[] allTypes = locationService.getLocationsByTypeAsArray(mTaskID);
+            for (String type : allTypes) {
+
+                mTypes.add(type);
+            }
+            readTask = true;
         }
     }
 
@@ -120,18 +129,13 @@ public class LocationControlSet implements TaskEditControlSet{
             if(locationService.syncLocationsBySpecific(task.getId(), mashu))
                 task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
         }
-            mashu.clear();
-            for (Map.Entry<String, List<String>> element : mTypes.entrySet()) {
-                mashu.add(element.getKey());
-                String[] arr = new String[element.getValue().size()];
-                int i = 0;
-                for (String s : element.getValue())
-                    arr[i++] = s;
-                //if (locationService.syncLocationsByTypeSpecial(mTaskID, element.getKey(), arr))
-                //    task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
-            }
-            if(locationService.syncLocationsByType(task.getId(), mashu))
-                task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
+        mashu.clear();
+        for (String type : mTypes) {
+            mashu.add(type);
+
+        }
+        if(locationService.syncLocationsByType(task.getId(), mashu))
+            task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
         return null;
     }

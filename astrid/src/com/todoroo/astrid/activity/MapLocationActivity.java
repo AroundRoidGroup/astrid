@@ -1,5 +1,9 @@
 package com.todoroo.astrid.activity;
 
+import java.util.ArrayList;
+import java.util.EventObject;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -14,6 +18,7 @@ import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.LocationsDbAdapter;
 import com.aroundroidgroup.map.Misc;
+import com.aroundroidgroup.map.MyEventClassListener;
 import com.aroundroidgroup.map.mapFunctions;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -31,6 +36,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private AdjustedMap mMapView;
     private final LocationService locationService = new LocationService();
     private double mRadius;
+    private List<String> mTypes;
 
     /* identifiers for the overlays in the mapView */
     private static final int SPECIFIC_OVERLAY = 1;
@@ -214,12 +220,26 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         /* If the task is location-based, the following code will add the locations to the map */
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mRadius, mTaskID);
+        int[] feedback = mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mRadius, mTaskID);
+        mTypes = new ArrayList<String>();
+        for (int i = 0 ; i < feedback.length ; i++)
+            if (feedback[i] == mapFunctions.SUCCESS)
+                mTypes.add(locationTags[i]);
 
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
         actionBar.setTitle(mCurrentTask.getValue(Task.TITLE));
 
         actionBar.addAction(new InformationOnLocations());
         actionBar.addAction(new DeviceLocation());
+
+        mMapView.addEventListener(new MyEventClassListener() {
+
+            @Override
+            public void handleMyEventClassEvent(EventObject e) {
+                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mRadius, mTaskID);
+
+            }
+
+        });
     }
 }

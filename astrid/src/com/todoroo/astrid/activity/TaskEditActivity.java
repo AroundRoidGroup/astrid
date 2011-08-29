@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.TabActivity;
@@ -669,25 +667,25 @@ public final class TaskEditActivity extends TabActivity {
                 }
 
                 String[] typeData = b.getStringArray(SpecificMapLocation.TYPE_TO_SEND);
-                Map<String, List<String>> parsedTypes = new HashMap<String, List<String>>();
-                if (typeData != null) {
-                    for (String str : typeData) {
-                        String type = str.substring(0, str.indexOf("$$")); //$NON-NLS-1$
-                        String rest = str.substring(str.indexOf("$$") + "$$".length()); //$NON-NLS-1$ //$NON-NLS-2$
-                        List<String> lst = new ArrayList<String>();
-                        while (true) {
-                            int del = rest.indexOf('%');
-                            if (del == -1)
-                                break;
-                            String g = rest.substring(0, del);
-                            lst.add(g);
-                            rest = rest.substring(del + 1);
-                        }
-                        parsedTypes.put(type, lst);
-                    }
-                }
+//                Map<String, List<String>> parsedTypes = new HashMap<String, List<String>>();
+//                if (typeData != null) {
+//                    for (String str : typeData) {
+//                        String type = str.substring(0, str.indexOf("$$")); //$NON-NLS-1$
+//                        String rest = str.substring(str.indexOf("$$") + "$$".length()); //$NON-NLS-1$ //$NON-NLS-2$
+//                        List<String> lst = new ArrayList<String>();
+//                        while (true) {
+//                            int del = rest.indexOf('%');
+//                            if (del == -1)
+//                                break;
+//                            String g = rest.substring(0, del);
+//                            lst.add(g);
+//                            rest = rest.substring(del + 1);
+//                        }
+//                        parsedTypes.put(type, lst);
+//                    }
+//                }
                 specificCS.updateSpecificPoints(allSpecific, allAddresses);
-                specificCS.updateTypes(parsedTypes);
+                specificCS.updateTypes(typeData);
             }
             return;
         }

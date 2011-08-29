@@ -14,7 +14,8 @@
 			android:textSize="6pt" android:layout_weight="1"
 			android:completionThreshold="1" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:layout_margin="0dip"
-			android:drawableLeft="@drawable/ic_menu_search"/>
+			android:drawableLeft="@drawable/ic_menu_search"
+			android:singleLine="true"/>
 		<Button android:id="@+id/specificAddAddressButton"
 			android:text="@string/DLG_add"
 			android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_margin="0dip"/>
@@ -30,7 +31,6 @@
 	<LinearLayout android:id="@+id/linearLayout1"
 		android:orientation="horizontal" android:layout_width="match_parent"
 		android:layout_height="wrap_content">
-
 		<com.aroundroidgroup.map.AdjustedMap
 			android:id="@+id/mapview" android:layout_width="fill_parent"
 			android:clickable="true" android:apiKey="@string/GOOGLE_MAPS_API_KEY"
