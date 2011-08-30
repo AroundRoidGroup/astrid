@@ -167,8 +167,6 @@ public class AroundgpsServlet extends HttpServlet {
 					try {
 						ml.sendOneMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", "Hi "+user.getNickname()+"!\n\nWe are happy that you have chosen using Astrid, Aroundroid, and Aroundroid People Location.");
 					} catch (MessagingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 				}
 				GPSProps gpsP = new GPSProps(user,user.getEmail().toLowerCase(), dLon, dLat,lTimeStamp);

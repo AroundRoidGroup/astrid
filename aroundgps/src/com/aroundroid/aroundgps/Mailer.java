@@ -13,6 +13,8 @@ import javax.mail.internet.MimeMessage;
 //mailer for one session
 public class Mailer {
 	
+	private static final String emailRegularExpression = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"; //$NON-NLS-1$
+	
 	private Properties props = new Properties();
 	private Session session = Session.getDefaultInstance(props, null);
 	
@@ -30,5 +32,9 @@ public class Mailer {
 		msg.setSubject(subject);
 		msg.setText(msgBody);
 		Transport.send(msg);
+	}
+	
+	public static boolean validMail(String mailAdress){
+		return mailAdress.matches(emailRegularExpression);
 	}
 }
