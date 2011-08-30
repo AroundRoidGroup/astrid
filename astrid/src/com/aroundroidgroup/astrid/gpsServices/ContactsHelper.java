@@ -57,9 +57,9 @@ public class ContactsHelper {
 
     public String getDisplayName(Cursor cur){
         if (cur.moveToNext()) {
-                return cur.getString(
-                        cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            }
+            return cur.getString(
+                    cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+        }
         else{
             return null;
         }

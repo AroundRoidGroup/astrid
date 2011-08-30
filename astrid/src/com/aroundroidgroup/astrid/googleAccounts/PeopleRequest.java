@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 
 public class PeopleRequest {
 
-    private static List<NameValuePair> createPostData(FriendProps myFp,String peopleString){
+    private static List<NameValuePair> createPostData(FriendProps myFp,String[] people){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (myFp!=null && myFp.isValid()){
             nameValuePairs.add(new BasicNameValuePair("GPSLAT", myFp.getLat())); //$NON-NLS-1$
@@ -36,7 +36,9 @@ public class PeopleRequest {
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0))); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0))); //$NON-NLS-1$
         }
-        nameValuePairs.add(new BasicNameValuePair("USERS",peopleString));//("USERS", "NaamaKeshet@gmail.comXXXtomer.keshet@gmail.comXXXa@b.comXXXg@c.com")); //$NON-NLS-1$
+        for (String dude : people){
+            nameValuePairs.add(new BasicNameValuePair("USERS",dude)); //$NON-NLS-1$
+        }
         return nameValuePairs;
     }
 
@@ -79,7 +81,7 @@ public class PeopleRequest {
         return lfp;
     }
 
-    public static List<FriendProps> requestPeople(FriendProps myFp,String people, ConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
+    public static List<FriendProps> requestPeople(FriendProps myFp,String[] people, ConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createPostData(myFp,people)));

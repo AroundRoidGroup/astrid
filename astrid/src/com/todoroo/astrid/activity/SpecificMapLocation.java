@@ -821,7 +821,7 @@ public class SpecificMapLocation extends MapActivity{
     @Override
     protected void onPause() {
         super.onPause();
-        //        mHan.removeCallbacks(mUpdateTimeTask);
+        mHan.removeCallbacks(mUpdateTimeTask);
         mLocationDB.close();
         saveAndQuit();
     }

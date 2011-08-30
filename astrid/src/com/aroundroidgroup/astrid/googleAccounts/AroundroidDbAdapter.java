@@ -283,6 +283,7 @@ public class AroundroidDbAdapter {
 
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
+        //c = fetchByContactId(CONTACTID_MY_ID);
         c = fetchByContactId(CONTACTID_MY_ID);
         if (c!=null && c.moveToFirst()){
             return c;
