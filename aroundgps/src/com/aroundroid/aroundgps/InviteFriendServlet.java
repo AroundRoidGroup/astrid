@@ -51,8 +51,8 @@ public class InviteFriendServlet extends HttpServlet {
 				//if cannot find friend registered to the service, sends mail
 				Mailer ml = new Mailer(user.getEmail(), user.getNickname());
 				try {
-					ml.sendOneMail(friendMail, "Invitation for Aroundroid, People Location Service", "Hi!\n\n I am inviting you to download astrid and Aroundroid.\n\n It will allow me to set a reminder that will notify me when I am around you area!\n\nNow THAT'S cool!\n\nYours,\n\n"+user.getNickname());
-					mailSent = true;
+					mailSent = ml.sendOneHtmlMail(friendMail, "Invitation for Aroundroid, People Location Service",AroundroidFTLMails.getInviteMail(user.getNickname(), friendMail.substring(0, friendMail.indexOf('@'))));
+					//ml.sendOneMail(friendMail, "Invitation for Aroundroid, People Location Service", "Hi!\n\n I am inviting you to download astrid and Aroundroid.\n\n It will allow me to set a reminder that will notify me when I am around you area!\n\nNow THAT'S cool!\n\nYours,\n\n"+user.getNickname());					
 				} catch (MessagingException e) {
 				}
 			}

@@ -50,7 +50,8 @@ public class CronUserManagerServlet extends HttpServlet {
 
 			for (GPSProps gpsP : gpses){
 				try {
-					ml.sendOneMail(gpsP.getMail(), "AroundRoid People Location Service - Long time, no see!", "Hi "+gpsP.getUser().getNickname()+"!\n\nYou haven't used Aroundroid People location Service for a long time.\n\nA week from now, you will no longer be available for other users.\n\nTo start using Aroundroid again, open Astrid from you Android and choose People Location Service.");
+					//ml.sendOneMail(gpsP.getMail(), "AroundRoid People Location Service - Long time, no see!", "Hi "+gpsP.getUser().getNickname()+"!\n\nYou haven't used Aroundroid People location Service for a long time.\n\nA week from now, you will no longer be available for other users.\n\nTo start using Aroundroid again, open Astrid from you Android and choose People Location Service.");
+					ml.sendOneHtmlMail(gpsP.getMail(), "AroundRoid People Location Service - Long time, no see!", AroundroidFTLMails.getReminderMail(gpsP.getUser().getNickname()));
 					gpsP.setReminded(true);
 				} catch (MessagingException e) {
 					// TODO Auto-generated catch block
@@ -64,7 +65,8 @@ public class CronUserManagerServlet extends HttpServlet {
 			//mail them death
 			for (GPSProps gpsP : gpses2){
 				try {
-					ml.sendOneMail(gpsP.getMail(), "AroundRoid People Location Service - Is it the end?", "Hi "+gpsP.getUser().getNickname()+"!\n\nYou haven't used Aroundroid People location Service for a long time.\n\nAs a result, you will no longer be available for other users.\n\nTo start using Aroundroid again, open Astrid from you Android and choose People Location Service.");
+					//ml.sendOneMail(gpsP.getMail(), "AroundRoid People Location Service - Is it the end?", "Hi "+gpsP.getUser().getNickname()+"!\n\nYou haven't used Aroundroid People location Service for a long time.\n\nAs a result, you will no longer be available for other users.\n\nTo start using Aroundroid again, open Astrid from you Android and choose People Location Service.");
+					ml.sendOneHtmlMail(gpsP.getMail(),"AroundRoid People Location Service - Is it the end?" , AroundroidFTLMails.getDeletedMail(gpsP.getUser().getNickname()));
 				} catch (MessagingException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

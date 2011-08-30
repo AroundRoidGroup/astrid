@@ -165,7 +165,8 @@ public class AroundgpsServlet extends HttpServlet {
 					//TODO use a better mailing system, plus sending a html mail for bold and stuff
 					Mailer ml = new Mailer(AroundGPSConstants.mailName, AroundGPSConstants.mailUser);
 					try {
-						ml.sendOneMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", "Hi "+user.getNickname()+"!\n\nWe are happy that you have chosen using Astrid, Aroundroid, and Aroundroid People Location.");
+						ml.sendOneHtmlMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", AroundroidFTLMails.getWelcome(user.getNickname()));
+						//ml.sendOneMail(user.getEmail(), "Welcome to Aroundroid, People Location Reminders!", "Hi "+user.getNickname()+"!\n\nWe are happy that you have chosen using Astrid, Aroundroid, and Aroundroid People Location.");
 					} catch (MessagingException e) {
 					}
 				}
