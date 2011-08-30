@@ -11,8 +11,8 @@
 	<string name="no_contact_info">No additional contact information</string>
 
 	<!-- people location preference (login/logout) -->
-	<string name="EPr_people_base_remainder">People Based Reminder</string>
-	<string name="EPr_connect">Aroundroid people\'s location</string>
+
+	<string name="EPr_connect">Connect to people\'s locations</string>
 	<string name="logging_in_status">Logging In...</string>
 	<string name="people_location_login">Login</string>
 	<string name="people_location_logout">Logout</string>
@@ -29,8 +29,8 @@
 	<string name="email_title">E-mail Address</string>
 
 	<!-- Delete friend dialog -->
-	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete</string>
-	<string name="DLG_delete_text_after_mail">from your tracking friend list?</string>
+	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete </string>
+	<string name="DLG_delete_text_after_mail"> from your tracking friend list?</string>
 	<string name="DLG_delete_title">Delete friend</string>
 
 	<!-- Toast -invitation sent or not sent to your friend -->

@@ -34,7 +34,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -269,7 +268,7 @@ public class SpecificMapLocation extends MapActivity{
     final int mDelayMillis = 10 * 1000;
     private final Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
-                Toast.makeText(SpecificMapLocation.this, "now", Toast.LENGTH_LONG).show();
+
                         /* my code */
                         mPeople.clear();
                         mNullPeople.clear();

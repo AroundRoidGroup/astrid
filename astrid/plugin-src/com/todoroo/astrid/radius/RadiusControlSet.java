@@ -53,7 +53,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        carValue.setText(String.valueOf(progress));
+                        carValue.setText(String.valueOf(progress)+" meters");
                     }
 
                     @Override
@@ -71,7 +71,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        footValue.setText(String.valueOf(progress));
+                        footValue.setText(String.valueOf(progress)+" meters");
                     }
 
                     @Override
@@ -103,8 +103,8 @@ public class RadiusControlSet implements TaskEditControlSet{
         // Setup footRadiusSelector/carRadiusSelector and the view text
            footRadiusSelector.setProgress(footRadius);
            carRadiusSelector.setProgress(carRadius);
-           carValue.setText(carRadius+""); //$NON-NLS-1$
-           footValue.setText(footRadius+""); //$NON-NLS-1$
+           carValue.setText(carRadius+" meters"); //$NON-NLS-1$
+           footValue.setText(footRadius+" meters"); //$NON-NLS-1$
            if(footRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_foot_radius_key)) ||
                    carRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_car_radius_key))){
                enabled.setChecked(false);
@@ -119,8 +119,13 @@ public class RadiusControlSet implements TaskEditControlSet{
     public String writeToModel(Task task) {
         if(!enabled.isChecked())
             return null;
-        if (locService.syncFootRadius(task.getId(), Integer.parseInt((String)footValue.getText())) ||
-        locService.syncCarRadius(task.getId(), Integer.parseInt((String)carValue.getText())))
+        String str = (String)footValue.getText();
+        String numStr = str.substring(0, str.indexOf(" ")); //$NON-NLS-1$
+        str = (String)carValue.getText();
+        String numStr1= str.substring(0, str.indexOf(" ")); //$NON-NLS-1$
+        boolean b1 = locService.syncFootRadius(task.getId(), Integer.parseInt(numStr));
+        boolean b2 = locService.syncCarRadius(task.getId(), Integer.parseInt(numStr1));
+        if (b1 || b2)
             task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
         return null;
     }

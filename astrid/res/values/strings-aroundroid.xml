@@ -13,7 +13,8 @@
 	<string name="gps_not_enabled">Your GPS seems to be disabled, do you want to enable it?</string>
 	
 	<!-- button for enabling and disabling AroundRoid -->
-	<string name="use_aroundroid_title">Use AroundRoid location based reminders</string>
+		<string name="EPr_people_base_remainder">AroundRoid\'s location service</string>
+	<string name="use_aroundroid_title">Use AroundRoid</string>
 	<string name="use_aroundroid_text">AroundRoid allows you to have Astrid remind you of a task when you get near a location for it</string>
 	
 	
