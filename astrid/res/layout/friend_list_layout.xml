@@ -15,5 +15,6 @@
      <TextView android:id="@android:id/empty"
                android:layout_width="wrap_content"
                android:layout_height="fill_parent"
+               android:textSize="20dip"
                android:text="@string/tracking_list_empty"/>
  </LinearLayout>
