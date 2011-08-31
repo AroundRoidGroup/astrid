@@ -27,6 +27,7 @@ import android.preference.PreferenceScreen;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.PeopleLocationPreferneces;
+import com.aroundroidgroup.astrid.gpsServices.GPSEnablingDialog;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
@@ -244,14 +245,15 @@ public class EditPreferences extends TodorooPreferences {
             }
         }
 
-        if (r.getString(R.string.p_aroundroid).equals(preference.getKey())) {
-            Preference loginButton = findPreference(r.getString(R.string.p_people_login_key));
+        if (r.getString(R.string.AD_p_aroundroid).equals(preference.getKey())) {
+            Preference loginButton = findPreference(r.getString(R.string.AD_p_people_login_key));
             Intent serviceIntent = new Intent(this,GPSService.class);
             if (value != null && !(Boolean)value){
                 stopService(serviceIntent);
                 loginButton.setEnabled(false);
             }
             else{
+                GPSEnablingDialog.checkGPSEnabled(EditPreferences.this);
                 startService(serviceIntent);
                 loginButton.setEnabled(true);
             }

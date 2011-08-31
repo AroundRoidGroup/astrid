@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+
 	<!-- dialog buttons and titles -->
-	<string name="DLG_exit_title">Are you sure you want to exit?</string>
-	<string name="DLG_cancel">Cancel</string>
-	<string name="DLG_add">Add</string>
-	<string name="DLG_add_all">Add All</string>
-	<string name="DLG_ok">ok</string>
-	<string name="DLG_hurray">Hurray!</string>
-	<string name="DLG_yes_recommanded">Yes (recommanded)</string>
+	<string name="AD_DLG_exit_title">Are you sure you want to exit?</string>
+	<string name="AD_DLG_cancel">Cancel</string>
+	<string name="AD_DLG_add">Add</string>
+	<string name="AD_DLG_add_all">Add All</string>
+	<string name="AD_DLG_ok">OK</string>
+	<string name="AD_DLG_hurray">Hurray!</string>
+	<string name="AD_DLG_yes_recommanded">Yes (recommanded)</string>
 	
 	<!-- dialog  -->
-	<string name="gps_not_enabled">Your GPS seems to be disabled, do you want to enable it?</string>
+	<string name="AD_gps_not_enabled">Your GPS seems to be disabled, do you want to enable it?</string>
 	
 	<!-- button for enabling and disabling AroundRoid -->
-	<string name="use_aroundroid_title">Use AroundRoid location based reminders</string>
-	<string name="use_aroundroid_text">AroundRoid allows you to have Astrid remind you of a task when you get near a location for it</string>
+		<string name="AD_EPr_people_base_remainder">AroundRoid\'s location service</string>
+	<string name="AD_use_aroundroid_title">Use AroundRoid</string>
+	<string name="AD_use_aroundroid_text">AroundRoid allows you to have Astrid remind you of a task when you get near a location for it</string>
 	
+	<!-- radius bar -->
+		<string name="AD_meters">meters</string>
 	
 
 

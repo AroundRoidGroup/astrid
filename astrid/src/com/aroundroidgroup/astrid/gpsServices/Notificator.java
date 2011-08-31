@@ -12,6 +12,7 @@ import android.location.Location;
 
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
 import com.aroundroidgroup.astrid.gpsServices.GPSService.LocStruct;
+import com.aroundroidgroup.locationTags.LocationFields;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Misc;
@@ -30,7 +31,6 @@ public class Notificator {
     static LocationService locationService = new LocationService();
     public static void notifyAboutPeopleLocation(Task task,double speed, double myLat, double myLon, double lat, double lon) {
         float[] arr = new float[3];
-        //TODO : check array
 
         Location.distanceBetween(
                 myLat,
@@ -38,10 +38,8 @@ public class Notificator {
                 lat,lon, arr);
         float dist = arr[0];
 
-        //distance - 100 kilometers
-        //TODO change 25 to an editable parameter
         int radius = 0;
-        if (speed>25)
+        if (speed>LocationFields.carSpeedThreshold)
             radius = locationService.getCarRadius(task.getId());
         else
             radius = locationService.getFootRadius(task.getId());

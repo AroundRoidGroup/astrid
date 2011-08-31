@@ -32,8 +32,8 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_people_location);
         r = getResources();
-        loginList = (ListPreference) findPreference(r.getString(R.string.login_list_preference_key));
-        Logout =  findPreference(r.getString(R.string.logout_preference_key));
+        loginList = (ListPreference) findPreference(r.getString(R.string.AD_login_list_preference_key));
+        Logout =  findPreference(r.getString(R.string.AD_logout_preference_key));
         status = findPreference(r.getString(R.string.sync_SPr_status_key));
         accountManager = AccountManager.get(getApplicationContext());
         final Account[] accounts = accountManager.getAccountsByType("com.google"); //$NON-NLS-1$
@@ -78,14 +78,14 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
             public boolean onPreferenceClick(Preference p) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(PeopleLocationPreferneces.this);
-                builder.setMessage(r.getString(R.string.DLG_exit_title))
+                builder.setMessage(R.string.AD_DLG_exit_title)
                 .setCancelable(false)
-                .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.DLG_yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         prs.stop();
                     }
                 })
-                .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.DLG_no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Logout.setEnabled(true);
                         dialog.cancel();
@@ -121,7 +121,7 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         View view = findViewById(R.id.status);
         view.setBackgroundColor(Color.BLUE);
 
-        status.setTitle(r.getString(R.string.logging_in_status));
+        status.setTitle(R.string.AD_logging_in_status);
         ////LOGOUT
 
 
@@ -134,7 +134,7 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
         View view = findViewById(R.id.status);
         view.setBackgroundColor(Color.RED);
         Preference pref = findPreference(r.getString(R.string.sync_SPr_status_key));
-        pref.setTitle(r.getString(R.string.sync_status_loggedout));
+        pref.setTitle(R.string.sync_status_loggedout);
         ////LOGOUT
 
         Logout.setEnabled(false);

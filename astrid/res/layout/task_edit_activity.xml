@@ -82,7 +82,7 @@
 	    android:id="@+id/location_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/TEA_location_label"
+        android:text="@string/AD_TEA_location_label"
         style="@style/TextAppearance.GEN_EditLabel" />
     <LinearLayout
         android:id="@+id/location"
@@ -97,7 +97,7 @@
       		android:layout_height="wrap_content"
    		    android:layout_weight="1"
         	
-        	android:text="@string/text_location_button"
+        	android:text="@string/AD_text_location_button"
         	/>
         
     </LinearLayout>  
