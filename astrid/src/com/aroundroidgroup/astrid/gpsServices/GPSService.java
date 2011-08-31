@@ -41,7 +41,7 @@ import com.todoroo.andlib.utility.DateUtilities;
 
 public class GPSService extends Service{
 
-    private final boolean USING_MOCK_LOCATIONS = true;
+    private final boolean USING_MOCK_LOCATIONS = false;
 
     private DataRefresher refreshData = null;
 
@@ -51,8 +51,6 @@ public class GPSService extends Service{
 
     private final static LocationService threadLocationService = new LocationService();
 
-    private final WPSLocation userLastLocation = null;
-    private final Object userLocationLock = new Object();
 
     private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
 
@@ -117,9 +115,6 @@ public class GPSService extends Service{
         refreshData.start();
     }
 
-    private static final int LOCATION_MESSAGE = 1;
-    private static final int ERROR_MESSAGE = 2;
-    private static final int DONE_MESSAGE = 3;
     private XPS _xps;
     private final MyLocationCallback _callback = new MyLocationCallback();
     WPSAuthentication auth = new WPSAuthentication("aroundroid", "AroundRoid"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -142,13 +137,13 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("WPS done");
+            toastMe("WPS done"); //$NON-NLS-1$
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("WPS handleError");
+            toastMe("WPS handleError"); //$NON-NLS-1$
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -157,14 +152,14 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleIPLocation");
+            toastMe("WPS handleIPLocation"); //$NON-NLS-1$
 
         }
 
         public void handleWPSLocation(WPSLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed());
+            toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             makeUseOfNewLocation(location);
         }
 
@@ -207,7 +202,6 @@ public class GPSService extends Service{
             _xps.abort();
         }
         this.aDba.close();
-
     }
 
     private final Handler mHandler = new Handler();
@@ -270,10 +264,9 @@ public class GPSService extends Service{
 
 
         private final int defaultSleepTime = 1 * 1000;
-        private final int defaultLocationInvalidateTime = 1000 * 120;
+
 
         private final int sleepTime = defaultSleepTime;
-        private final int locationInvalidateTime = defaultLocationInvalidateTime;
 
         private long lastConnectionTime;
 
@@ -435,7 +428,7 @@ public class GPSService extends Service{
     private final LocationListener locationListener = new LocationListener() {
 
         public void onLocationChanged(Location location) {
-            toastMe("GPS location changed: " + location.hasSpeed());
+            toastMe("GPS location changed: " + location.hasSpeed()); //$NON-NLS-1$
             makeUseOfNewLocation(location);
         }
 
@@ -463,14 +456,14 @@ public class GPSService extends Service{
                 mockLocationCreator.openLocationList();
                 mockLocationThread = new Thread(mockLocationCreator);
                 mockLocationThread.start();
-                Toast.makeText(this.getApplicationContext(), "Mock locations are in use", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getApplicationContext(), "Mock locations are in use", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
             } catch (IOException e) {
-                Toast.makeText(this.getApplicationContext(), "Error: Unable to open / read data file", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getApplicationContext(), "Error: Unable to open / read data file", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 mockLocationCreator = null;
             }
         } catch(SecurityException e) {
-            Toast.makeText(this.getApplicationContext(), "Error: Insufficient Privileges", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "unable to use mock locations, insufficient privileges", e);
+            Toast.makeText(this.getApplicationContext(), "Error: Insufficient Privileges", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+            Log.e(TAG, "unable to use mock locations, insufficient privileges", e); //$NON-NLS-1$
         }
 
     }

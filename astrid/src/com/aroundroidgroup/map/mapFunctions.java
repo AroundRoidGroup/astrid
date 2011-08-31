@@ -241,11 +241,11 @@ public class mapFunctions {
             return new int[0];
         int[] feedback = new int[people.length];
         for (int i = 0 ; i < people.length ; i++) {
-            if (people[i] == null || locations[i] == null || locations[i].isNaN()) {
+            if (people[i] == null || locations[i] == null || locations[i].isNaN() || locations[i] == null) {
                 feedback[i] = FAILURE;
                 continue;
             }
-            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, null);
+            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, people[i]);
             feedback[i] = SUCCESS;
         }
         return feedback;

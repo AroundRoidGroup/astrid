@@ -60,13 +60,13 @@ public class LocationsDbAdapter {
         }
 
         @Override
-        public void onCreate(SQLiteDatabase db) {
+        public synchronized void onCreate(SQLiteDatabase db) {
             db.execSQL(CREATE_TABLE_TRANSLATIONS);
             db.execSQL(CREATE_TABLE_TYPES);
         }
 
         @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        public synchronized void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             Log.w(TAG, "Upgrading database from version " + oldVersion + " to " //$NON-NLS-1$ //$NON-NLS-2$
                     + newVersion + ", which will destroy all old data"); //$NON-NLS-1$
             db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_TRANSLATIONS); //$NON-NLS-1$
@@ -94,13 +94,13 @@ public class LocationsDbAdapter {
      *         initialization call)
      * @throws SQLException if the database could be neither opened or created
      */
-    public LocationsDbAdapter open() throws SQLException {
+    public synchronized LocationsDbAdapter open() throws SQLException {
         mDbHelper = new DatabaseHelper(mCtx);
         mDb = mDbHelper.getWritableDatabase();
         return this;
     }
 
-    public void close() {
+    public synchronized void close() {
         mDbHelper.close();
     }
 
@@ -114,7 +114,7 @@ public class LocationsDbAdapter {
      * @param body the body of the note
      * @return rowId or -1 if failed
      */
-    public long createTranslate(int latitude, int longitude, String address) {
+    public synchronized long createTranslate(int latitude, int longitude, String address) {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_LATITUDE, latitude);
         initialValues.put(KEY_LONGITUDE, longitude);
@@ -123,7 +123,7 @@ public class LocationsDbAdapter {
         return mDb.insert(DATABASE_TABLE_TRANSLATIONS, null, initialValues);
     }
 
-    public long createType(String type, long latitude, long longitude, double radius, Map<String, DPoint> data) {
+    public synchronized long createType(String type, long latitude, long longitude, double radius, Map<String, DPoint> data) {
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_TYPE, type);
         initialValues.put(KEY_LATITUDE, latitude);
@@ -131,22 +131,23 @@ public class LocationsDbAdapter {
         initialValues.put(KEY_RADIUS, radius);
         initialValues.put(KEY_LAST_USE_TIME, DateUtilities.now());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
-//        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+        //        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
         String typeTableName = "_" + type; //$NON-NLS-1$
+
+        /* creating the table for the given type. the table contains business names and their coords */
+        String typeTableSQL =
+            "create table if not exists " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            + KEY_BUSINESS_NAME + " text not null, " + KEY_LATITUDE + " integer, " + KEY_LONGITUDE + " integer, " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            KEY_TYPE_ID + " integer) ;"; //$NON-NLS-1$
+        mDb.execSQL(typeTableSQL);
         if (data != null) {
-            /* creating the table for the given type. the table contains business names and their coords */
-            String typeTableSQL =
-                "create table if not exists " + typeTableName + " (" + KEY_ROWID + " integer primary key autoincrement, " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                + KEY_BUSINESS_NAME + " text not null, " + KEY_LATITUDE + " integer, " + KEY_LONGITUDE + " integer, " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                KEY_TYPE_ID + " integer) ;"; //$NON-NLS-1$
-            mDb.execSQL(typeTableSQL);
             for (Map.Entry<String, DPoint> p : data.entrySet()) {
                 ContentValues pair = new ContentValues();
                 pair.put(KEY_BUSINESS_NAME, p.getKey());
                 pair.put(KEY_LATITUDE, Misc.degToGeo(p.getValue()).getLatitudeE6());
                 pair.put(KEY_LONGITUDE, Misc.degToGeo(p.getValue()).getLongitudeE6());
                 pair.put(KEY_TYPE_ID, rowID);
-//                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
+                //                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
 
             }
         }
@@ -159,11 +160,11 @@ public class LocationsDbAdapter {
      * @param rowId id of note to delete
      * @return true if deleted, false otherwise
      */
-    public boolean deleteTranslation(long rowId) {
+    public synchronized boolean deleteTranslation(long rowId) {
         return mDb.delete(DATABASE_TABLE_TRANSLATIONS, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
-    public boolean deleteType(long rowId) {
+    public synchronized boolean deleteType(long rowId) {
         return mDb.delete(DATABASE_TABLE_TYPES, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
@@ -172,17 +173,17 @@ public class LocationsDbAdapter {
      *
      * @return Cursor over all notes
      */
-    public Cursor fetchAllTranslations() {
+    public synchronized Cursor fetchAllTranslations() {
         return mDb.query(DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID, KEY_LATITUDE, KEY_LONGITUDE,
                 KEY_ADDRESS}, null, null, null, null, null);
     }
 
-    public Cursor fetchAllTypes() {
+    public synchronized Cursor fetchAllTypes() {
         return mDb.query(DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_LATITUDE, KEY_LONGITUDE,
                 KEY_RADIUS}, null, null, null, null, null);
     }
 
-    public String fetchByCoordinateFromType(String type, int latitude, int longitude) throws SQLException {
+    public synchronized String fetchByCoordinateFromType(String type, int latitude, int longitude) throws SQLException {
         Cursor mCursor =
             mDb.query(true, "_" + type, new String[] {KEY_BUSINESS_NAME}, //$NON-NLS-1$
                     "(" + KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " and " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + ") and " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -199,7 +200,7 @@ public class LocationsDbAdapter {
         return null;
     }
 
-    public Cursor fetchByCoordinate(int latitude, int longitude) throws SQLException{
+    public synchronized Cursor fetchByCoordinate(int latitude, int longitude) throws SQLException{
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
                     KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS},
@@ -217,7 +218,7 @@ public class LocationsDbAdapter {
         return mCursor;
     }
 
-    public String fetchByCoordinateAsString(int latitude, int longitude) throws SQLException {
+    public synchronized String fetchByCoordinateAsString(int latitude, int longitude) throws SQLException {
         Cursor mCursor = fetchByCoordinate(latitude, longitude);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
@@ -230,7 +231,7 @@ public class LocationsDbAdapter {
         return null;
     }
 
-    public Cursor fetchByAddress(String address) throws SQLException {
+    public synchronized Cursor fetchByAddress(String address) throws SQLException {
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
                     KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS}, KEY_ADDRESS + "='" + address + "'", //$NON-NLS-1$ //$NON-NLS-2$
@@ -246,7 +247,7 @@ public class LocationsDbAdapter {
         return mCursor;
     }
 
-    public GeoPoint fetchByAddressAsString(String address) throws SQLException {
+    public synchronized GeoPoint fetchByAddressAsString(String address) throws SQLException {
         Cursor mCursor = fetchByAddress(address);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
@@ -267,7 +268,7 @@ public class LocationsDbAdapter {
      * @return Cursor positioned to matching note, if found
      * @throws SQLException if note could not be found/retrieved
      */
-    public Cursor fetchTranslation(long rowId) throws SQLException {
+    public synchronized Cursor fetchTranslation(long rowId) throws SQLException {
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TRANSLATIONS, new String[] {KEY_ROWID,
                     KEY_LATITUDE, KEY_LONGITUDE, KEY_ADDRESS}, KEY_ROWID + "=" + rowId, null, //$NON-NLS-1$
@@ -284,7 +285,7 @@ public class LocationsDbAdapter {
 
     }
 
-    public Cursor fetchByType(String type) throws SQLException{
+    public synchronized Cursor fetchByType(String type) throws SQLException{
         Cursor mCursor =
             mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE,
                     KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS}, KEY_TYPE + "='" + type + "'", //$NON-NLS-1$ //$NON-NLS-2$
@@ -305,18 +306,18 @@ public class LocationsDbAdapter {
         return mCursor;
     }
 
-    public Cursor fetchByTypeComplex(String type, int latitude, int longitude, double radius) throws SQLException {
+    public synchronized Cursor fetchByTypeComplex(String type, int latitude, int longitude, double radius) throws SQLException {
         if (type == null)
             return null;
         Cursor mCursor =
-        mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS},
-                KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " AND " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                KEY_LONGITUDE + "<=" + (longitude + mCoordinateError) + " AND " + KEY_LONGITUDE + ">=" + (longitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                KEY_RADIUS + "<=" + (radius + mRadiusError) + " AND " + KEY_RADIUS + ">=" + (radius - mRadiusError), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                null, null, null, null, null);
+            mDb.query(true, DATABASE_TABLE_TYPES, new String[] {KEY_ROWID, KEY_TYPE, KEY_LATITUDE, KEY_LONGITUDE, KEY_RADIUS},
+                    KEY_TYPE + "='" + type + "' AND " + //$NON-NLS-1$ //$NON-NLS-2$
+                    KEY_LATITUDE + "<=" + (latitude + mCoordinateError) + " AND " + KEY_LATITUDE + ">=" + (latitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                    KEY_LONGITUDE + "<=" + (longitude + mCoordinateError) + " AND " + KEY_LONGITUDE + ">=" + (longitude - mCoordinateError) + " AND " + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                    KEY_RADIUS + "<=" + (radius + mRadiusError) + " AND " + KEY_RADIUS + ">=" + (radius - mRadiusError), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    null, null, null, null, null);
         if (mCursor != null) {
             if (mCursor.moveToFirst()) {
-//                Toast.makeText(mCtx, "kjkj", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 int rowID = mCursor.getInt(mCursor.getColumnIndex(KEY_ROWID));
                 updateType(rowID,
                         mCursor.getString(mCursor.getColumnIndex(KEY_TYPE)),
@@ -332,7 +333,7 @@ public class LocationsDbAdapter {
         return mCursor;
     }
 
-    public Cursor fetchType(long rowId) throws SQLException {
+    public synchronized Cursor fetchType(long rowId) throws SQLException {
 
         Cursor mCursor =
 
@@ -361,7 +362,7 @@ public class LocationsDbAdapter {
      * @param body value to set note body to
      * @return true if the note was successfully updated, false otherwise
      */
-    public boolean updateTranslate(long rowId, int latitude, int longitude, String address) {
+    public synchronized boolean updateTranslate(long rowId, int latitude, int longitude, String address) {
         ContentValues args = new ContentValues();
         args.put(KEY_LATITUDE, latitude);
         args.put(KEY_LONGITUDE, longitude);
@@ -370,7 +371,7 @@ public class LocationsDbAdapter {
         return mDb.update(DATABASE_TABLE_TRANSLATIONS, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
 
-    public boolean updateType(long rowId, String type, int latitude, int longitude, double radius) {
+    public synchronized boolean updateType(long rowId, String type, int latitude, int longitude, double radius) {
         ContentValues args = new ContentValues();
         args.put(KEY_TYPE, type);
         args.put(KEY_LATITUDE, latitude);

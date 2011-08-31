@@ -7,10 +7,12 @@
 	<com.markupartist.android.widget.ActionBar
         android:id="@+id/actionbar"
         style="@style/ActionBar" />
+                <Button android:id="@+id/forcontextmenuonlybutton2"
+			android:layout_width="wrap_content" android:layout_height="wrap_content" />
   	<com.aroundroidgroup.map.AdjustedMap
 		android:id="@+id/mapview" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
 		android:clickable="true"
-		android:apiKey="@string/GOOGLE_MAPS_API_KEY" />
+		android:apiKey="@string/AD_GOOGLE_MAPS_API_KEY" />
 </LinearLayout>

@@ -283,7 +283,7 @@ public final class TaskEditActivity extends TabActivity {
                         controls.add(new RepeatControlSet(TaskEditActivity.this, extrasAddons));
                         controls.add(new GCalControlSet(TaskEditActivity.this, extrasAddons));
 
-                        if (Preferences.getBoolean(R.string.p_aroundroid, false)){
+                        if (Preferences.getBoolean(R.string.AD_p_aroundroid, false)){
                             specificCS = new LocationControlSet(TaskEditActivity.this);
                             controls.add(specificCS);
                             controls.add(new RadiusControlSet(TaskEditActivity.this, extrasAddons));

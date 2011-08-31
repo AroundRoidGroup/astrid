@@ -69,7 +69,7 @@ public class FriendAdapter extends ArrayAdapter<FriendPropsWithContactId> {
         if (conId!=AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
             String displayName = conHel.oneDisplayName(conId);
             if (displayName==null){
-                displayName = context.getResources().getString(R.string.no_contact_info);;
+                displayName = context.getResources().getString(R.string.AD_no_contact_info);;
             }
             holder.secondaryTextView.setText(displayName);
             holder.secondaryTextView.setVisibility(View.VISIBLE);

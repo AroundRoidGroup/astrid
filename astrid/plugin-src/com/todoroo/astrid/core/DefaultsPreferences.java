@@ -23,6 +23,7 @@ public class DefaultsPreferences extends TodorooPreferences {
     @Override
     public int getPreferenceResource() {
         return R.xml.preferences_defaults;
+
     }
 
     /**
@@ -34,6 +35,13 @@ public class DefaultsPreferences extends TodorooPreferences {
         Resources r = getResources();
 
         // defaults options
+        if (!Preferences.getBoolean(R.string.AD_p_aroundroid, false)){
+            Preference defaultCarRadius = findPreference(r.getString(R.string.p_rmd_default_car_radius_key));
+            defaultCarRadius.setEnabled(false);
+            Preference defaultFootRadius = findPreference(r.getString(R.string.p_rmd_default_foot_radius_key));
+            defaultFootRadius.setEnabled(false);
+        }
+
         if(r.getString(R.string.p_default_urgency_key).equals(preference.getKey())) {
             updateTaskListPreference(preference, value, r, R.array.EPr_default_urgency,
                     R.array.EPr_default_urgency_values, R.string.EPr_default_urgency_desc);
