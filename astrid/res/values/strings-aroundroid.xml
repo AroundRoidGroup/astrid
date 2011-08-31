@@ -17,6 +17,8 @@
 	<string name="use_aroundroid_title">Use AroundRoid</string>
 	<string name="use_aroundroid_text">AroundRoid allows you to have Astrid remind you of a task when you get near a location for it</string>
 	
+	<!-- radius bar -->
+		<string name="meters">meters</string>
 	
 
 

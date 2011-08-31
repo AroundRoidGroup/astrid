@@ -29,8 +29,8 @@
 	<string name="email_title">E-mail Address</string>
 
 	<!-- Delete friend dialog -->
-	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete </string>
-	<string name="DLG_delete_text_after_mail"> from your tracking friend list?</string>
+	<string name="DLG_delete_text_before_mail">Are you sure that you want to delete</string>
+	<string name="DLG_delete_text_after_mail">from your tracking friend list?</string>
 	<string name="DLG_delete_title">Delete friend</string>
 
 	<!-- Toast -invitation sent or not sent to your friend -->

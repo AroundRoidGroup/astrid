@@ -527,8 +527,8 @@ public class ManageContactsActivity extends ListActivity{
     private Dialog createDeleteDialog(final String friendMail) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(r.getString(R.string.DLG_delete_text_before_mail) +
-                friendMail + r.getString(R.string.DLG_delete_text_after_mail))
+        builder.setMessage(r.getString(R.string.DLG_delete_text_before_mail) + " "+
+                friendMail +" " + r.getString(R.string.DLG_delete_text_after_mail))
                 .setTitle(r.getString(R.string.DLG_delete_title))
                 .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

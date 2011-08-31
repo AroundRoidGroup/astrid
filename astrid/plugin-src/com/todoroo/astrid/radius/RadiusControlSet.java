@@ -1,6 +1,7 @@
 package com.todoroo.astrid.radius;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.aroundroidgroup.locationTags.LocationService;
+import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
@@ -32,8 +34,8 @@ public class RadiusControlSet implements TaskEditControlSet{
     private final TextView carValue;
     private final LocationService locService= new LocationService();
 
-
     public RadiusControlSet(final Activity activity, ViewGroup parent) {
+        final Resources r = activity.getResources();
         DependencyInjectionService.getInstance().inject(this);
         LayoutInflater.from(activity).inflate(R.layout.radius_control, parent, true);
         enabled = (CheckBox) activity.findViewById(R.id.radiusEnabled);
@@ -53,7 +55,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        carValue.setText(String.valueOf(progress)+" meters");
+                        carValue.setText(String.valueOf(progress)+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
                     }
 
                     @Override
@@ -71,7 +73,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        footValue.setText(String.valueOf(progress)+" meters");
+                        footValue.setText(String.valueOf(progress)+" " + r.getString(R.string.meters)); //$NON-NLS-1$
                     }
 
                     @Override
@@ -91,6 +93,7 @@ public class RadiusControlSet implements TaskEditControlSet{
 
     @Override
     public void readFromTask(Task task) {
+        Resources r = ContextManager.getContext().getResources();
         int  footRadius = locService.getFootRadius(task.getId());
         int  carRadius = locService.getCarRadius(task.getId());
         // Get current value from settings
@@ -103,8 +106,8 @@ public class RadiusControlSet implements TaskEditControlSet{
         // Setup footRadiusSelector/carRadiusSelector and the view text
            footRadiusSelector.setProgress(footRadius);
            carRadiusSelector.setProgress(carRadius);
-           carValue.setText(carRadius+" meters"); //$NON-NLS-1$
-           footValue.setText(footRadius+" meters"); //$NON-NLS-1$
+           carValue.setText(carRadius+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
+           footValue.setText(footRadius+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
            if(footRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_foot_radius_key)) ||
                    carRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_car_radius_key))){
                enabled.setChecked(false);
