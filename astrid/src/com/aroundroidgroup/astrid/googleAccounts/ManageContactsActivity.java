@@ -1,11 +1,14 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.json.JSONException;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -42,6 +45,8 @@ import android.widget.Toast;
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
+import com.aroundroidgroup.map.DPoint;
+import com.aroundroidgroup.map.Geocoding;
 import com.timsu.astrid.R;
 
 public class ManageContactsActivity extends ListActivity{
@@ -113,13 +118,25 @@ public class ManageContactsActivity extends ListActivity{
         }
 
         if (fpwci.isValid()){
-            sb.append("\nLatitude: ").append(fpwci.getLat()).append("\nLongitude: " + fpwci.getLat());
+            String address = null;
+            try {
+                address = Geocoding.reverseGeocoding(new DPoint(fpwci.getDlat(), fpwci.getDlon()));
+                sb.append("\nAddress: "+address);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (address==null){
+                sb.append("\nLatitude: ").append(fpwci.getLat()).append("\nLongitude: " + fpwci.getLat());
+            }
         }else{
             sb.append("\nLocation unavailable or not registered");
         }
 
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
 
         builder.setMessage(sb.toString())
         .setTitle("Friend Information")
