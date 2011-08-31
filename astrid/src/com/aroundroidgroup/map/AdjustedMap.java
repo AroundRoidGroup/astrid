@@ -16,8 +16,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -46,6 +48,7 @@ public class AdjustedMap extends MapView {
     private long currentTaskID = -1;
     private final String address = null;
     private Map<Integer, MapItemizedOverlay> overlays;
+    private Map<Integer, Boolean> mDoubleItem;
     private Map<MapItemizedOverlay, String[]> mConfigurations;
     private Map<MapItemizedOverlay, String> mNames;
     private List<Overlay> mapOverlays;
@@ -214,11 +217,12 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
-    public boolean createOverlay(int uniqueName, Drawable d, String[] config, String name) {
+    public boolean createOverlay(boolean doubles, int uniqueName, Drawable d, String[] config, String name) {
         if (d == null)
             return false;
         if (overlays.get(uniqueName) == null) {
             MapItemizedOverlay overlay = new MapItemizedOverlay(d);
+            mDoubleItem.put(uniqueName, doubles);
             overlays.put(uniqueName, overlay);
             mConfigurations.put(overlay, config);
             mNames.put(overlay, name);
@@ -254,12 +258,12 @@ public class AdjustedMap extends MapView {
         currentTaskID = taskID;
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && g != null && title != null && snippet != null) {
-//            if (overlay.getIndexOf(g) == -1) {
+            if (!(overlay.getIndexOf(g) != -1 && !mDoubleItem.get(identifier))) {
                 overlay.addOverlay(new AdjustedOverlayItem(g, title, snippet, addr, taskID, extras, -1));
                 mapOverlays.add(overlay);
                 invalidate();
                 return true;
-//            }
+            }
         }
         return false;
     }
@@ -365,6 +369,7 @@ public class AdjustedMap extends MapView {
         locDB = new LocationsDbAdapter(mContext);
         locDB.open();
         overlays = new HashMap<Integer, MapItemizedOverlay>();
+        mDoubleItem = new HashMap<Integer, Boolean>();
         mConfigurations = new HashMap<MapItemizedOverlay, String[]>();
         mNames = new HashMap<MapItemizedOverlay, String>();
         mapOverlays = getOverlays();
@@ -431,11 +436,6 @@ public class AdjustedMap extends MapView {
     }
 
     public int getItemsByExtrasCount(int id, String extras) {
-        MapItemizedOverlay yy = null;
-        for (MapItemizedOverlay x : overlays.values()) {
-            if (x.size() > 0)
-                yy = x;
-        }
         MapItemizedOverlay overlay = overlays.get(id);
         int counter = 0;
         if (overlay != null) {
@@ -451,7 +451,7 @@ public class AdjustedMap extends MapView {
         List<AdjustedOverlayItem> xtraLst = new ArrayList<AdjustedOverlayItem>();
         if (overlay != null) {
             for (AdjustedOverlayItem item : overlay) {
-                if (item.getExtras().equals(extras))
+                if (item.getExtras() != null && item.getExtras().equals(extras))
                     xtraLst.add(item);
             }
         }
@@ -492,6 +492,19 @@ public class AdjustedMap extends MapView {
             GeoPoint pdf = getMapCenter();
             if (!pdf.equals(lastCenter)) {
                 /* map center changed */
+                int lon = getLongitudeSpan();
+                int lat = getLatitudeSpan();
+                float[] hight = new float[1], width = new float[1];
+                if (lat==0 || lon==0){
+                    hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
+                    width[0]=241; //initialized map width. need to be changed if initial zoom level changes
+                }else{
+                    Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
+                    Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
+                }
+
+
+                Toast.makeText(mContext, "RADIUS = " + Math.min(hight[0], width[0]) / 2 + "", Toast.LENGTH_LONG).show();
                 fireEvent();
                 lastCenter = getMapCenter();
             }

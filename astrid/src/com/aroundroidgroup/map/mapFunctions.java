@@ -245,7 +245,7 @@ public class mapFunctions {
                 feedback[i] = FAILURE;
                 continue;
             }
-            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, null);
+            map.addItemToOverlay(Misc.degToGeo(locations[i]), people[i], people[i], people[i], id, taskID, people[i]);
             feedback[i] = SUCCESS;
         }
         return feedback;
