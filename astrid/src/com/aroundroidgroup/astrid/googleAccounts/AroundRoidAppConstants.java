@@ -33,22 +33,4 @@ public class AroundRoidAppConstants {
         return DateUtilities.now() - timeStamp <= maximumValidTime;
     }
 
-    /***
-     * joins all strings in sArr with delimiter delimiter to one big string
-     * @param sArr
-     * @param delimiter
-     * @return
-     */
-    //TODO consider moving from one big string to xml
-    public static String join(String[] sArr, String delimiter) {
-        StringBuffer buffer = new StringBuffer();
-        for ( int i = 0; i < sArr.length ; i++){
-            buffer.append(sArr[i]);
-            if (i < sArr.length-1){
-                buffer.append(delimiter);
-            }
-        }
-        return buffer.toString();
-    }
-
 }

@@ -248,7 +248,7 @@ public class GPSService extends Service{
                     //String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
                     long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
                     FriendPropsWithContactId fpwci = AroundroidDbAdapter.userToFPWithContactId(cur);
-                    if (!holdDeletes && !hs.contains(fpwci.getMail()) && fpwci.getContactId()!=-AroundroidDbAdapter.CONTACTID_INVALID_CONTACT){
+                    if (!holdDeletes && !hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0){
                         aDba.deletePeople(rowId);
                         deleted = true;
                     }

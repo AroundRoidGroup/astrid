@@ -17,9 +17,11 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -81,6 +83,60 @@ public class ManageContactsActivity extends ListActivity{
     private final Set<String> peopleHashSet =  Collections.synchronizedSet(new LinkedHashSet<String>());
 
     private final LocationService myLocationService = new LocationService();
+
+    public void startContactActivity(long contactId){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(contactId));
+        intent.setData(uri);
+        this.startActivity(intent);
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        // Get the item that was clicked
+        Object o = this.getListAdapter().getItem(position);
+        createViewContactDialog((FriendPropsWithContactId) o).show();
+    }
+
+    private Dialog createViewContactDialog(final FriendPropsWithContactId fpwci) {
+
+        final String contactDisplayName = (fpwci.getContactId()>=0?conHel.oneDisplayName(fpwci.getContactId())
+                :null);
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Tracking mail: ").append(fpwci.getMail());
+
+        if (contactDisplayName!=null){
+            sb.append("\nContact Name: ").append(contactDisplayName);
+        }
+
+        if (fpwci.isValid()){
+            sb.append("\nLatitude: ").append(fpwci.getLat()).append("\nLongitude: " + fpwci.getLat());
+        }else{
+            sb.append("\nLocation unavailable or not registered");
+        }
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(sb.toString())
+        .setTitle("Friend Information")
+        .setNeutralButton(("View Contact Card"), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (contactDisplayName!=null){
+                    startContactActivity(fpwci.getContactId());
+                }
+                else{
+                    Toast.makeText(ManageContactsActivity.this, "No contact information available", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
+
+    }
 
     @Override
     protected void onDestroy() {
@@ -473,18 +529,18 @@ public class ManageContactsActivity extends ListActivity{
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(r.getString(R.string.DLG_delete_text_before_mail) +
                 friendMail + r.getString(R.string.DLG_delete_text_after_mail))
-        .setTitle(r.getString(R.string.DLG_delete_title))
-        .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                peopleHashSet.remove(friendMail);
-                fillData();
-            }
-        })
-        .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
+                .setTitle(r.getString(R.string.DLG_delete_title))
+                .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        peopleHashSet.remove(friendMail);
+                        fillData();
+                    }
+                })
+                .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
         AlertDialog alert = builder.create();
         return alert;
 
@@ -516,11 +572,12 @@ public class ManageContactsActivity extends ListActivity{
             taskId = null;
         }
 
-        if (peopleWeGot!=null){
-            originalPeople = peopleWeGot;
-        }
-        else if (taskId!=null){
+
+        if (taskId!=null){
             originalPeople = myLocationService.getLocationsByPeopleAsArray(taskId);
+        }
+        else if (peopleWeGot!=null){
+            originalPeople = peopleWeGot;
         }
         else{
             originalPeople = new String[0];
@@ -566,7 +623,7 @@ public class ManageContactsActivity extends ListActivity{
         //TODO deal with error
         List<FriendPropsWithContactId> list = new ArrayList<FriendPropsWithContactId>();
         for (String mail : peopleHashSet2){
-                list.add(get(mail));
+            list.add(get(mail));
         }
         return list;
     }
@@ -604,7 +661,7 @@ public class ManageContactsActivity extends ListActivity{
             }
         }.start();
     }
-    */
+     */
 
     private class ScanContactsTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -797,9 +854,11 @@ public class ManageContactsActivity extends ListActivity{
 
 
     private LinkedHashSet<String> copySetSafe(){
-        LinkedHashSet <String> retSet = null;
+        LinkedHashSet <String> retSet =  new LinkedHashSet<String>();
         synchronized (peopleHashSet) {
-            retSet =  new LinkedHashSet<String>(peopleHashSet);
+            for (String s : peopleHashSet){
+                retSet.add(s);
+            }
         }
         return retSet;
     }
@@ -823,6 +882,7 @@ public class ManageContactsActivity extends ListActivity{
     protected void onResume() {
         super.onResume();
         setUITimer();
+        fillData();
     }
 
 

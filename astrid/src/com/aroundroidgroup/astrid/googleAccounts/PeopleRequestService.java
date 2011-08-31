@@ -107,10 +107,8 @@ public class PeopleRequestService {
         }
         // TODO check if location l is null
         // TODO not good implementation, cancel PeopleRequest class!
-        String peopleString = AroundRoidAppConstants.join(peopleArr
-                ,AroundRoidAppConstants.usersDelimiter);
         try {
-            List<FriendProps> lfp = PeopleRequest.requestPeople(myFp,peopleString, arcm);
+            List<FriendProps> lfp = PeopleRequest.requestPeople(myFp,peopleArr, arcm);
             Collections.sort(lfp, FriendProps.getMailComparator());
             for (FriendProps fp : lfp){
                 propsToDatabase(fp, aDba);
@@ -118,18 +116,14 @@ public class PeopleRequestService {
             return lfp;
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             //TODO null SSL pointer exception - I think that this happens when cookie expaires!
             //TODO or null SLL pointer is due frequent use (like parallel)
-            e.printStackTrace();
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
         } catch (SAXException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
         }
         this.stop();
         return null;
