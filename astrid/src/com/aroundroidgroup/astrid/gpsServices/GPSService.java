@@ -249,7 +249,7 @@ public class GPSService extends Service{
                     else if (hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0 && conHel.oneDisplayName(fpwci.getContactId())==null){
                         aDba.updatePeople(rowId, -2);
                     }
-                    if (!deleted && fpwci.isValid() && !AroundRoidAppConstants.timeCheckValid(fpwci.getTimestamp())){
+                    if (!deleted && !AroundRoidAppConstants.timeCheckValid(fpwci.getTimestamp()) && fpwci.isValid() ){
                         aDba.updatePeople(rowId, fpwci.getDlat(), fpwci.getDlon(), fpwci.getTimestamp(),fpwci.getContactId(),AroundRoidAppConstants.STATUS_OFFLINE);
                     }
                 }while (cur.moveToNext());

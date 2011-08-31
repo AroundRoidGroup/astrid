@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.json.JSONException;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -25,6 +26,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,6 +54,9 @@ import com.timsu.astrid.R;
 public class ManageContactsActivity extends ListActivity{
 
     public static final String PEOPLE_BACK = "peopleBack"; //$NON-NLS-1$
+
+
+    private static final int PICKCONTACT = 1;
 
     private static final int DIALOG_MAIL_METHOD = 0;
     private static final int DIALOG_ALREADY_SCANNED = 2;
@@ -102,6 +107,97 @@ public class ManageContactsActivity extends ListActivity{
         // Get the item that was clicked
         Object o = this.getListAdapter().getItem(position);
         createViewContactDialog((FriendPropsWithContactId) o).show();
+    }
+
+    private void pickContact() {
+        // Create an intent to "pick" a contact, as defined by the content provider URI
+        Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        startActivityForResult(intent, PICKCONTACT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // If the request went well (OK) and the request was PICK_CONTACT_REQUEST
+        if (resultCode == Activity.RESULT_OK && requestCode == PICKCONTACT) {
+            // Perform a query to the contact's content provider for the contact's name
+            Cursor cursor = getContentResolver().query(data.getData(),
+                    new String[] {Contacts._ID,Contacts.DISPLAY_NAME}, null, null, null);
+            if (cursor.moveToFirst()) { // True if the cursor is not empty
+                //TODO make better dont call getFriends
+                Set<Entry<String,Long>> es = conHel.getFriends(cursor);
+                cursor.moveToFirst();
+                String[] mails = new String[es.size()];
+                int i =0;
+                for (Entry<String,Long> en : es){
+                    mails[i++] = en.getKey();
+                }
+                int columnIndex = cursor.getColumnIndex(Contacts.DISPLAY_NAME);
+                String name = cursor.getString(columnIndex);
+                int idcol = cursor.getColumnIndex(Contacts._ID);
+                long id = (cursor.getLong(idcol));
+                // Do something with the selected contact's name...
+
+                //if not names dont create this dialog
+                if (mails.length>0){
+                    createFriendMailsDialog(name,mails,id).show();
+                }else{
+                    Toast.makeText(ManageContactsActivity.this, "This contact has no email addresses!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+            cursor.close();
+        }
+    }
+
+    private Dialog createFriendMailsDialog(String contactName, final String[] mails,final long contactId){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose associated mail - "+ contactName);
+        builder.setSingleChoiceItems(mails, 0, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                boolean ok = true;
+                Cursor cur = mDbHelper.fetchByMail(mails[which]);
+                if (cur==null){
+                    ok = false;
+                }
+                if (!cur.moveToFirst()){
+                    //record not found
+                    mDbHelper.createPeople(mails[which],contactId);
+                }
+                else {
+                    Long currentcontactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                    if (currentcontactId == -2){
+                        //record found with no contact id.
+                        //UPDATE A NEW CONTACT ID
+                        Long oldRecordId = cur.getLong(cur.getColumnIndex((AroundroidDbAdapter.KEY_ROWID)));
+                        mDbHelper.updatePeople(oldRecordId, contactId);
+                    }
+                    else{
+                        ok = false;
+                    }
+                }
+                cur.close();
+                if (ok){
+                    dialog.dismiss();
+                    new ScanOneFriendTask().execute(new String[]{mails[which]});
+                }
+                else{
+                    Toast.makeText(ManageContactsActivity.this, "This mail address is already associated with another contact or other error!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        }).setOnCancelListener(new OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+            }
+        });
+        AlertDialog alert = builder.create();
+        return alert;
     }
 
     private Dialog createViewContactDialog(final FriendPropsWithContactId fpwci) {
@@ -171,9 +267,6 @@ public class ManageContactsActivity extends ListActivity{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
-
         switch (item.getItemId()) {
         case R.id.peoplelocation_menu_mail:
             if (!prs.isConnected()){
@@ -188,11 +281,17 @@ public class ManageContactsActivity extends ListActivity{
                 //if not connected prompt connection
                 showDialog(DIALOG_NOT_CONNECTED);
             }
+            else{
+                pickContact();
+            }
+            //TODO add another button
+            /*
             else if (!getAlreadyScannedSometime(null)){
                 new ScanContactsTask().execute(new Void[0]);
             } else {
                 showDialog(DIALOG_ALREADY_SCANNED);
             }
+             */
             break;
         case R.id.peoplelocation_menu_login:
             Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
@@ -574,6 +673,7 @@ public class ManageContactsActivity extends ListActivity{
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.friend_list_layout);
+        r = getResources();
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
@@ -828,6 +928,7 @@ public class ManageContactsActivity extends ListActivity{
             if (cur ==null){
                 return false;
             }
+            //TODO check option to scan again
             if (!cur.moveToFirst()){
                 cur.close();
                 //fetch

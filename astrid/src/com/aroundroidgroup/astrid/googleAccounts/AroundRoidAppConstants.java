@@ -30,7 +30,8 @@ public class AroundRoidAppConstants {
      * @return
      */
     public static boolean timeCheckValid(long timeStamp){
-        return DateUtilities.now() - timeStamp <= maximumValidTime;
+        long nowTime = DateUtilities.now();
+        return (nowTime - timeStamp) <= maximumValidTime;
     }
 
 }
