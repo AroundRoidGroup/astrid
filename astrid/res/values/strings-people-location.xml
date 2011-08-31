@@ -3,7 +3,7 @@
 	<!-- Credentials list is empty text -->
 	<string name="noCreds">There are no users associated with this Android
 		device.</string>
-	
+
 	<!-- tracking list -->
 	<string name="tracking_list_empty">You are not tracking any friends! Press menu to add some.</string>
 	
@@ -94,5 +94,16 @@
 	<!-- MANGE CONTACTS ACTIVITY -->
 	<string name="menu_add_friend">Enter a friend Email</string>
 	<string name="menu_add_friend2">Pick friend from Contact List</string>
+
+	<!-- additional contact information -->
+	<string name="ace_mail">Tracking mail:</string>
+	<string name="ace_name">Contact Name:</string>
+	<string name="ace_unregistered">Location unavailable or not registered</string>
+	<string name="ace_title">Friend Information</string>
+	<string name="ace_contact_card">View Contact Card</string>
+	
+
+
+
 </resources>
     

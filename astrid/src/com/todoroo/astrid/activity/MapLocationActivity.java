@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import android.widget.ZoomButtonsController.OnZoomListener;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
@@ -71,10 +71,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private static final int MENU_PEOPLE_GROUP = 1048576;
     private static final int MENU_TAPPED_GROUP = 16777216;
 
-    /* overlays' names */
-    private static final String OVERLAY_TYPE_NAME = "Type Location";
-    private static final String OVERLAY_SPECIFIC_NAME = "Specific Location";
-    private static final String OVERLAY_PEOPLE_NAME = "People Location";
 
     private AroundroidDbAdapter mPeopleDB;
     private LocationsDbAdapter mLocationDB;
@@ -149,36 +145,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
-    private class InformationOnLocations extends AbstractAction {
-
-        public InformationOnLocations() {
-            super(R.drawable.ic_menu_info);
-        }
-
-        @Override
-        public void performAction(View view) {
-            String locationsCount = ""; //$NON-NLS-1$
-            if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
-                locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-            if (mMapView.getOverlaySize(TYPE_OVERLAY) > 0)
-                locationsCount += "Types: " + mMapView.getOverlaySize(TYPE_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-            if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
-                locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
-
-            AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
-            dialog.setIcon(android.R.drawable.ic_dialog_alert);
-            dialog.setTitle("Information");
-            dialog.setMessage(locationsCount);
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dg, int which) {
-                    return;
-                }
-            });
-            dialog.show();
-            return;
-        }
-    }
 
     private class ViewAll extends AbstractAction {
 
@@ -188,12 +154,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         @Override
         public void performAction(View view) {
+            Resources r = getResources();
             if (!hasPlaces()) {
                 AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("No locations for this task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
+                dialog.setMessage(r.getString(R.string.no_location_for_task));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -215,7 +182,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("All Locations");
+        Resources r = getResources();
+        menu.setHeaderTitle(r.getString(R.string.all_locations));
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -246,7 +214,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         Intent intent = new Intent(this, Focaccia.class);
-
+        Resources r = getResources();
         /* getting task's title by its ID */
         TaskService taskService = new TaskService();
         TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(mTaskID),
@@ -288,7 +256,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                 intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, bla + ""); //$NON-NLS-1$
             }
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_NAME))
-                intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_TYPE_NAME);
+                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_type));
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_TITLE))
                 intent.putExtra(Focaccia.SHOW_TITLE, item.getTitle().toString());
 
@@ -297,7 +265,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         case MENU_PEOPLE_GROUP:
             if (item.getItemId() == -1) {
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, item.getTitle());
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_ADDRESS))
@@ -311,7 +279,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
             if (da != null && !da.isNaN()) {
                 mMapView.getController().setCenter(Misc.degToGeo(da));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, OVERLAY_PEOPLE_NAME);
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, peopleItem.getTitle());
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_SNIPPET))
@@ -329,6 +297,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Resources r = getResources();
         setContentView(R.layout.map_of_task);
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
@@ -366,13 +335,13 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         mMapView.createOverlay(true, SPECIFIC_OVERLAY, this.getResources().getDrawable(R.drawable.icon_specific), new String[] {
             Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, OVERLAY_SPECIFIC_NAME);
+        }, r.getString(R.string.kind_specific));
         mMapView.createOverlay(false, TYPE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_type), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, OVERLAY_TYPE_NAME);
+        }, r.getString(R.string.kind_type));
         mMapView.createOverlay(true, PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS, Focaccia.SHOW_SNIPPET
-        }, OVERLAY_PEOPLE_NAME);
+        }, r.getString(R.string.kind_people));
 
 
         mPeople = new HashMap<String, DPoint>();
@@ -447,8 +416,8 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     final int mDelayMillis = 10 * 1000;
     private final Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
-            Toast.makeText(MapLocationActivity.this, "now", Toast.LENGTH_LONG).show();
-            /* my code */
+           /* my code */
+            Resources r = getResources();
             mMapView.clearOverlay(PEOPLE_OVERLAY);
             mMapView.invalidate();
             String[] existedPeople = locationService.getLocationsByPeopleAsArray(mTaskID);
@@ -467,7 +436,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
                         if (fp.isValid()) {
                             GeoPoint gp = Misc.degToGeo(new DPoint(fp.getDlat(), fp.getDlon()));
                             String savedAddr = mapFunctions.getSavedAddressAndUpdate(gp.getLatitudeE6(), gp.getLongitudeE6());
-                            mMapView.addItemToOverlay(gp, OVERLAY_PEOPLE_NAME, person, savedAddr, PEOPLE_OVERLAY, mTaskID, person);
+                            mMapView.addItemToOverlay(gp, r.getString(R.string.kind_people), person, savedAddr, PEOPLE_OVERLAY, mTaskID, person);
                         }
                     }
                     c.close();

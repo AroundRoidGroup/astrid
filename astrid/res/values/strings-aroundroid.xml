@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+
 	<!-- dialog buttons and titles -->
 	<string name="DLG_exit_title">Are you sure you want to exit?</string>
 	<string name="DLG_cancel">Cancel</string>

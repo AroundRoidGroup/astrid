@@ -20,7 +20,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -58,7 +57,6 @@ public class AdjustedMap extends MapView {
     private MapItemizedOverlay lastPressedOverlay = null;
     private int lastPressedIndex = -1;
     private GeoPoint lastDeviceLocation;
-    private static final String TASK_NAME_HEADER_OF_DEVICE_ITEM = "Astrid !!!";
 
 
     public static final String TASK_NAME = "Task_Name_For_POPUP_HEADER"; //$NON-NLS-1$
@@ -504,8 +502,7 @@ public class AdjustedMap extends MapView {
                 }
 
 
-                Toast.makeText(mContext, "RADIUS = " + Math.min(hight[0], width[0]) / 2 + "", Toast.LENGTH_LONG).show();
-                fireEvent();
+               fireEvent();
                 lastCenter = getMapCenter();
             }
             // hopa
@@ -763,7 +760,7 @@ public class AdjustedMap extends MapView {
                 intent.putExtra(Focaccia.READ_ONLY, Focaccia.READ_ONLY);
                 intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
                 intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.device_location));
-                intent.putExtra(Focaccia.TASK_NAME, TASK_NAME_HEADER_OF_DEVICE_ITEM);
+                intent.putExtra(Focaccia.TASK_NAME, r.getString(R.string.your_location_title));
             }
             else {
                 if (editable)
