@@ -730,24 +730,29 @@ public class AdjustedMap extends MapView {
             AdjustedOverlayItem item = mOverlays.get(index);
             Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
 
-            /* getting task's title by its ID */
-            TaskService taskService = new TaskService();
-            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(item.getTaskID()),
-                    TaskCriteria.isVisible()))).
-                    orderBy(SortHelper.defaultTaskOrder()).limit(100));
-            try {
+            if (item.getTaskID() != mapFunctions.MULTIPLE_TASKS_ID) {
 
-                Task task = new Task();
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    cursor.moveToNext();
-                    task.readFromCursor(cursor);
-                    intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
-                    break;
+                /* getting task's title by its ID */
+                TaskService taskService = new TaskService();
+                TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(item.getTaskID()),
+                        TaskCriteria.isVisible()))).
+                        orderBy(SortHelper.defaultTaskOrder()).limit(100));
+                try {
+
+                    Task task = new Task();
+                    for (int i = 0; i < cursor.getCount(); i++) {
+                        cursor.moveToNext();
+                        task.readFromCursor(cursor);
+                        intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                        break;
+                    }
+                } finally {
+                    cursor.close();
                 }
-            } finally {
-                cursor.close();
             }
-
+            else {
+                intent.putExtra(Focaccia.TASK_NAME, "Multiple Tasks");
+            }
             String addr = null;
             if (item.getAddress() == null)
                 addr = Misc.geoToDeg(item.getPoint()).toString();

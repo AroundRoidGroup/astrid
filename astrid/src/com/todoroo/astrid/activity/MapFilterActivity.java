@@ -54,6 +54,7 @@ public class MapFilterActivity extends MapActivity {
     private Map<String, DPoint> mPeople;
     private final LocationService mLocationService = new LocationService();
 
+
     /* identifiers for the overlays in the mapView */
     private static final int SPECIFIC_OVERLAY = 1;
     private static final int TYPE_OVERLAY = 2;
@@ -371,7 +372,28 @@ public class MapFilterActivity extends MapActivity {
             Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS, Focaccia.SHOW_SNIPPET
         }, OVERLAY_PEOPLE_NAME);
 
+        final List<String> allList = new ArrayList<String>();
+
         TodorooCursor<Task> cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
+                TaskCriteria.isVisible())).
+                orderBy(SortHelper.defaultTaskOrder()).limit(100));
+        mTaskNumber = cursor.getCount();
+        try {
+
+            Task task = new Task();
+            for (int k = 0; k < cursor.getCount(); k++) {
+                cursor.moveToNext();
+                task.readFromCursor(cursor);
+                String[] types = mLocationService.getLocationsByTypeAsArray(task.getId());
+                for (String t : types)
+                    allList.add(t);
+            }
+        }
+        finally {
+            cursor.close();
+        }
+
+        cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                 TaskCriteria.isVisible())).
                 orderBy(SortHelper.defaultTaskOrder()).limit(100));
         mTaskNumber = cursor.getCount();
@@ -398,10 +420,15 @@ public class MapFilterActivity extends MapActivity {
                 String[] tags = mLocationService.getLocationsByTypeAsArray(taskID);
                 mTypes = new ArrayList<String>();
                 if (tags != null) {
-                    for (String s : tags)
+                    for (String s : tags) {
                         mTypes.add(s);
-                    mLocationNumber += tags.length;
-                    mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, tags, mRadius, taskID);
+                        int counter = 0;
+                        for (String str : allList)
+                            counter += s.equals(str) ? 1 : 0;
+                        if (counter > 1)
+                            mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, new String[] { s }, mRadius, mapFunctions.MULTIPLE_TASKS_ID);
+                        else mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, new String[] { s }, mRadius, taskID);
+                    }
                 }
                 mPeople = new HashMap<String, DPoint>();
                 mNullPeople = new ArrayList<String>();
@@ -433,6 +460,7 @@ public class MapFilterActivity extends MapActivity {
                         c.close();
 
                     }
+
                     mapFunctions.addPeopleToMap(mMapView, PEOPLE_OVERLAY, people, coords, taskID);
                 }
 
@@ -459,8 +487,19 @@ public class MapFilterActivity extends MapActivity {
 
                     Task task = new Task();
                     for (int k = 0; k < c.getCount(); k++) {
+
                         c.moveToNext();
-                        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, mLocationService.getLocationsByTypeAsArray(task.getId()), mRadius, task.getId());
+                        task.readFromCursor(c);
+                        String[] tags = mLocationService.getLocationsByTypeAsArray(task.getId());
+                        for (String s : tags) {
+                            int counter = 0;
+                            for (String str : allList)
+                                counter += s.equals(str) ? 1 : 0;
+                            if (counter > 1)
+                                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, new String[] { s }, mRadius, mapFunctions.MULTIPLE_TASKS_ID);
+                            else mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, new String[] { s }, mRadius, task.getId());
+                        }
+
                     }
 
                 } finally {

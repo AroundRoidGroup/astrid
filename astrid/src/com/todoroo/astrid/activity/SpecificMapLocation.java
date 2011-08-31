@@ -3,6 +3,7 @@ package com.todoroo.astrid.activity;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -463,6 +464,7 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         mAutoTextView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
         mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, Misc.types);
+
         mAutoTextView.setAdapter(mAdapter);
         mAutoTextView.addTextChangedListener(new TextWatcher() {
 
@@ -473,6 +475,8 @@ public class SpecificMapLocation extends MapActivity{
                     String searchText = mAutoTextView.getText().toString();
                     DPoint center = Misc.geoToDeg(mMapView.getMapCenter());
                     c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
+                    for (String type : Misc.types)
+                        c.add(type);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
@@ -480,6 +484,25 @@ public class SpecificMapLocation extends MapActivity{
                 }
                 if (c != null) {
                     mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, c);
+                    mAdapter.sort(new Comparator<String>() {
+
+                        @Override
+                        public int compare(String object1, String object2) {
+                            boolean firstObj = false;
+                            boolean secondObj = false;
+                            for (String type : Misc.types) {
+                                if (type.equals(object1))
+                                    firstObj = true;
+                                if (type.equals(object2))
+                                    secondObj = true;
+                            }
+                            if (firstObj && !secondObj)
+                                return -1;
+                            if (!firstObj && secondObj)
+                                return 1;
+                            return 0;
+                        }
+                    });
                     mAutoTextView.setAdapter(mAdapter);
                 }
 
