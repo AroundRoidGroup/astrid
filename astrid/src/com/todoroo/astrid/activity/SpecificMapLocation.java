@@ -400,6 +400,8 @@ public class SpecificMapLocation extends MapActivity{
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -419,6 +421,7 @@ public class SpecificMapLocation extends MapActivity{
         //        actionBar.addView(b);
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
+
         mRadius = 100;
         mPeopleDB.open();
         mMapView.setSatellite(false);

@@ -55,8 +55,6 @@ public class ManageContactsActivity extends ListActivity{
     private static final int DIALOG_NOT_CONNECTED = 5;
     private static final int DIALOG_ALREADY_FOUND = 6;
 
-    private Resources r;
-
     private AroundroidDbAdapter mDbHelper;
 
     private Long taskId;
@@ -100,7 +98,7 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private Dialog createViewContactDialog(final FriendPropsWithContactId fpwci) {
-
+        final Resources r = getResources();
         final String contactDisplayName = (fpwci.getContactId()>=0?conHel.oneDisplayName(fpwci.getContactId())
                 :null);
 
@@ -263,6 +261,7 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private Dialog createContactsDialog(){
+        final Resources r = getResources();
         Cursor cur = mDbHelper.fetchAllPeopleWContactRegistered();
         //TODO deal with cur error
         int numberOfFriends = cur.getCount();
@@ -394,6 +393,7 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private Dialog createAddAnywayDialog(final String friendMail) {
+        final Resources r = getResources();
         final Dialog loginDialog = new Dialog(this);
         loginDialog.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
@@ -525,7 +525,7 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private Dialog createDeleteDialog(final String friendMail) {
-
+        final Resources r = getResources();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(r.getString(R.string.AD_DLG_delete_text_before_mail) + " "+ //$NON-NLS-1$
                 friendMail +" " + r.getString(R.string.AD_DLG_delete_text_after_mail)) //$NON-NLS-1$
@@ -685,6 +685,7 @@ public class ManageContactsActivity extends ListActivity{
 
         @Override
         protected void onPreExecute(){
+            final Resources r = getResources();
             _progressDialog = ProgressDialog.show(
                     ManageContactsActivity.this,
                     r.getString(R.string.AD_contacts_scan_title),
@@ -765,6 +766,7 @@ public class ManageContactsActivity extends ListActivity{
 
         @Override
         protected void onPreExecute(){
+            final Resources r = getResources();
             _progressDialog = ProgressDialog.show(
                     ManageContactsActivity.this,
                     r.getString(R.string.AD_checking_friend_title),
