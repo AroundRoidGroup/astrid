@@ -2,16 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="match_parent"
 	android:layout_height="match_parent">
-	<TextView android:id="@+id/locationType" android:text="@string/focaccia_type"
+	<TextView android:id="@+id/locationType" android:text="@string/AD_focaccia_type"
 		android:textSize="6pt" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" />
-	<TextView android:id="@+id/locationSnippet" android:text="@string/focaccia_snippet"
+	<TextView android:id="@+id/locationSnippet" android:text="@string/AD_focaccia_snippet"
 		android:textSize="6pt" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_marginTop="3px" />
-	<TextView android:id="@+id/locationName" android:text="@string/focaccia_name"
+	<TextView android:id="@+id/locationName" android:text="@string/AD_focaccia_name"
 		android:textSize="6pt" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_marginTop="3px" />
-	<TextView android:id="@+id/locationAddress" android:text="@string/focaccia_address"
+	<TextView android:id="@+id/locationAddress" android:text="@string/AD_focaccia_address"
 		android:textSize="6pt" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_marginTop="3px" />
 	<LinearLayout android:orientation="horizontal"

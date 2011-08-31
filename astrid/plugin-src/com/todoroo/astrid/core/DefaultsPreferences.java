@@ -35,7 +35,7 @@ public class DefaultsPreferences extends TodorooPreferences {
         Resources r = getResources();
 
         // defaults options
-        if (!Preferences.getBoolean(R.string.p_aroundroid, false)){
+        if (!Preferences.getBoolean(R.string.AD_p_aroundroid, false)){
             Preference defaultCarRadius = findPreference(r.getString(R.string.p_rmd_default_car_radius_key));
             defaultCarRadius.setEnabled(false);
             Preference defaultFootRadius = findPreference(r.getString(R.string.p_rmd_default_foot_radius_key));

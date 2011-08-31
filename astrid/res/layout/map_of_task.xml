@@ -14,6 +14,6 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 
 		android:clickable="true"
-		android:apiKey="@string/GOOGLE_MAPS_API_KEY" />
+		android:apiKey="@string/AD_GOOGLE_MAPS_API_KEY" />
 
 </LinearLayout>

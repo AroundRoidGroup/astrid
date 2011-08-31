@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.location.LocationManager;
 import android.provider.Settings;
 
@@ -21,7 +20,6 @@ import com.todoroo.andlib.utility.Preferences;
 public class GPSEnablingDialog {
 
     public static Activity activity;
-    private static Resources r;
     private static final String userAllowsGpsEnabled = "userAllowsGpsEnabled"; //$NON-NLS-1$
 
     /**
@@ -34,7 +32,6 @@ public class GPSEnablingDialog {
      */
     public static void checkGPSEnabled(Activity act){
         activity = act;
-        r = act.getResources();
         final LocationManager manager = (LocationManager) act.getSystemService( Context.LOCATION_SERVICE );
         if (manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) )
             Preferences.setBoolean(userAllowsGpsEnabled,true);
@@ -48,9 +45,9 @@ public class GPSEnablingDialog {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-        builder.setMessage(r.getString(R.string.gps_not_enabled))
+        builder.setMessage(R.string.AD_gps_not_enabled)
         .setCancelable(false)
-        .setPositiveButton(r.getString(R.string.DLG_yes), new DialogInterface.OnClickListener() {
+        .setPositiveButton(R.string.DLG_yes, new DialogInterface.OnClickListener() {
 
             public void onClick(final DialogInterface dialog, final int id) {
                 final ComponentName toLaunch = new ComponentName("com.android.settings","com.android.settings.SecuritySettings"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -61,7 +58,7 @@ public class GPSEnablingDialog {
                 activity.startActivityForResult(intent, 0);
             }
         })
-        .setNegativeButton(r.getString(R.string.DLG_no), new DialogInterface.OnClickListener() {
+        .setNegativeButton(R.string.DLG_no, new DialogInterface.OnClickListener() {
             public void onClick(final DialogInterface dialog, final int id) {
                 Preferences.setBoolean(userAllowsGpsEnabled,false);
                 dialog.cancel();

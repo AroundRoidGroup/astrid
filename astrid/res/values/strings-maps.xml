@@ -2,78 +2,78 @@
 <resources>
 
 <!-- title for action bar -->
-<string name="action_bar_title">AroundRoid</string>
+<string name="AD_action_bar_title">AroundRoid</string>
 
 <!-- the device location title -->
-<string name="your_location_title">Your Location</string>
+<string name="AD_your_location_title">Your Location</string>
 
 	<!-- map information dialog -->
-	<string name="map_alert_dialog_title">Information</string>
+	<string name="AD_map_alert_dialog_title">Information</string>
 	
 	<!-- the location is already attached to the task -->
-	<string name="location_already_attached">This location is already attached to task.</string>
+	<string name="AD_location_already_attached">This location is already attached to task.</string>
 	
 	<!-- location on a map cannot be resolved -->
-	<string name="unresolvable_location">This location cannot be resolved.</string>
+	<string name="AD_unresolvable_location">This location cannot be resolved.</string>
 	<!-- no location for this task- alert dialog -->
-	<string name="no_location_for_task">No locations for this task.</string>
+	<string name="AD_no_location_for_task">No locations for this task.</string>
 	
 	<!-- searching in the autocomplete textbox -->
-	<string name="map_searching">Searching...</string>
+	<string name="AD_map_searching">Searching...</string>
 	
 <!-- kinds of locations(by type, by people or a specific) -->
-<string name="kind_type">Type Location</string>
-<string name="kind_specific">Specific Location</string>
-<string name="kind_people">People Location</string>
+<string name="AD_kind_type">Type Location</string>
+<string name="AD_kind_specific">Specific Location</string>
+<string name="AD_kind_people">People Location</string>
 
 
 
 	<!-- hint for the textbox in SpecificMapLocation -->
-	<string name="map_textbox_hint">Search Maps</string>
+	<string name="AD_map_textbox_hint">Search Maps</string>
 
 	<!-- Map Filter title -->
-	<string name="location_filter_title">Places Nearby</string>
+	<string name="AD_location_filter_title">Places Nearby</string>
 
 	<!-- SpecificMapLocation buttons -->
-	<string name="addPeopleButton">Add People</string>
-	<string name="viewAllButton">View All</string>
+	<string name="AD_addPeopleButton">Add People</string>
+	<string name="AD_viewAllButton">View All</string>
 	
 	<!-- in Focaccia activity -->
-	<string name="focaccia_snippet">Snippet:</string>
-	<string name="focaccia_type">Type:</string>
-	<string name="focaccia_name">Name:</string>
-	<string name="focaccia_address">Address:</string>
+	<string name="AD_focaccia_snippet">Snippet:</string>
+	<string name="AD_focaccia_type">Type:</string>
+	<string name="AD_focaccia_name">Name:</string>
+	<string name="AD_focaccia_address">Address:</string>
 
 
 	<!-- taskEditActivity Location button == -->
 	<!-- Location label -->
-	<string name="TEA_location_label">Locations</string>
+	<string name="AD_TEA_location_label">Locations</string>
 	<!-- Location button -->
-	<string name="text_location_button">Manage Locations</string>
+	<string name="AD_text_location_button">Manage Locations</string>
 
 	<!-- Locations action bar title -->
-	<string name="actionbar_title">hello</string>
+	<string name="AD_actionbar_title">hello</string>
 	
 	<!-- alert dialog in  filter map location -->
 	
-	<string name="alert_dialog_tasks">Tasks:</string>
+	<string name="AD_alert_dialog_tasks">Tasks:</string>
 
 	
 		
 	<!--if location is attached to multiple tasks  -->
-	<string name="multiple_tasks">Multiple Tasks</string>
+	<string name="AD_multiple_tasks">Multiple Tasks</string>
 	
 	<!-- view all header -->
-	<string name="all_locations">All Locations</string>
+	<string name="AD_all_locations">All Locations</string>
 	
 	
 		<!-- text shown when pressing the device's location on map -->
-	<string name="device_location">Your Location</string>
+	<string name="AD_device_location">Your Location</string>
 
 	<!-- GOOGLE MAPS API KEY -->
-	<string name="GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
+	<string name="AD_GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
 
 	<!-- GOOGLE PLACES API KEY -->
-	<string name="GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+	<string name="AD_GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
 
 </resources>

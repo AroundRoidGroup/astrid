@@ -245,8 +245,8 @@ public class EditPreferences extends TodorooPreferences {
             }
         }
 
-        if (r.getString(R.string.p_aroundroid).equals(preference.getKey())) {
-            Preference loginButton = findPreference(r.getString(R.string.p_people_login_key));
+        if (r.getString(R.string.AD_p_aroundroid).equals(preference.getKey())) {
+            Preference loginButton = findPreference(r.getString(R.string.AD_p_people_login_key));
             Intent serviceIntent = new Intent(this,GPSService.class);
             if (value != null && !(Boolean)value){
                 stopService(serviceIntent);

@@ -111,9 +111,9 @@ public class MapFilterActivity extends MapActivity {
             if (!hasPlaces()) {
                 AlertDialog dialog = new AlertDialog.Builder(MapFilterActivity.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
-                dialog.setMessage(r.getString(R.string.no_location_for_task));
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage(r.getString(R.string.AD_no_location_for_task));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -134,8 +134,7 @@ public class MapFilterActivity extends MapActivity {
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        Resources r = getResources();
-        menu.setHeaderTitle(r.getString(R.string.all_locations));
+        menu.setHeaderTitle(R.string.AD_all_locations);
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -236,7 +235,7 @@ public class MapFilterActivity extends MapActivity {
                 intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
             }
             else {
-                intent.putExtra(Focaccia.TASK_NAME, r.getString(R.string.multiple_tasks));
+                intent.putExtra(Focaccia.TASK_NAME, r.getString(R.string.AD_multiple_tasks));
             }
             GeoPoint closestType = mMapView.getPointWithMinimalDistanceFromDeviceLocation(TYPE_OVERLAY, item.getTitle().toString());
             if (closestType != null)
@@ -305,7 +304,7 @@ public class MapFilterActivity extends MapActivity {
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Resources r = getResources();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_filter_activity);
 
@@ -410,7 +409,7 @@ public class MapFilterActivity extends MapActivity {
         }
 
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle(r.getString(R.string.location_filter_title));
+        actionBar.setTitle(R.string.AD_location_filter_title);
 
         actionBar.addAction(new ViewAll());
         actionBar.addAction(new DeviceLocation());

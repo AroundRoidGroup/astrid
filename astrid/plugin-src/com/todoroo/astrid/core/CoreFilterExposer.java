@@ -45,7 +45,7 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         SearchFilter searchFilter = new SearchFilter(r.getString(R.string.BFE_Search));
         searchFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_search)).getBitmap();
 
-        MapFilter mapFilter = new MapFilter(r.getString(R.string.location_filter_title));
+        MapFilter mapFilter = new MapFilter(r.getString(R.string.AD_location_filter_title));
         mapFilter.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_map)).getBitmap();
 
         Filter recent = new Filter(r.getString(R.string.BFE_Recent),
@@ -55,7 +55,7 @@ public final class CoreFilterExposer extends BroadcastReceiver {
         recent.listingIcon = ((BitmapDrawable)r.getDrawable(R.drawable.tango_new)).getBitmap();
 
         // transmit filter list
-        boolean showMapFilter = Preferences.getBoolean(R.string.p_aroundroid, false);
+        boolean showMapFilter = Preferences.getBoolean(R.string.AD_p_aroundroid, false);
         FilterListItem[] list = new FilterListItem[3+(showMapFilter?1:0)];
         list[0] = inbox;
         list[1] = recent;

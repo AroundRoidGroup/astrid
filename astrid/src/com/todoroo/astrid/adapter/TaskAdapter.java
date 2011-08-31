@@ -339,7 +339,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         // set mapbutton invisible when there is no @location tag
         final Button mapButton = viewHolder.mapbutton; {
-            if(!Preferences.getBoolean(R.string.p_aroundroid, false))
+            if(!Preferences.getBoolean(R.string.AD_p_aroundroid, false))
                 mapButton.setVisibility(View.GONE);
             else{
                 //TODO when using aroundroid decide what to do

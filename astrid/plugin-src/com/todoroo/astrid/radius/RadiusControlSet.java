@@ -55,7 +55,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        carValue.setText(String.valueOf(progress)+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
+                        carValue.setText(String.valueOf(progress)+ " " + r.getString(R.string.AD_meters)); //$NON-NLS-1$
                     }
 
                     @Override
@@ -73,7 +73,7 @@ public class RadiusControlSet implements TaskEditControlSet{
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress,
                       boolean fromUser) {
-                        footValue.setText(String.valueOf(progress)+" " + r.getString(R.string.meters)); //$NON-NLS-1$
+                        footValue.setText(String.valueOf(progress)+" " + r.getString(R.string.AD_meters)); //$NON-NLS-1$
                     }
 
                     @Override
@@ -106,8 +106,8 @@ public class RadiusControlSet implements TaskEditControlSet{
         // Setup footRadiusSelector/carRadiusSelector and the view text
            footRadiusSelector.setProgress(footRadius);
            carRadiusSelector.setProgress(carRadius);
-           carValue.setText(carRadius+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
-           footValue.setText(footRadius+ " " + r.getString(R.string.meters)); //$NON-NLS-1$
+           carValue.setText(carRadius+ " " + r.getString(R.string.AD_meters)); //$NON-NLS-1$
+           footValue.setText(footRadius+ " " + r.getString(R.string.AD_meters)); //$NON-NLS-1$
            if(footRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_foot_radius_key)) ||
                    carRadius!=Integer.parseInt(Preferences.getStringValue(R.string.p_rmd_default_car_radius_key))){
                enabled.setChecked(false);

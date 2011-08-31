@@ -119,8 +119,7 @@ public class SpecificMapLocation extends MapActivity{
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        Resources r = getResources();
-        menu.setHeaderTitle(r.getString(R.string.all_locations));
+        menu.setHeaderTitle(R.string.AD_all_locations);
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -212,7 +211,7 @@ public class SpecificMapLocation extends MapActivity{
                 intent.putExtra(Focaccia.SHOW_AMOUNT_BY_EXTRAS, bla + ""); //$NON-NLS-1$
             }
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_NAME))
-                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_type));
+                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.AD_kind_type));
             if (mMapView.hasConfig(TYPE_OVERLAY, Focaccia.SHOW_TITLE))
                 intent.putExtra(Focaccia.SHOW_TITLE, item.getTitle().toString());
 
@@ -224,7 +223,7 @@ public class SpecificMapLocation extends MapActivity{
                 mLastNullPeople = item.getTitle().toString();
                 intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.AD_kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, mLastNullPeople);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_ADDRESS))
@@ -241,7 +240,7 @@ public class SpecificMapLocation extends MapActivity{
                 mMapView.getController().setCenter(Misc.degToGeo(da));
                 intent.putExtra(Focaccia.DELETE, Focaccia.DELETE);
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_NAME))
-                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.kind_people));
+                    intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.AD_kind_people));
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_TITLE))
                     intent.putExtra(Focaccia.SHOW_TITLE, peopleItem.getTitle());
                 if (mMapView.hasConfig(PEOPLE_OVERLAY, Focaccia.SHOW_SNIPPET))
@@ -312,7 +311,7 @@ public class SpecificMapLocation extends MapActivity{
                     if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
                         savedAddr = entry.getValue().toString();
                 }
-                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), r.getString(R.string.kind_people), entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
+                mMapView.addItemToOverlay(Misc.degToGeo(entry.getValue()), r.getString(R.string.AD_kind_people), entry.getKey(), savedAddr, PEOPLE_OVERLAY, mTaskID, entry.getKey());
             }
 
             mMapView.updateDeviceLocation();
@@ -341,9 +340,9 @@ public class SpecificMapLocation extends MapActivity{
             if (!hasPlaces()) {
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
-                dialog.setMessage(r.getString(R.string.no_location_for_task));
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage(r.getString(R.string.AD_no_location_for_task));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -407,7 +406,7 @@ public class SpecificMapLocation extends MapActivity{
         setContentView(R.layout.specific_map);
 
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle(r.getString(R.string.action_bar_title));
+        actionBar.setTitle(R.string.AD_action_bar_title);
 
         actionBar.addAction(new ViewAll());
         actionBar.addAction(new DeviceLocation());
@@ -443,13 +442,13 @@ public class SpecificMapLocation extends MapActivity{
 
         mMapView.createOverlay(false, SPECIFIC_OVERLAY, this.getResources().getDrawable(R.drawable.icon_specific), new String[] {
             Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, r.getString(R.string.kind_specific));
+        }, r.getString(R.string.AD_kind_specific));
         mMapView.createOverlay(false, TYPE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_type), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_AMOUNT_BY_EXTRAS, Focaccia.SHOW_TITLE, Focaccia.SHOW_ADDRESS
-        }, r.getString(R.string.kind_type));
+        }, r.getString(R.string.AD_kind_type));
         mMapView.createOverlay(true, PEOPLE_OVERLAY, this.getResources().getDrawable(R.drawable.icon_people), new String[] {
             Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS, Focaccia.SHOW_SNIPPET
-        }, r.getString(R.string.kind_people));
+        }, r.getString(R.string.AD_kind_people));
 
 
 
@@ -630,9 +629,9 @@ public class SpecificMapLocation extends MapActivity{
                     else {
                         AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                         dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                        dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
-                        dialog.setMessage(r.getString(R.string.location_already_attached));
-                        dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
+                        dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                        dialog.setMessage(r.getString(R.string.AD_location_already_attached));
+                        dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                                 new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dg, int which) {
                                 return;
@@ -820,7 +819,7 @@ public class SpecificMapLocation extends MapActivity{
         @Override
         protected void onPreExecute() {
             Resources r = getResources();
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.map_searching), true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.AD_map_searching), true);
             super.onPreExecute();
         }
 
@@ -888,7 +887,7 @@ public class SpecificMapLocation extends MapActivity{
         @Override
         protected void onPreExecute() {
             Resources r = getResources();
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.map_searching), true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.AD_map_searching), true);
             super.onPreExecute();
         }
 
@@ -912,9 +911,9 @@ public class SpecificMapLocation extends MapActivity{
                 pDialog.cancel();
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
-                dialog.setMessage(r.getString(R.string.unresolvable_location));
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage(r.getString(R.string.AD_unresolvable_location));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -924,13 +923,13 @@ public class SpecificMapLocation extends MapActivity{
                 super.onPostExecute(result);
                 return;
             }
-            if (false == mMapView.addItemToOverlay(result, r.getString(R.string.kind_specific), resolvedAddr, resolvedAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
+            if (false == mMapView.addItemToOverlay(result, r.getString(R.string.AD_kind_specific), resolvedAddr, resolvedAddr, SPECIFIC_OVERLAY, mTaskID, null)) {
                 pDialog.cancel();
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle(r.getString(R.string.map_alert_dialog_title));
-                dialog.setMessage(r.getString(R.string.location_already_attached));
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.DLG_ok),
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage(r.getString(R.string.AD_location_already_attached));
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
