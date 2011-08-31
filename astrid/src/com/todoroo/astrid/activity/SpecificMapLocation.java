@@ -427,7 +427,7 @@ public class SpecificMapLocation extends MapActivity{
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
         mRadius = 100;
         mPeopleDB.open();
-
+        mMapView.setSatellite(false);
         mLocationDB = new LocationsDbAdapter(this);
         mLocationDB.open();
 
@@ -692,6 +692,9 @@ public class SpecificMapLocation extends MapActivity{
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus)
                     mAddress.setText(""); //$NON-NLS-1$
+                InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                // only will trigger it if no physical keyboard is open
+                mgr.showSoftInput(mAddress, InputMethodManager.SHOW_IMPLICIT);
             }
         });
         mLocationDB.close();

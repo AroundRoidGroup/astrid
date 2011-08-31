@@ -2,9 +2,11 @@ package com.todoroo.astrid.activity;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -48,7 +50,7 @@ public class MapFilterActivity extends MapActivity {
     private double mRadius;
     private AdjustedMap mMapView;
     private Button mViewAll;
-    private List<String> mTypes;
+    private Set<String> mTypes;
     private AroundroidDbAdapter mPeopleDB;
     private List<String> mNullPeople;
     private Map<String, DPoint> mPeople;
@@ -176,15 +178,16 @@ public class MapFilterActivity extends MapActivity {
                 menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specAddrs[i]);
             else menu.add(MENU_SPECIFIC_GROUP, MENU_SPECIFIC_GROUP + i, Menu.NONE, specCoords[i].toString());
         }
-        for (int i = 0 ; i < mTypes.size() ; i++)
-            menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i, Menu.NONE, mTypes.get(i));
+        int i = 0;
+        for (String type : mTypes)
+            menu.add(MENU_KIND_GROUP, MENU_KIND_GROUP + i++, Menu.NONE, type);
         for (Entry<String, DPoint> element : mPeople.entrySet()) {
             List<AdjustedOverlayItem> contactMail = mMapView.selectItemFromOverlayByExtrasAsAjustedItem(PEOPLE_OVERLAY, element.getKey());
             if (!contactMail.isEmpty()) {
                 menu.add(MENU_PEOPLE_GROUP, contactMail.get(0).getUniqueID(), Menu.NONE, contactMail.get(0).getSnippet());
             }
         }
-        int i = 0;
+        i = 0;
         for (i = 0 ; i < mNullPeople.size() ; i++)
             menu.add(MENU_PEOPLE_GROUP, -1, Menu.NONE, mNullPeople.get(i));
         for (i = 0 ; i < mMapView.getTappedPointsCount() ; i++) {
@@ -261,15 +264,16 @@ public class MapFilterActivity extends MapActivity {
                     }
                     break;
                 }
+                if (hasThisType.size() == 1) {
+                    intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                }
+                else {
+                    intent.putExtra(Focaccia.TASK_NAME, "Multiple Tasks");
+                }
             } finally {
                 cursor.close();
             }
-            if (hasThisType.size() == 1) {
-                intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
-            }
-            else {
-                intent.putExtra(Focaccia.TASK_NAME, "Multiple Tasks");
-            }
+
             GeoPoint closestType = mMapView.getPointWithMinimalDistanceFromDeviceLocation(TYPE_OVERLAY, item.getTitle().toString());
             if (closestType != null)
                 mMapView.getController().setCenter(closestType);
@@ -392,7 +396,7 @@ public class MapFilterActivity extends MapActivity {
         finally {
             cursor.close();
         }
-
+        mTypes = new LinkedHashSet<String>();
         cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                 TaskCriteria.isVisible())).
                 orderBy(SortHelper.defaultTaskOrder()).limit(100));
@@ -418,7 +422,7 @@ public class MapFilterActivity extends MapActivity {
                 }
                 /* adding the locations by KIND */
                 String[] tags = mLocationService.getLocationsByTypeAsArray(taskID);
-                mTypes = new ArrayList<String>();
+
                 if (tags != null) {
                     for (String s : tags) {
                         mTypes.add(s);

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -473,11 +474,13 @@ public class AdjustedMap extends MapView {
     public int removeItemFromOverlayByExtras(int id, String extras) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null) {
-            for (AdjustedOverlayItem item : overlay) {
-                if (item.getExtras().equals(extras))
-                    overlay.removeOverlayByItem(item);
+            ListIterator<AdjustedOverlayItem> iterator = overlay.iterator();
+            while (iterator.hasNext()) {
+                AdjustedOverlayItem item = iterator.next();
+                if (item.getExtras() != null && item.getExtras().equals(extras)) {
+                    iterator.remove();
+                }
             }
-
         }
         invalidate();
         return getItemsByExtrasCount(id, extras);
@@ -834,8 +837,8 @@ public class AdjustedMap extends MapView {
         }
 
         @Override
-        public Iterator<AdjustedOverlayItem> iterator() {
-            return mOverlays.iterator();
+        public ListIterator<AdjustedOverlayItem> iterator() {
+            return mOverlays.listIterator();
         }
 
     }
