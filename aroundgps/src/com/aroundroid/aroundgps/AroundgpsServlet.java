@@ -75,6 +75,7 @@ public class AroundgpsServlet extends HttpServlet {
 
 	//"select from "+ GPSProps.class.getName()+" where mail == ' '(");
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
@@ -143,7 +144,6 @@ public class AroundgpsServlet extends HttpServlet {
 				hisGPS = ((GPSProps) cache.get(friendMail));
 			}
 			else{
-				@SuppressWarnings("unchecked")
 				List<GPSProps> friendGPS  = (List<GPSProps>) pm.newQuery(buildGetQuery(friendMail)).execute();
 				if (friendGPS.size()>0){
 					hisGPS  = friendGPS.get(0);
@@ -163,7 +163,6 @@ public class AroundgpsServlet extends HttpServlet {
 		}
 
 		String query2 = buildGetQuery(user.getEmail());
-		@SuppressWarnings("unchecked")
 		List<GPSProps> gpses2  = (List<GPSProps>) pm.newQuery(query2).execute();
 
 		//this loop if for debugging purposes only
