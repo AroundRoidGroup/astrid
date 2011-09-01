@@ -18,6 +18,10 @@ import android.view.View;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 
+/**
+ * login screen for AroundRoid - people's locations
+ *
+ */
 public class PeopleLocationPreferneces extends PreferenceActivity {
 
     protected AccountManager accountManager;
@@ -73,12 +77,11 @@ public class PeopleLocationPreferneces extends PreferenceActivity {
 
 
 
-
         Logout.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference p) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(PeopleLocationPreferneces.this);
-                builder.setMessage(R.string.AD_DLG_exit_title)
+                builder.setMessage(R.string.AD_logout_text)
                 .setCancelable(false)
                 .setPositiveButton(R.string.DLG_yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

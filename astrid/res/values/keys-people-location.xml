@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
- <!-- Preference Key (do not translate) -->
-    <string name="AD_login_list_preference_key">listPref</string>
-    <!-- Preference Key (do not translate) -->
-    <string name="AD_logout_preference_key">Logout</string>
-    
-  <!-- allow AroundRoid key -->
-  <string name="AD_p_aroundroid">aroundRoid</string> 
-  <!-- login button in preferences key -->
-  <string name="AD_p_people_login_key">peopleLogin</string>
-    
- </resources>
+	<!-- Preference Key (do not translate) -->
+	<string name="AD_login_list_preference_key">listPref</string>
+	<!-- Preference Key (do not translate) -->
+	<string name="AD_logout_preference_key">Logout</string>
+
+	<!-- allow AroundRoid key -->
+	<string name="AD_p_aroundroid">aroundRoid</string>
+	<!-- login button in preferences key -->
+	<string name="AD_p_people_login_key">peopleLogin</string>
+
+	<!-- GOOGLE MAPS API KEY -->
+	<string name="AD_GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
+
+	<!-- GOOGLE PLACES API KEY -->
+	<string name="AD_GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+
+
+</resources>

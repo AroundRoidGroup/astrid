@@ -2,7 +2,6 @@ package com.aroundroidgroup.astrid.gpsServices;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -28,91 +27,55 @@ import com.todoroo.astrid.reminders.ReminderService;
 import com.todoroo.astrid.service.TaskService;
 
 public class Notificator {
-    static LocationService locationService = new LocationService();
-    public static void notifyAboutPeopleLocation(Task task,double speed, double myLat, double myLon, double lat, double lon) {
-        float[] arr = new float[3];
 
-        Location.distanceBetween(
-                myLat,
-                myLon,
-                lat,lon, arr);
-        float dist = arr[0];
+    private final static LocationService locationService = new LocationService();
 
-        int radius = 0;
-        if (speed>LocationFields.carSpeedThreshold)
-            radius = locationService.getCarRadius(task.getId());
-        else
-            radius = locationService.getFootRadius(task.getId());
+    /**  list of all people followed by any of the tasks   */
+    private static List<FriendProps> listFriendProps;
 
-        if (dist>radius)
-            Notifications.cancelLocationNotification(task.getId());
-        else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
-    }
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a person's location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a person's location
+     */
+    private static boolean notifyAboutPeopleLocationNeeded(Task task,
+            LocStruct locStruct, int radius) {
 
-
-    //assuming lfp is sorted by mail
-    //TODO this!
-    public static void notifyAllPeople(FriendProps myFp,double speed,
-            List<FriendProps> lfp, LocationService ls) {
-        if (!myFp.isValid()){
-            return;
+        for (String str: locationService.getLocationsByPeopleAsArray(task.getId())){
+            DPoint dp = getPersonLocation(str);
+            float[] arr = new float[1];
+            Location.distanceBetween(
+                    locStruct.getLatitude(),
+                    locStruct.getLongitude(),
+                    dp.getX(),dp.getY(), arr);
+            if (arr[0]<=radius)
+                return true;
         }
-        //notify the tasks
-        TodorooCursor<Task> cursor = AstridQueries.getDefaultCursor();
-        Task task = new Task();
-        for (int i = 0; i < cursor.getCount(); i++) {
-            FriendProps exampleProps = new FriendProps();
-            cursor.moveToNext();
-            task.readFromCursor(cursor);
-            String[] mails = ls.getLocationsByPeopleAsArray(task.getId());
-            for (String str : mails){
-                exampleProps.setMail(str);
-                int index = Collections.binarySearch(lfp, exampleProps, FriendProps.getMailComparator());
-                if (index>=0){
-                    FriendProps findMe = lfp.get(index);
-                    if (findMe.isValid()){
-                        Notificator.notifyAboutPeopleLocation(task, speed,myFp.getDlat(),myFp.getDlon(),findMe.getDlat(),findMe.getDlon());
-                    }
-                }
-            }
+        return false;
+
+    }
+
+    private static DPoint getPersonLocation(String str) {
+        for (FriendProps prop: listFriendProps){
+            if (prop.getMail().compareTo(str)==0)
+                return new DPoint(Double.parseDouble(prop.getLat()), Double.parseDouble(prop.getLon()));
         }
-        cursor.close();
+        return null;
     }
 
-    public static void handleByTypeAndBySpecificNotification(LocStruct locStruct) {
-        TaskService taskService = new TaskService();
-        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
-                Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
-                        TaskCriteria.isVisible())).
-                        orderBy(SortHelper.defaultTaskOrder()).limit(30));
-        try {
-
-            Task task = new Task();
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToNext();
-                task.readFromCursor(cursor);
-                notifyAboutLocationIfNeeded(task,locStruct, false);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
-
-    private static void notifyAboutLocationIfNeeded(Task task,LocStruct locStruct, boolean inDriveMode) {
-        //Toast.makeText(ContextManager.getContext(), "popo", Toast.LENGTH_LONG).show();
-        int radius;
-        if (inDriveMode)
-            radius = locationService.getCarRadius(task.getId());
-        else
-            radius = locationService.getFootRadius(task.getId());
-        if (!(notifyAboutSpecificLocationNeeded(task, locStruct, radius) ||
-                notifyAboutTypeOfLocationNeeded(task, locStruct, radius)))
-            Notifications.cancelLocationNotification(task.getId());
-        else
-            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
-    }
-
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a type of location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a type of location
+     */
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
             LocStruct locStruct, int radius) {
         DPoint loc = new DPoint(locStruct.getLatitude(),locStruct.getLongitude());
@@ -140,6 +103,15 @@ public class Notificator {
             return false;
     }
 
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a specific location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a specific location
+     */
     private static boolean notifyAboutSpecificLocationNeeded(Task task,
             LocStruct locStruct, int radius) {
         for (String str: locationService.getLocationsBySpecificAsArray(task.getId())){
@@ -155,5 +127,58 @@ public class Notificator {
         return false;
     }
 
+    /**
+     * pops location based notifications to all tasks that should be popped
+     * @param mySpeed: the speed of the device
+     * @param lfp: list of all people followed by any of the tasks
+     * @param ls: the device's location
+     */
+    public static void handleNotifications(double mySpeed,
+            List<FriendProps> lfp, LocStruct ls) {
+        listFriendProps = lfp;
+        int radius = 0;
+        boolean isInCarMode = mySpeed>LocationFields.carSpeedThreshold;
 
+        TaskService taskService = new TaskService();
+        TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
+                Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
+                        TaskCriteria.isVisible())).
+                        orderBy(SortHelper.defaultTaskOrder()).limit(30));
+
+        try {
+            Task task = new Task();
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToNext();
+                task.readFromCursor(cursor);
+                if (isInCarMode)
+                    radius = locationService.getCarRadius(task.getId());
+                else
+                    radius = locationService.getFootRadius(task.getId());
+
+                notifyAboutLocationIfNeeded(task,ls, radius);
+            }
+        } finally {
+            cursor.close();
+        }
+
+    }
+
+    /**
+     * pops a location based notification to the user about the task if needed
+     *
+     * @param task: the task to notify about
+     * @param ls: the location of the device
+     * @param radius: the alert radius of the task
+     */
+    private static void notifyAboutLocationIfNeeded(Task task, LocStruct ls,
+            int radius) {
+        if (!(notifyAboutSpecificLocationNeeded(task, ls, radius) ||
+                notifyAboutTypeOfLocationNeeded(task, ls, radius) ||
+                notifyAboutPeopleLocationNeeded(task, ls, radius)))
+
+            Notifications.cancelLocationNotification(task.getId());
+        else
+            ReminderService.getInstance().getScheduler().createAlarm(task, DateUtilities.now(), ReminderService.TYPE_LOCATION);
+
+    }
 }

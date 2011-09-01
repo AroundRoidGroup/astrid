@@ -330,7 +330,6 @@ public class AroundroidDbAdapter {
      * @return friend props if cursor is not empty otherwise null
      */
     public static FriendProps userToFP(Cursor cur){
-        if (cur.moveToFirst()){
             FriendProps fp  = new FriendProps();
             fp.setDlat(cur.getDouble(cur.getColumnIndex(KEY_LAT)));
             fp.setDlon(cur.getDouble(cur.getColumnIndex(KEY_LON)));
@@ -338,9 +337,6 @@ public class AroundroidDbAdapter {
             fp.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
             fp.setValid(cur.getString(cur.getColumnIndex(KEY_VALIDS)));
             return fp;
-        }else{
-            return null;
-        }
     }
 
     /***

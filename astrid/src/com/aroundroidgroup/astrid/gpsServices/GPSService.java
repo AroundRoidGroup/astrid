@@ -335,8 +335,8 @@ public class GPSService extends Service{
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     FriendProps myFp = aDba.specialUserToFP();
                     if ((loopCounter % 3)==0){
-                    //periodicly update the server and from the server
-                    prs.updatePeopleLocations(peopleArr,myFp,aDba);
+                        //periodicly update the server and from the server
+                        prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
             }
@@ -361,7 +361,6 @@ public class GPSService extends Service{
         this.mySpeed = ls.getSpeed();
 
 
-        FriendProps myFp = aDba.specialUserToFP();
         String peopleArr[] = threadLocationService.getAllLocationsByPeople();
         List<FriendProps> lfp = new ArrayList<FriendProps>(peopleArr.length);
         for (String dude : peopleArr){
@@ -378,10 +377,7 @@ public class GPSService extends Service{
             curPeople.close();
         }
 
-        if (myFp!=null && myFp.isValid()){
-            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
-        }
-        Notificator.handleByTypeAndBySpecificNotification(ls);
+        Notificator.handleNotifications(mySpeed,lfp,ls);
 
     }
 
@@ -417,7 +413,9 @@ public class GPSService extends Service{
     }
 
     protected void makeUseOfNewLocation(WPSLocation location) {
-        makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
+        if (aDba==null){
+            return;
+        }
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
             currMin = realMin;
@@ -429,6 +427,7 @@ public class GPSService extends Service{
                     currMin,
                     _callback);
         }
+        makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
     }
 
     protected void makeUseOfNewLocation(Location location){

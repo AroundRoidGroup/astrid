@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/peoplelocation_menu_mail"
           android:icon="@drawable/ic_menu_add"
-          android:title="Mail" />
+          android:title="@string/AD_menu_mail" />
     <item android:id="@+id/peopleLocation_menu_contacts"
           android:icon="@drawable/ic_menu_friendslist"
-          android:title="Contacts" />
+          android:title="@string/AD_menu_contacts" />
     <item android:id="@+id/peoplelocation_menu_login"
           android:icon="@drawable/ic_menu_preferences"
-          android:title="Login" />
+          android:title="@string/AD_people_location_login" />
 </menu>

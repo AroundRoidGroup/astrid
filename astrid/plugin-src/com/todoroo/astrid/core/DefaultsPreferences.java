@@ -56,10 +56,10 @@ public class DefaultsPreferences extends TodorooPreferences {
                     R.array.EPr_default_reminders_values, R.string.EPr_default_reminders_desc);
         } else if(r.getString(R.string.p_rmd_default_car_radius_key).equals(preference.getKey())) {
             updateTaskListPreference(preference, value, r, R.array.EPr_car_radius,
-                    R.array.EPr_car_radius_defult_value, R.string.EPr_default_carRadius_desc);
+                    R.array.EPr_car_radius_defult_value, R.string.EPr_default_Radius_desc);
         } else if(r.getString(R.string.p_rmd_default_foot_radius_key).equals(preference.getKey())) {
             updateTaskListPreference(preference, value, r, R.array.EPr_foot_radius,
-                    R.array.EPr_foot_radius_defult_value, R.string.EPr_default_footRadius_desc);
+                    R.array.EPr_foot_radius_defult_value, R.string.EPr_default_Radius_desc);
         } else if(r.getString(R.string.p_rmd_default_random_hours).equals(preference.getKey())) {
             int index = AndroidUtilities.indexOf(r.getStringArray(R.array.EPr_reminder_random_hours), (String)value);
             if(index <= 0)

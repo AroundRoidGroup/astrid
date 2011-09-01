@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- the text in the logout dialog -->
+	<string name="AD_logout_text">Are you sure you want to logout?</string>
+
 	<!-- Credentials list is empty text -->
 	<string name="AD_noCreds">There are no users associated with this Android
 		device.</string>
@@ -74,10 +77,7 @@
 
 	<!--scanning the contact list dialog -->
 	<string name="AD_contacts_scan_title">Looking for contacts</string>
-	<string name="AD_contacts_scan_text">Scanning you Contact List to find friends that use AroundRoid. This may take a while...</string>
-
-    <!-- exit dialog-->
-	<string name="AD_DLG_exit_title">Are you sure you want to exit?</string>
+	<string name="AD_contacts_scan_text">Scanning your Contact List to find friends that use AroundRoid. This may take a while...</string>
 
 	<!-- Checking if your friend is using Aroundroid -->
 	<string name="AD_checking_friend_title">Checking friend</string>
@@ -102,6 +102,10 @@
 	<string name="AD_ace_title">Friend Information</string>
 	<string name="AD_ace_contact_card">View Contact Card</string>
 
+
+	<!-- manage contacts menu -->
+	<string name="AD_menu_mail">Mail</string>
+	<string name="AD_menu_contacts">Contacts</string>
 
 
 
