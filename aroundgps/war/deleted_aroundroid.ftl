@@ -24,7 +24,7 @@
 					 <td width ="55%" align="right">
 					 
 
-<a href="http://www.google.com"><img src="http://8.mshcdn.com/wp-content/uploads/2009/08/breakdancing.jpg" alt="Aroundroid logo" height="200" align=""></a>
+<a href="http://code.google.com/p/aroundroid/"><img src="http://8.mshcdn.com/wp-content/uploads/2009/08/breakdancing.jpg" alt="Aroundroid logo" height="200" align=""></a>
 					 </td>
 			 </tr>
 </table>
