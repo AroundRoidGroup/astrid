@@ -87,7 +87,6 @@ public class GPSService extends Service{
 
     @Override
     public void onCreate() {
-        //Toast.makeText(getApplicationContext(), "OnCreate", Toast.LENGTH_LONG).show();
         // The service is being created
         refreshData = new DataRefresher();
         conHel = new ContactsHelper(getContentResolver());
@@ -429,7 +428,7 @@ public class GPSService extends Service{
     private final LocationListener locationListener = new LocationListener() {
 
         public void onLocationChanged(Location location) {
-            toastMe("GPS location changed: " + location.hasSpeed()); //$NON-NLS-1$
+            //toastMe("GPS location changed: " + location.hasSpeed()); //$NON-NLS-1$
             makeUseOfNewLocation(location);
         }
 
