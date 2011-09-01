@@ -673,7 +673,6 @@ public class ManageContactsActivity extends ListActivity{
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         setContentView(R.layout.friend_list_layout);
-        r = getResources();
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
         mDbHelper.open();
@@ -1003,10 +1002,5 @@ public class ManageContactsActivity extends ListActivity{
         setUITimer();
         fillData();
     }
-
-
-
-
-
 
 }

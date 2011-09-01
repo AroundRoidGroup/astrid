@@ -95,6 +95,7 @@ public class SpecificMapLocation extends MapActivity{
 
     private long mTaskID;
     private double mRadius;
+    private String mLastPeople;
     private Button mViewAll;
     private String mSearchText;
     private String mLastPeople;
@@ -778,7 +779,6 @@ public class SpecificMapLocation extends MapActivity{
             LinkedHashSet<String> locations = new LinkedHashSet<String>();
             locations.addAll(mPeople.keySet());
             locations.addAll(mNullPeople);
-            mLocationService.syncLocationsByPeople(mTaskID, locations);
         }
 
         if (requestCode == AdjustedMap.AM_REQUEST_CODE) {

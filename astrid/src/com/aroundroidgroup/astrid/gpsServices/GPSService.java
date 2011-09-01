@@ -1,6 +1,7 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -259,11 +260,13 @@ public class GPSService extends Service{
         }
     }
 
+
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 1 * 1000;
+        private final int defaultSleepTime = 10 * 1000;
 
 
         private final int sleepTime = defaultSleepTime;
@@ -282,73 +285,64 @@ public class GPSService extends Service{
             this.toExit = true;
         }
 
+        private void handleConnection(){
+            if (!prs.isConnected()){
+                if (!prs.isConnecting()){
+
+                    if (connectCount>0){
+                        reported = false;
+                        prs.stop();
+                        connectCount--;
+                        lastConnectionTime = DateUtilities.now();
+                        startPeopleRequests(account);
+                    }
+                    else if (!reported && (prs.isOn())){
+                        reported = true;
+                        toastMe("Connection lost!!!");//$NON-NLS-1$
+                    }
+                }
+                else if (DateUtilities.now()-lastConnectionTime>maxWait){
+                    prs.stop();
+                    reported = true;
+                    toastMe("Connection lost!!!");//$NON-NLS-1$
+                }
+            }
+            else if (!reported){
+                reported = true;
+                toastMe("Connected! Hooray!"); //$NON-NLS-1$
+            }
+        }
+
         @Override
         public void run() {
             //TODO CRASHES WHEN NOT CONNECTED TO SYNC FOR USER (NAAMAKESHET@GMAIL.com RED EXCAMATION MARK)
-
-            //TODO consider making userLastLocation a database entry
-
-            //TODO if isConnecting for to long, force close
-            //initiate GPS
             while (!toExit){
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     continue;
                 }
-                if (!prs.isConnected()){
-                    if (!prs.isConnecting()){
 
-                        if (connectCount>0){
-                            reported = false;
-                            //TODO stop doesn't really works
-                            prs.stop();
-                            connectCount--;
-                            lastConnectionTime = DateUtilities.now();
-                            startPeopleRequests(account);
-                        }
-                        else if (!reported && (prs.isOn())){
-                            reported = true;
-                            toastMe("Connection lost!!!");//$NON-NLS-1$
-                        }
-                    }
-                    else if (DateUtilities.now()-lastConnectionTime>maxWait){
-                        prs.stop();
-                        reported = true;
-                        toastMe("Connection lost!!!");//$NON-NLS-1$
-                    }
-                }
-                else if (!reported){
-                    reported = true;
-                    toastMe("Connected! Hooray!"); //$NON-NLS-1$
-                }
-
-
+                handleConnection();
                 //check if friends is enabled and connected and needed
                 if (prs.isConnected()){
-
                     ++loopCounter;
-
                     if ((loopCounter % peiodicDataScanMax == 0)){
+                        //periodcly cleaning the database
                         loopCounter = 0;
                         cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
-
-                    //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    if (loopCounter==0 || peopleArr.length>0){
-                        FriendProps myFp = aDba.specialUserToFP();
-                        List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
-                        //TODO doesn't notify!?
-                        if (lfp!=null && myFp!=null && myFp.isValid()){
-                            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
-                        }
+                    FriendProps myFp = aDba.specialUserToFP();
+                    if ((loopCounter % 3)==0){
+                    //periodicly update the server and from the server
+                    prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
-
-
-
             }
+            //TODO debug remove this
+            int x = 3;
+            x = 2 +x;
         }
 
 
@@ -365,6 +359,28 @@ public class GPSService extends Service{
             cur.close();
         }
         this.mySpeed = ls.getSpeed();
+
+
+        FriendProps myFp = aDba.specialUserToFP();
+        String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+        List<FriendProps> lfp = new ArrayList<FriendProps>(peopleArr.length);
+        for (String dude : peopleArr){
+            Cursor curPeople = aDba.fetchByMail(dude);
+            if (curPeople==null){
+                continue;
+            }
+            if (curPeople.moveToFirst()){
+                FriendProps fp = AroundroidDbAdapter.userToFP(curPeople);
+                if (fp!=null){
+                    lfp.add(fp);
+                }
+            }
+            curPeople.close();
+        }
+
+        if (myFp!=null && myFp.isValid()){
+            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+        }
         Notificator.handleByTypeAndBySpecificNotification(ls);
 
     }

@@ -21,6 +21,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+/***
+ * Responsible of establishing connecting (getting connection cookie)
+ * @author Tomer
+ *
+ */
 public class ConnectionManager {
 
     private Account chosenAccount;
@@ -35,31 +40,41 @@ public class ConnectionManager {
 
     private String lastToken;
 
+    private final static long requestDelayTime = 1000;
+
     private final DefaultHttpClient http_client =  new DefaultHttpClient();;
 
+    /***
+     * send a single http request
+     * @param hur the http request
+     * @return http resonse on success, null if error occured
+     */
     public synchronized HttpResponse executeOnHttp(HttpUriRequest hur) {
         if (!isConnected()){
             return null;
         }
-        //TODO remove this
         try {
-            Thread.sleep(1000);
+            //delays requests to not overwhelm the server
+            Thread.sleep(requestDelayTime);
         } catch (InterruptedException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            //do nothing
         }
         try {
             return http_client.execute(hur);
         } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //do nothing
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //do nothing
         }
+        //returns null in case of error
         return null;
     }
 
+    /***
+     * sets the account and the context of the connection manager
+     * @param account the account
+     * @param c the context
+     */
     public void setProps(Account account,Context c){
         if (isConnecting() || isConnecting()){
             return;
@@ -69,6 +84,9 @@ public class ConnectionManager {
         props = true;
     }
 
+    /***
+     * start the connection proccess if not already connecting or connected
+     */
     public void connect(){
         if (!isProps() || isConnecting()){
             return;
@@ -78,10 +96,18 @@ public class ConnectionManager {
         accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
     }
 
+    /***
+     *
+     * @return the account name
+     */
     public String getAccountString(){
         return chosenAccount.name;
     }
 
+    /***
+     * tries to reconnect using the stored account and properties
+     * @return
+     */
     public boolean reconnect(){
         if (isProps()){
             connect();
@@ -90,36 +116,68 @@ public class ConnectionManager {
         return false;
     }
 
+    /***
+     * stops the connection
+     */
     public void stop() {
         this.setConnected(false);
         this.setConnecting(false);
     }
 
+    /***
+     * when authentication token is recived, tris to get connection cookie
+     * @param bundle contains the authentication token
+     */
     protected void onGetAuthToken(Bundle bundle) {
         this.lastToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
         new GetCookieTask().execute(lastToken);
     }
 
+    /***
+     * set to connecting status
+     * @param isConnecting
+     */
     private void setConnecting(boolean isConnecting) {
         this.isConnecting = isConnecting;
     }
 
+    /***
+     *
+     * @return is connecting right now
+     */
     public boolean isConnecting() {
         return isConnecting;
     }
 
+    /***
+     * set connected status
+     * @param isConnected
+     */
     private void setConnected(boolean isConnected) {
         this.isConnected = isConnected;
     }
 
+    /***
+     *
+     * @return is connected
+     */
     public boolean isConnected() {
         return isConnected;
     }
 
+    /***
+     *
+     * @return is initialized with account and context
+     */
     public boolean isProps() {
         return props;
     }
 
+    /***
+     * handels authentication callback. tries to start accpet/decline activity if needed
+     * @author Tomer
+     *
+     */
     private class GetAuthTokenCallback implements AccountManagerCallback<Bundle> {
 
         public void run(AccountManagerFuture<Bundle> result) {
@@ -148,9 +206,18 @@ public class ConnectionManager {
     }
 
 
-    //TODO change from async task to something real.
+
+    /***
+     * send a request to the server and hopes that the secured cookie is included in the response sent back.
+     * @author Tomer
+     *
+     */
     private class GetCookieTask extends AsyncTask<String, Void, Boolean> {
+
         @Override
+        /***
+         * on failure to get cookie or error returns false. otherwise true
+         */
         protected Boolean doInBackground(String... tokens) {
             try {
                 // Don't follow redirects
@@ -167,9 +234,9 @@ public class ConnectionManager {
                         return true;
                 }
             } catch (ClientProtocolException e) {
-                // TODO fill
+                //nothing
             } catch (IOException e) {
-                // TODO fill
+                //nothing
             } finally {
                 http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
             }
@@ -179,14 +246,14 @@ public class ConnectionManager {
         @Override
         protected void onPostExecute(Boolean result) {
             if (result){
-                //TODO fill
+                //if result ok the connection manager is connected
                 setConnected(true);
                 setConnecting(false);
             }
             else{
-                setConnecting(false);;
+                //the connection proccess failed. invalidating authentication cookie just in case
+                setConnecting(false);
                 accountManager.invalidateAuthToken(chosenAccount.type, lastToken);
-                //accountManager.getAuthToken(chosenAccount, "ah", false, new GetAuthTokenCallback(), null); //$NON-NLS-1$
             }
         }
     }
