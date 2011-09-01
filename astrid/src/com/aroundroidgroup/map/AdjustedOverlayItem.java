@@ -12,7 +12,6 @@ public class AdjustedOverlayItem extends OverlayItem {
 
     public AdjustedOverlayItem(GeoPoint point, String title, String snippet) {
         super(point, title, snippet);
-        // TODO Auto-generated constructor stub
     }
 
     public AdjustedOverlayItem(GeoPoint point, String title, String snippet, String address, long taskID, String extras, int uniqueID) {

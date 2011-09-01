@@ -55,7 +55,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
     private long mTaskID;
     private AdjustedMap mMapView;
     private final LocationService locationService = new LocationService();
-    private double mRadius;
+
     private Button mViewAll;
     private List<String> mTypes;
     private List<String> mNullPeople;
@@ -97,32 +97,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mLocationDB.close();
     }
 
-    //    private class ViewAll extends AbstractAction {
-    //
-    //        public ViewAll() {
-    //            super(R.drawable.ic_menu_list);
-    //        }
-    //
-    //        @Override
-    //        public void performAction(View view) {
-    //            if (!mMapView.hasPlaces()) {
-    //                AlertDialog dialog = new AlertDialog.Builder(MapLocationActivity.this).create();
-    //                dialog.setIcon(android.R.drawable.ic_dialog_alert);
-    //                dialog.setTitle("Information");
-    //                dialog.setMessage("No locations for this task.");
-    //                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-    //                        new DialogInterface.OnClickListener() {
-    //                    public void onClick(DialogInterface dg, int which) {
-    //                        return;
-    //                    }
-    //                });
-    //                dialog.show();
-    //            }
-    //            else mViewAll.showContextMenu();
-    //            return;
-    //        }
-    //
-    //    }
+
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@ Adding the button that centralizing the map to the last known location of the device  @@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -309,7 +284,6 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
         mPeopleDB.open();
         mLocationDB = new LocationsDbAdapter(this);
         mLocationDB.open();
-        mRadius = 100;
 
         mViewAll = (Button)findViewById(R.id.forcontextmenuonlybutton);
         mViewAll.setVisibility(View.GONE);
@@ -386,7 +360,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
         /* If the task is location-based, the following code will add the locations to the map */
         String[] locationTags = locationService.getLocationsByTypeAsArray(mTaskID);
-        int[] feedback = mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mRadius, mTaskID);
+        int[] feedback = mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, locationTags, mMapView.getMapRadius(), mTaskID);
         mTypes = new ArrayList<String>();
         for (int i = 0 ; i < feedback.length ; i++)
             if (feedback[i] == mapFunctions.SUCCESS)
@@ -402,7 +376,7 @@ public class MapLocationActivity extends MapActivity implements OnZoomListener  
 
             @Override
             public void handleMyEventClassEvent(EventObject e) {
-                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mRadius, mTaskID);
+                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mMapView.getMapRadius(), mTaskID);
 
             }
 

@@ -57,9 +57,6 @@ public class PlacesLocations {
                 "sll=" + latitude + "," + longtitude + "&" + /* search center point (we'll use current device location */ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 "rsz=8&" + /* number of results to return per page */ //$NON-NLS-1$
                 "start=" + start + //$NON-NLS-1$
-                /* "sspn=&" +  a box that the local search should be relative to. */
-                //              "key=ABQIAAAAObA0GRIqXQNR793dPFwR8BTZfQpz0IQ9_INffx12OPoBPuPM7hSLpvO3lnM8iCuwWf3V8zc49jSZEQ&" + /* */
-                //              "userip=192.168.0.1" + /* IP address of the end-user on whose behalf the request is being made */
         ""); //$NON-NLS-1$
     }
 

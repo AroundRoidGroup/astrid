@@ -52,7 +52,7 @@ public class LocationFields {
             Metadata.VALUE2.name);
 
     /** Delimiter for parsing the location strings */
-    public static final String delimiter = "::"; //$NON-NLS-1$
+    public static final String delimiter = ":"; //$NON-NLS-1$
 
     /** The speed at which the application goes from walking mode to driving mode */
     public static final int carSpeedThreshold = 25*1000/60/60; // 25 km/h

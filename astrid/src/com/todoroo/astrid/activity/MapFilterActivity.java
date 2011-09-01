@@ -20,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -73,7 +72,6 @@ public class MapFilterActivity extends MapActivity {
     private static final String OVERLAY_SPECIFIC_NAME = "Specific Location"; //$NON-NLS-1$
     private static final String OVERLAY_PEOPLE_NAME = "People Location"; //$NON-NLS-1$
 
-    private int mTaskNumber;
     private int mLocationNumber;
 
     @Override
@@ -105,36 +103,7 @@ public class MapFilterActivity extends MapActivity {
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
-    private class InformationOnLocations extends AbstractAction {
 
-        public InformationOnLocations() {
-            super(R.drawable.ic_menu_info);
-        }
-
-        @Override
-        public void performAction(View view) {
-            String locationsCount = ""; //$NON-NLS-1$
-            if (mMapView.getOverlaySize(SPECIFIC_OVERLAY) > 0)
-                locationsCount += "Specifics: " + mMapView.getOverlaySize(SPECIFIC_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-            if (mMapView.getOverlaySize(TYPE_OVERLAY) > 0)
-                locationsCount += "Types: " + mMapView.getOverlaySize(TYPE_OVERLAY) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-            if (mMapView.getOverlaySize(PEOPLE_OVERLAY) > 0)
-                locationsCount += "People: " + mMapView.getOverlaySize(PEOPLE_OVERLAY); //$NON-NLS-1$
-
-            AlertDialog dialog = new AlertDialog.Builder(MapFilterActivity.this).create();
-            dialog.setIcon(android.R.drawable.ic_dialog_alert);
-            dialog.setTitle("Information");
-            dialog.setMessage("Tasks: " + mTaskNumber + "\nLocations: " + mLocationNumber);
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                    new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dg, int which) {
-                    return;
-                }
-            });
-            dialog.show();
-            return;
-        }
-    }
     private class ViewAll extends AbstractAction {
 
         public ViewAll() {
@@ -146,9 +115,9 @@ public class MapFilterActivity extends MapActivity {
             if (!hasPlaces()) {
                 AlertDialog dialog = new AlertDialog.Builder(MapFilterActivity.this).create();
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
-                dialog.setTitle("Information");
-                dialog.setMessage("No locations for this task.");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
+                dialog.setTitle("Information"); //$NON-NLS-1$
+                dialog.setMessage("No locations for this task."); //$NON-NLS-1$
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", //$NON-NLS-1$
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -169,7 +138,7 @@ public class MapFilterActivity extends MapActivity {
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("All Locations");
+        menu.setHeaderTitle("All Locations"); //$NON-NLS-1$
         int len = mMapView.getOverlaySize(SPECIFIC_OVERLAY);
         DPoint[] specCoords = mMapView.getAllByIDAsCoords(SPECIFIC_OVERLAY);
         String[] specAddrs = mMapView.getAllByIDAsAddress(SPECIFIC_OVERLAY);
@@ -244,7 +213,6 @@ public class MapFilterActivity extends MapActivity {
                     TaskCriteria.isVisible())).
                     orderBy(SortHelper.defaultTaskOrder()).limit(100));
             List<Long> hasThisType = new ArrayList<Long>();
-            String taskName = null;
             try {
 
                 Task task = new Task();
@@ -259,7 +227,6 @@ public class MapFilterActivity extends MapActivity {
                         for (String s : types)
                             if (s.equals(item.getTitle())) {
                                 hasThisType.add(task.getId());
-                                taskName = cursor.getString(cursor.getColumnIndex(Task.TITLE.toString()));
                             }
                     }
                     break;
@@ -268,7 +235,7 @@ public class MapFilterActivity extends MapActivity {
                     intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
                 }
                 else {
-                    intent.putExtra(Focaccia.TASK_NAME, "Multiple Tasks");
+                    intent.putExtra(Focaccia.TASK_NAME, "Multiple Tasks"); //$NON-NLS-1$
                 }
             } finally {
                 cursor.close();
@@ -381,7 +348,6 @@ public class MapFilterActivity extends MapActivity {
         TodorooCursor<Task> cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                 TaskCriteria.isVisible())).
                 orderBy(SortHelper.defaultTaskOrder()).limit(100));
-        mTaskNumber = cursor.getCount();
         try {
 
             Task task = new Task();
@@ -400,7 +366,6 @@ public class MapFilterActivity extends MapActivity {
         cursor = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                 TaskCriteria.isVisible())).
                 orderBy(SortHelper.defaultTaskOrder()).limit(100));
-        mTaskNumber = cursor.getCount();
         try {
 
             Task task = new Task();
@@ -474,7 +439,7 @@ public class MapFilterActivity extends MapActivity {
         }
 
         final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle("Places Nearby");
+        actionBar.setTitle("Places Nearby"); //$NON-NLS-1$
 
         actionBar.addAction(new ViewAll());
         actionBar.addAction(new DeviceLocation());
@@ -486,7 +451,6 @@ public class MapFilterActivity extends MapActivity {
                 TodorooCursor<Task> c = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                         TaskCriteria.isVisible())).
                         orderBy(SortHelper.defaultTaskOrder()).limit(100));
-                mTaskNumber = c.getCount();
                 try {
 
                     Task task = new Task();
@@ -521,14 +485,12 @@ public class MapFilterActivity extends MapActivity {
     final int mDelayMillis = 10 * 1000;
     private final Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
-            Toast.makeText(MapFilterActivity.this, "now", Toast.LENGTH_LONG).show();
             /* my code */
             mMapView.clearOverlay(PEOPLE_OVERLAY);
             mMapView.invalidate();
             TodorooCursor<Task> c = (new TaskService()).query(Query.select(Task.ID).where(Criterion.and(TaskCriteria.isActive(),
                     TaskCriteria.isVisible())).
                     orderBy(SortHelper.defaultTaskOrder()).limit(100));
-            mTaskNumber = c.getCount();
             try {
 
                 Task task = new Task();
