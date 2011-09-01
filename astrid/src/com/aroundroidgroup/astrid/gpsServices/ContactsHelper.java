@@ -30,8 +30,8 @@ public class ContactsHelper {
 
     public Set<Entry<String, Long>> getFriends(Cursor cur){
         HashMap<String, Long> hm = new HashMap<String, Long>();
-        if (cur.getCount() > 0) {
-            while (cur.moveToNext()) {
+        if (cur.moveToFirst()) {
+            do {
                 String id = (cur.getString(
                         cur.getColumnIndex(ContactsContract.Contacts._ID)));
                 Cursor emailCur = cr.query(
@@ -39,18 +39,20 @@ public class ContactsHelper {
                         null,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?", //$NON-NLS-1$
                         new String[]{id}, null);
-                while (emailCur.moveToNext()) {
-                    // This would allow you get several email addresses
-                    // if the email addresses were stored in an array
-                    String mail = emailCur.getString(
-                            emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                    if (!hm.containsKey(mail)){
-                        hm.put(mail, Long.parseLong(id));
-                    }
+                if (emailCur.moveToFirst()){
+                    do {
+                        // This would allow you get several email addresses
+                        // if the email addresses were stored in an array
+                        String mail = emailCur.getString(
+                                emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                        if (!hm.containsKey(mail)){
+                            hm.put(mail, Long.parseLong(id));
+                        }
+                    } while (emailCur.moveToNext());
                 }
                 emailCur.close();
 
-            }
+            } while (cur.moveToNext()) ;
         }
         return hm.entrySet();
     }
