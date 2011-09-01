@@ -942,7 +942,7 @@ public class AdjustedMap extends MapView {
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
 
                 /* setting the dialog title */
-                dialog.setTitle("Confirm Specific Location");
+                dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
 
                 /* setting the dialog message. in this case, asking the user if he's sure he */
                 /* wants to add the tapped location to the task, so the task will be specific- */
@@ -951,7 +951,7 @@ public class AdjustedMap extends MapView {
 
                 final String savedAddr = mapFunctions.getSavedAddressAndUpdate(p.getLatitudeE6(), p.getLongitudeE6());
 
-                dialog.setMessage("Would you like to add the following location:"+"\n" + savedAddr);
+                dialog.setMessage("Would you like to add the following location:"+"\n" + savedAddr); //$NON-NLS-1$ //$NON-NLS-2$
 
                 /* setting the confirm button text and action to be executed if it has been chosen */
                 dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),

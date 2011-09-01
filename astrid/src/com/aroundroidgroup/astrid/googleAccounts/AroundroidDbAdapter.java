@@ -67,10 +67,6 @@ public class AroundroidDbAdapter {
             onCreate(db);
         }
 
-        public void kill(SQLiteDatabase db) {
-            db.execSQL("DROP TABLE IF EXISTS peopleloc"); //$NON-NLS-1$
-            onCreate(db);
-        }
 
 
     }

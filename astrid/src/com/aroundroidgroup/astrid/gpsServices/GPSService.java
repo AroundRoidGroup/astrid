@@ -61,7 +61,6 @@ public class GPSService extends Service{
 
     private double mySpeed;
 
-    //TODO find a better method for doing this
     public static Account account = null;
     public static int connectCount = 0;
 
@@ -82,10 +81,7 @@ public class GPSService extends Service{
 
     @Override
     public void onStart(Intent intent, int startId) {
-
-        // TODO Auto-generated method stub
         super.onStart(intent, startId);
-        //Toast.makeText(getApplicationContext(), "OnStart!?!", Toast.LENGTH_LONG).show();
 
     }
 
@@ -96,7 +92,6 @@ public class GPSService extends Service{
         refreshData = new DataRefresher();
         conHel = new ContactsHelper(getContentResolver());
         aDba.open();
-        //TODO problem with "me"
         //aDba.dropPeople();
         Cursor cur = aDba.createAndfetchSpecialUser();
         if (cur!=null){
@@ -122,11 +117,9 @@ public class GPSService extends Service{
     int currMin = threadLocationService.minimalRadiusRelevant(0);
     private void skyhookSetup(){
         _xps = new XPS(this);
-        //Toast.makeText(getApplicationContext(), "service onCreate", Toast.LENGTH_LONG).show();
 
         _xps.getXPSLocation(auth,
-                // note we convert _period to seconds
-                10,
+                30,
                 currMin,
                 _callback);
     }
@@ -138,13 +131,11 @@ public class GPSService extends Service{
     {
         public void done()
         {
-            toastMe("WPS done"); //$NON-NLS-1$
             // tell the UI thread to re-enable the buttons
         }
 
         public WPSContinuation handleError(WPSReturnCode error)
         {
-            toastMe("WPS handleError"); //$NON-NLS-1$
             // send a message to display the error
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -153,20 +144,17 @@ public class GPSService extends Service{
         public void handleIPLocation(IPLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleIPLocation"); //$NON-NLS-1$
 
         }
 
         public void handleWPSLocation(WPSLocation location)
         {
             // send a message to display the location
-            toastMe("WPS handleWPSLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             makeUseOfNewLocation(location);
         }
 
         public WPSContinuation handleWPSPeriodicLocation(WPSLocation location)
         {
-            toastMe("handleWPSPeriodicLocation "+location.getLatitude()+" "+location.getLongitude()+" speed: "+location.getSpeed()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             makeUseOfNewLocation(location);
             // return WPS_STOP if the user pressed the Stop button
             return WPSContinuation.WPS_CONTINUE;
@@ -315,7 +303,6 @@ public class GPSService extends Service{
 
         @Override
         public void run() {
-            //TODO CRASHES WHEN NOT CONNECTED TO SYNC FOR USER (NAAMAKESHET@GMAIL.com RED EXCAMATION MARK)
             while (!toExit){
                 try {
                     Thread.sleep(sleepTime);
@@ -340,7 +327,6 @@ public class GPSService extends Service{
                     }
                 }
             }
-            //TODO debug remove this
             int x = 3;
             x = 2 +x;
         }
@@ -448,14 +434,14 @@ public class GPSService extends Service{
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            //TODO empty
+            //
         }
 
         public void onProviderEnabled(String provider) {
-            //Toast.makeText(getApplicationContext(), "GPS Enabled!", Toast.LENGTH_LONG).show();
+            //
         }
         public void onProviderDisabled(String provider) {
-            //Toast.makeText(getApplicationContext(), "GPS Disabled!", Toast.LENGTH_LONG).show();
+            //
 
         }
     };
