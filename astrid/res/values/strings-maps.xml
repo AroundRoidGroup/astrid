@@ -9,18 +9,18 @@
 
 	<!-- map information dialog -->
 	<string name="AD_map_alert_dialog_title">Information</string>
-	
+
 	<!-- the location is already attached to the task -->
 	<string name="AD_location_already_attached">This location is already attached to task.</string>
-	
+
 	<!-- location on a map cannot be resolved -->
 	<string name="AD_unresolvable_location">This location cannot be resolved.</string>
 	<!-- no location for this task- alert dialog -->
 	<string name="AD_no_location_for_task">No locations for this task.</string>
-	
+
 	<!-- searching in the autocomplete textbox -->
-	<string name="AD_map_searching">Searching...</string>
-	
+	<string name="AD_map_searching">Searching For:</string>
+
 <!-- kinds of locations(by type, by people or a specific) -->
 <string name="AD_kind_type">Type Location</string>
 <string name="AD_kind_specific">Specific Location</string>
@@ -37,7 +37,7 @@
 	<!-- SpecificMapLocation buttons -->
 	<string name="AD_addPeopleButton">Add People</string>
 	<string name="AD_viewAllButton">View All</string>
-	
+
 	<!-- in Focaccia activity -->
 	<string name="AD_focaccia_snippet">Snippet:</string>
 	<string name="AD_focaccia_type">Type:</string>
@@ -53,23 +53,27 @@
 
 	<!-- Locations action bar title -->
 	<string name="AD_actionbar_title">hello</string>
-	
+
 	<!-- alert dialog in  filter map location -->
-	
+
 	<string name="AD_alert_dialog_tasks">Tasks:</string>
 
-	
-		
+
+
 	<!--if location is attached to multiple tasks  -->
 	<string name="AD_multiple_tasks">Multiple Tasks</string>
-	
+
 	<!-- view all header -->
 	<string name="AD_all_locations">All Locations</string>
-	
-	<!-- confirm specific location  -->
-	<string name="AD_confirm_specific">Confirm Specific Location</string>
-	
-	<!-- asks whether to add a chosen location -->
-	<string name="AD_add_location_question">Would you like to add the following location:</string>
-	
+
+
+		<!-- text shown when pressing the device's location on map -->
+	<string name="AD_device_location">Your Location</string>
+
+	<!-- GOOGLE MAPS API KEY -->
+	<string name="AD_GOOGLE_MAPS_API_KEY">0sG-L_XVBHAno8qHuY9mcH09q86gnEUKt2uV6_w</string>
+
+	<!-- GOOGLE PLACES API KEY -->
+	<string name="AD_GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
+
 </resources>

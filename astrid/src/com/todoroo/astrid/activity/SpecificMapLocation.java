@@ -25,6 +25,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -36,7 +37,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -44,7 +44,6 @@ import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
-import com.aroundroidgroup.map.AutoCompleteSuggestions;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -80,11 +79,14 @@ public class SpecificMapLocation extends MapActivity{
     private static final int MENU_KIND_GROUP = 65536;
     private static final int MENU_PEOPLE_GROUP = 1048576;
     private static final int MENU_TAPPED_GROUP = 16777216;
+    private static final int REQUEST_CODE_SUGGESTIONS = 17;
 
     /* identifiers for the overlays in the mapView */
     private static final int SPECIFIC_OVERLAY = 1;
     private static final int TYPE_OVERLAY = 2;
     private static final int PEOPLE_OVERLAY = 3;
+
+    public static final String SUGGESTION = "sugg"; //$NON-NLS-1$
 
     /* identifiers for the intent that is sent back to TaskEditActivity from SaveAndQuit function */
     public static final String SPECIFIC_TO_SEND = "specific"; //$NON-NLS-1$
@@ -92,9 +94,9 @@ public class SpecificMapLocation extends MapActivity{
     public static final String PEOPLE_TO_SEND = "people"; //$NON-NLS-1$
 
     private long mTaskID;
-    private double mRadius;
-    private String mLastPeople;
     private Button mViewAll;
+    private String mSearchText;
+    private String mLastPeople;
     private List<String> mTypes;
     private AdjustedMap mMapView;
     private int mPressedItemIndex;
@@ -105,6 +107,7 @@ public class SpecificMapLocation extends MapActivity{
     private String mPressedItemExtras;
     private Map<String, DPoint> mPeople;
     private LocationsDbAdapter mLocationDB;
+    private CharSequence mLastAutoSearchText;
     private AutoCompleteTextView mAutoTextView;
     private static ArrayAdapter<String> mAdapter;
     private final AroundroidDbAdapter mPeopleDB = new AroundroidDbAdapter(this);
@@ -396,7 +399,6 @@ public class SpecificMapLocation extends MapActivity{
         public void performAction(View view) {
             Intent intent = new Intent(ContextManager.getContext(),ManageContactsActivity.class);
             intent.putExtra(ManageContactsActivity.taskIDSTR, mTaskID);
-            intent.putExtra(ManageContactsActivity.peopleArraySTR, mLocationService.getLocationsByPeopleAsArray(mTaskID));
             startActivityForResult(intent, CONTACTS_REQUEST_CODE);
             return;
         }
@@ -419,25 +421,8 @@ public class SpecificMapLocation extends MapActivity{
         actionBar.addAction(new DeviceLocation());
         actionBar.addAction(new InvitePeople());
 
-        ImageButton b = new ImageButton(this);
-        b.setImageResource(R.drawable.timepicker_down_btn);
-        actionBar.addView(b);
-
-        b.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent suggIntent = new Intent(SpecificMapLocation.this, AutoCompleteSuggestions.class);
-                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_CENTER, Misc.geoToDeg(mMapView.getMapCenter()).toString());
-                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_RADIUS, mRadius);
-                startActivityForResult(suggIntent, 12);
-
-            }
-        });
-
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
 
-        mRadius = 100;
         mPeopleDB.open();
         mMapView.setSatellite(false);
         mLocationDB = new LocationsDbAdapter(this);
@@ -448,7 +433,7 @@ public class SpecificMapLocation extends MapActivity{
             @Override
             public void handleMyEventClassEvent(EventObject e) {
                 mLocationDB.close();
-                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mRadius, mTaskID);
+                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), getMapRadius(), mTaskID);
                 mLocationDB.open();
 
             }
@@ -482,11 +467,15 @@ public class SpecificMapLocation extends MapActivity{
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!s.equals("") && s.equals(mLastAutoSearchText)) //$NON-NLS-1$
+                    return;
                 List<String> c = null;
                 try {
                     String searchText = mAutoTextView.getText().toString();
                     DPoint center = Misc.geoToDeg(mMapView.getMapCenter());
-                    c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
+                    c = Misc.googleAutoCompleteQuery(searchText, center, getMapRadius());
+                    if (!s.equals(mAutoTextView.getText().toString()))
+                        return;
                     for (String type : Misc.types)
                         c.add(type);
                 } catch (IOException e) {
@@ -517,7 +506,7 @@ public class SpecificMapLocation extends MapActivity{
                     });
                     mAutoTextView.setAdapter(mAdapter);
                 }
-
+                mLastAutoSearchText = s;
             }
 
             @Override
@@ -531,6 +520,27 @@ public class SpecificMapLocation extends MapActivity{
                 return;
             }
         });
+
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+        /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
+        /* @@@@@ visible to the user.                                                                  @@@@@    */
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+        mDeviceLocation = mMapView.getDeviceLocation();
+        if (mDeviceLocation != null) {
+            /* Centralizing the map to the last known location of the device */
+            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
+        }
+        else {
+            /* in case device location cannot be obtained, center the map on google headquarters */
+            mMapView.getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
+        }
+        mMapView.setBuiltInZoomControls(true);
+        mMapView.setZoomByAllLocations();
+        //        getMapRadius() = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -564,7 +574,7 @@ public class SpecificMapLocation extends MapActivity{
         for (String type : existedTypes)
             mTypes.add(type);
         mLocationDB.close();
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, existedTypes, mRadius, mTaskID);
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, existedTypes, getMapRadius(), mTaskID);
         mLocationDB.open();
 
         mPeople = new HashMap<String, DPoint>();
@@ -589,10 +599,10 @@ public class SpecificMapLocation extends MapActivity{
             String addr = mapFunctions.getSavedAddressAndUpdate(coordsGP.getLatitudeE6(), coordsGP.getLongitudeE6());
             mMapView.addItemToOverlay(coordsGP, element.getKey(), element.getKey(), addr, PEOPLE_OVERLAY, mTaskID, element.getKey());
         }
-        LinkedHashSet<String> locations = new LinkedHashSet<String>();
-        locations.addAll(mPeople.keySet());
-        locations.addAll(mNullPeople);
-        mLocationService.syncLocationsByPeople(mTaskID, locations);
+        //        LinkedHashSet<String> locations = new LinkedHashSet<String>();
+        //        locations.addAll(mPeople.keySet());
+        //        locations.addAll(mNullPeople);
+        //        mLocationService.syncLocationsByPeople(mTaskID, locations);
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -605,41 +615,6 @@ public class SpecificMapLocation extends MapActivity{
         registerForContextMenu(mViewAll);
         //        mViewAll.setOnClickListener(mViewAllListener);
         //        mViewAll.setOnLongClickListener(mViewAllLongListener);
-
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-
-
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
-        /* @@@@@ visible to the user.                                                                  @@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-
-        mDeviceLocation = mMapView.getDeviceLocation();
-        if (mDeviceLocation != null) {
-            /* Centralizing the map to the last known location of the device */
-            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
-        }
-        else {
-            /* in case device location cannot be obtained, center the map on google headquarters */
-            mMapView.getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
-        }
-        mMapView.setBuiltInZoomControls(true);
-        mMapView.setZoomByAllLocations();
-        //        mRadius = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
-
-        int lon = mMapView.getLongitudeSpan();
-        int lat = mMapView.getLatitudeSpan();
-        float[] hight = new float[1], width = new float[1];
-        if (lat==0 || lon==0){
-            hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
-            width[0]=241; //initialized map width. need to be changed if initial zoom level changes
-        }else{
-            Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
-            Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
-        }
-
-        mRadius = Math.min(hight[0], width[0]) / 2;
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -661,11 +636,11 @@ public class SpecificMapLocation extends MapActivity{
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mAddress.getWindowToken(), 0);
 
-
+                mSearchText = text;
                 if (Misc.isType(text)) {
                     if (!mTypes.contains(text)) {
                         String a = Misc.geoToDeg(mMapView.getMapCenter()).toString();
-                        new AsyncGooglePlacesQuery().execute(text, a, (new Double(mRadius).toString()));
+                        new AsyncGooglePlacesQuery().execute(text, a, (new Double(getMapRadius()).toString()));
                     }
                     else {
                         AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
@@ -683,6 +658,7 @@ public class SpecificMapLocation extends MapActivity{
                     }
                 }
                 else new AsyncLocationResolver().execute(text);
+
             }
         });
 
@@ -714,6 +690,7 @@ public class SpecificMapLocation extends MapActivity{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Resources r = getResources();
         if (requestCode == CONTACTS_REQUEST_CODE){
             if (resultCode == RESULT_OK){
                 Bundle bundle = data.getExtras();
@@ -745,10 +722,10 @@ public class SpecificMapLocation extends MapActivity{
                         else mNullPeople.add(contact);
                     }
                 }
-                LinkedHashSet<String> locations = new LinkedHashSet<String>();
-                locations.addAll(mPeople.keySet());
-                locations.addAll(mNullPeople);
-                mLocationService.syncLocationsByPeople(mTaskID, locations);
+                //                LinkedHashSet<String> locations = new LinkedHashSet<String>();
+                //                locations.addAll(mPeople.keySet());
+                //                locations.addAll(mNullPeople);
+                //                mLocationService.syncLocationsByPeople(mTaskID, locations);
             }
         }
 
@@ -789,13 +766,67 @@ public class SpecificMapLocation extends MapActivity{
 
         if (requestCode == AdjustedMap.AM_REQUEST_CODE) {
             if (resultCode == Focaccia.RESULT_CODE_DELETE) {
-                AdjustedOverlayItem removedItem = mMapView.removeLastPressedItem();
-                if (0 == mMapView.removeItemFromOverlayByExtras(TYPE_OVERLAY, removedItem.getExtras())) {
+                AdjustedOverlayItem removedItem = mMapView.selectLastPressedItem();
+                List<String> lstType = mMapView.selectItemFromOverlayByExtras(TYPE_OVERLAY, removedItem.getExtras());
+                List<String> lstPeople = mMapView.selectItemFromOverlayByExtras(PEOPLE_OVERLAY, removedItem.getExtras());
+                if (lstType.size() > 0) {
                     mTypes.remove(removedItem.getExtras());
+                }
+                if (lstPeople.size() > 0) {
+                    mPeople.remove(removedItem.getExtras());
+                }
+                mMapView.removeLastPressedItem();
+                LinkedHashSet<String> locations = new LinkedHashSet<String>();
+                locations.addAll(mPeople.keySet());
+                locations.addAll(mNullPeople);
+                mLocationService.syncLocationsByPeople(mTaskID, locations);
+            }
+        }
+
+        if (requestCode == REQUEST_CODE_SUGGESTIONS) {
+            Bundle bundle = data.getExtras();
+            if (bundle != null) {
+                String searchText = bundle.getString(SUGGESTION);
+                if (searchText != null) {
+                    if (Misc.isType(searchText)) {
+                        if (!mTypes.contains(searchText)) {
+                            String a = Misc.geoToDeg(mMapView.getMapCenter()).toString();
+                            new AsyncGooglePlacesQuery().execute(searchText, a, (new Double(getMapRadius()).toString()));
+                        }
+                        else {
+                            AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                            dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                            dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                            dialog.setMessage(r.getString(R.string.AD_location_already_attached));
+                            dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
+                                    new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dg, int which) {
+                                    return;
+                                }
+                            });
+                            dialog.show();
+
+                        }
+                    }
+                    else new AsyncLocationResolver().execute(searchText);
                 }
             }
         }
     }
+    private double getMapRadius() {
+        int lon = mMapView.getLongitudeSpan();
+        int lat = mMapView.getLatitudeSpan();
+        float[] hight = new float[1], width = new float[1];
+        if (lat==0 || lon==0){ // the function is called from onCreate
+            hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
+            width[0]=241; //initialized map width. need to be changed if initial zoom level changes
+        }else{
+            Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
+            Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
+        }
+        return Math.min(hight[0], width[0])/2;
+    }
+
     private void saveAndQuit() {
         Intent intent = new Intent();
 
@@ -862,10 +893,11 @@ public class SpecificMapLocation extends MapActivity{
         private double radius;
         private DPoint center;
         private GeoPoint centerGP;
+        Resources r = getResources();
         @Override
         protected void onPreExecute() {
-            Resources r = getResources();
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.AD_map_searching), true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null,
+                    Html.fromHtml(r.getString(R.string.AD_map_searching) + "<br><b>" + mSearchText + "</b>"), true); //$NON-NLS-1$ //$NON-NLS-2$
             super.onPreExecute();
         }
 
@@ -929,11 +961,12 @@ public class SpecificMapLocation extends MapActivity{
     private class AsyncLocationResolver extends AsyncTask<String, Void, GeoPoint> {
         private ProgressDialog pDialog = null;
         private String resolvedAddr = null;
+        private final Resources r = getResources();
 
         @Override
         protected void onPreExecute() {
-            Resources r = getResources();
-            pDialog = ProgressDialog.show(SpecificMapLocation.this, null, r.getString(R.string.AD_map_searching), true);
+            pDialog = ProgressDialog.show(SpecificMapLocation.this, null,
+                    Html.fromHtml(r.getString(R.string.AD_map_searching) + "<br><b>" + mSearchText + "</b>"), true); //$NON-NLS-1$ //$NON-NLS-2$
             super.onPreExecute();
         }
 
@@ -990,7 +1023,5 @@ public class SpecificMapLocation extends MapActivity{
             pDialog.cancel();
             super.onPostExecute(result);
         }
-
     }
-
 }
