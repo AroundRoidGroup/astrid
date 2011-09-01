@@ -120,7 +120,6 @@ public class ManageContactsActivity extends ListActivity{
             Cursor cursor = getContentResolver().query(data.getData(),
                     new String[] {Contacts._ID,Contacts.DISPLAY_NAME}, null, null, null);
             if (cursor.moveToFirst()) { // True if the cursor is not empty
-                //TODO make better dont call getFriends
                 Set<Entry<String,Long>> es = conHel.getFriends(cursor);
                 cursor.moveToFirst();
                 String[] mails = new String[es.size()];
@@ -138,7 +137,7 @@ public class ManageContactsActivity extends ListActivity{
                 if (mails.length>0){
                     createFriendMailsDialog(name,mails,id).show();
                 }else{
-                    Toast.makeText(ManageContactsActivity.this, "This contact has no email addresses!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(ManageContactsActivity.this, "This contact has no email addresses!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 }
 
             }
@@ -148,7 +147,7 @@ public class ManageContactsActivity extends ListActivity{
 
     private Dialog createFriendMailsDialog(String contactName, final String[] mails,final long contactId){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose associated mail - "+ contactName);
+        builder.setTitle("Choose associated mail - "+ contactName); //$NON-NLS-1$
         builder.setSingleChoiceItems(mails, 0, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -179,18 +178,18 @@ public class ManageContactsActivity extends ListActivity{
                     new ScanOneFriendTask().execute(new String[]{mails[which]});
                 }
                 else{
-                    Toast.makeText(ManageContactsActivity.this, "This mail address is already associated with another contact or other error!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(ManageContactsActivity.this, "This mail address is already associated with another contact or other error!", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
                 }
 
             }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() { //$NON-NLS-1$
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }
         }).setOnCancelListener(new OnCancelListener() {
             @Override
-            public void onCancel(DialogInterface dialog) {
+            public void onCancel(DialogInterface dialog) {//
             }
         });
         AlertDialog alert = builder.create();
@@ -214,14 +213,14 @@ public class ManageContactsActivity extends ListActivity{
             String address = null;
             try {
                 address = Geocoding.reverseGeocoding(new DPoint(fpwci.getDlat(), fpwci.getDlon()));
-                sb.append("\nAddress: "+address);
+                sb.append("\nAddress: "+address); //$NON-NLS-1$
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             if (address==null){
-                sb.append("\nLatitude: ").append(fpwci.getLat()).append("\nLongitude: " + fpwci.getLat());
+                sb.append("\nLatitude: ").append(fpwci.getLat()).append("\nLongitude: " + fpwci.getLat()); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }else{
             sb.append("\n"+r.getString(R.string.AD_ace_unregistered)); //$NON-NLS-1$
@@ -281,14 +280,6 @@ public class ManageContactsActivity extends ListActivity{
             else{
                 pickContact();
             }
-            //TODO add another button
-            /*
-            else if (!getAlreadyScannedSometime(null)){
-                new ScanContactsTask().execute(new Void[0]);
-            } else {
-                showDialog(DIALOG_ALREADY_SCANNED);
-            }
-             */
             break;
         case R.id.peoplelocation_menu_login:
             Intent intent = new Intent(ManageContactsActivity.this, PeopleLocationPreferneces.class);
@@ -378,7 +369,6 @@ public class ManageContactsActivity extends ListActivity{
     private Dialog createContactsDialog(){
         final Resources r = getResources();
         Cursor cur = mDbHelper.fetchAllPeopleWContactRegistered();
-        //TODO deal with cur error
         int numberOfFriends = cur.getCount();
 
         //if no friends create ok dialog. if has friends create list dialog.
@@ -734,7 +724,6 @@ public class ManageContactsActivity extends ListActivity{
     }
 
     private List<FriendPropsWithContactId> getProps(Set<String> peopleHashSet2) {
-        //TODO deal with error
         List<FriendPropsWithContactId> list = new ArrayList<FriendPropsWithContactId>();
         for (String mail : peopleHashSet2){
             list.add(get(mail));
@@ -747,7 +736,6 @@ public class ManageContactsActivity extends ListActivity{
         if (!cur.moveToFirst()){
             cur.close();
             long rowId = mDbHelper.createPeople(s);
-            //TODO assming create succesful
             cur = mDbHelper.fetchPeople(rowId);
         }
         //friendPROPSWITHCONTACTID CRITICAL PART
@@ -790,7 +778,7 @@ public class ManageContactsActivity extends ListActivity{
                 createContactsDialog().show();
             }
             else{
-                //TODO dont know what to do here
+                //
             }
 
 
@@ -851,7 +839,7 @@ public class ManageContactsActivity extends ListActivity{
                 //GPSService.lockDeletes(false);
                 return false;
             }
-            //TODO limit update people location to few people
+
             if (al.size()<=0){
                 //GPSService.lockDeletes(false);
                 return true;
@@ -899,7 +887,6 @@ public class ManageContactsActivity extends ListActivity{
 
         @Override
         protected void onPostExecute(Boolean result) {
-            //TODO check this:
             if (isFinishing()){
                 return;
             }
@@ -916,7 +903,6 @@ public class ManageContactsActivity extends ListActivity{
                     createAddAnywayDialog(friend).show();
                 }
             }
-            //TODO check for error
         }
 
         //assuming mail in lower case
@@ -951,10 +937,8 @@ public class ManageContactsActivity extends ListActivity{
             if (fp!=null){
                 if (fp.isRegistered()){
                     returnVal = true;
-                    //TODO check this:
                     if (!isFinishing()){
                         if (!friendInList(fp.getMail())){
-                            //TODO add this check to the onResult function too.
                             peopleHashSet.add(fp.getMail());;
                         }
                     }
