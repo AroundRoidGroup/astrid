@@ -36,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -43,6 +44,7 @@ import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
+import com.aroundroidgroup.map.AutoCompleteSuggestions;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -415,10 +417,21 @@ public class SpecificMapLocation extends MapActivity{
         actionBar.addAction(new DeviceLocation());
         actionBar.addAction(new InvitePeople());
 
-        //        Button b = new Button(this);
-        //        b.setWidth(250);
-        //        b.setText("Search Maps");
-        //        actionBar.addView(b);
+        ImageButton b = new ImageButton(this);
+        b.setImageResource(R.drawable.search_button_style);
+        actionBar.addView(b);
+
+        b.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent suggIntent = new Intent(SpecificMapLocation.this, AutoCompleteSuggestions.class);
+                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_CENTER, Misc.geoToDeg(mMapView.getMapCenter()).toString());
+                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_RADIUS, mRadius);
+                startActivityForResult(suggIntent, 12);
+
+            }
+        });
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
 
