@@ -6,8 +6,7 @@ public class MyEventListener implements MyEventClassListener {
 
     @Override
     public void handleMyEventClassEvent(EventObject e) {
-        // TODO Auto-generated method stub
-
+        return;
     }
 
 }

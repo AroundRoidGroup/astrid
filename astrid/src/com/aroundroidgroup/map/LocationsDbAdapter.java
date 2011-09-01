@@ -19,14 +19,12 @@ public class LocationsDbAdapter {
     public static final String KEY_LAST_USE_TIME = "time"; //$NON-NLS-1$
 
     public static final String KEY_ADDRESS = "address"; //$NON-NLS-1$
-    //    public static final String KEY_COORDINATES = "coordinates"; //$NON-NLS-1$
     public static final String KEY_LATITUDE = "lat"; //$NON-NLS-1$
     public static final String KEY_LONGITUDE = "lon"; //$NON-NLS-1$
     public static final String KEY_BUSINESS_NAME = "businessName"; //$NON-NLS-1$
     public static final String KEY_TYPE_ID = "idOfTypeByCenterAndRadius"; //$NON-NLS-1$
 
     public static final String KEY_TYPE = "type"; //$NON-NLS-1$
-    //    public static final String KEY_CENTER_POINT = "centerPoint"; //$NON-NLS-1$
     public static final String KEY_RADIUS = "radius"; //$NON-NLS-1$
 
     private static final String TAG = "NotesDbAdapter"; //$NON-NLS-1$
@@ -131,7 +129,6 @@ public class LocationsDbAdapter {
         initialValues.put(KEY_RADIUS, radius);
         initialValues.put(KEY_LAST_USE_TIME, DateUtilities.now());
         Long rowID = mDb.insert(DATABASE_TABLE_TYPES, null, initialValues);
-        //        Toast.makeText(mCtx, rowID + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
         String typeTableName = "_" + type; //$NON-NLS-1$
 
         /* creating the table for the given type. the table contains business names and their coords */
@@ -147,8 +144,6 @@ public class LocationsDbAdapter {
                 pair.put(KEY_LATITUDE, Misc.degToGeo(p.getValue()).getLatitudeE6());
                 pair.put(KEY_LONGITUDE, Misc.degToGeo(p.getValue()).getLongitudeE6());
                 pair.put(KEY_TYPE_ID, rowID);
-                //                Toast.makeText(mCtx, mDb.insert(typeTableName, null, pair) + "", Toast.LENGTH_LONG).show(); //$NON-NLS-1$
-
             }
         }
         return rowID;
