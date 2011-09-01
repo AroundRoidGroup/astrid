@@ -769,13 +769,16 @@ public class SpecificMapLocation extends MapActivity{
                 AdjustedOverlayItem removedItem = mMapView.selectLastPressedItem();
                 List<String> lstType = mMapView.selectItemFromOverlayByExtras(TYPE_OVERLAY, removedItem.getExtras());
                 List<String> lstPeople = mMapView.selectItemFromOverlayByExtras(PEOPLE_OVERLAY, removedItem.getExtras());
-                if (lstType.size() > 0) {
+                if (lstType.size() == 1) {
                     mTypes.remove(removedItem.getExtras());
                 }
                 if (lstPeople.size() > 0) {
                     mPeople.remove(removedItem.getExtras());
                 }
-                mMapView.removeLastPressedItem();
+                AdjustedOverlayItem removedItemForSure = mMapView.removeLastPressedItem();
+                List<DPoint> bla = mLocationService.getLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras());
+                bla.add(Misc.geoToDeg(removedItemForSure.getPoint()));
+                mLocationService.syncLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras(), Misc.ListToArrayDPoint(bla));
                 LinkedHashSet<String> locations = new LinkedHashSet<String>();
                 locations.addAll(mPeople.keySet());
                 locations.addAll(mNullPeople);
@@ -985,7 +988,6 @@ public class SpecificMapLocation extends MapActivity{
 
         @Override
         protected void onPostExecute(GeoPoint result) {
-            Resources r = getResources();
             if (result == null) {
                 pDialog.cancel();
                 AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();

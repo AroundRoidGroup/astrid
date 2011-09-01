@@ -20,7 +20,6 @@ import com.google.android.maps.GeoPoint;
 
 public class Misc {
 
-
     public static final String[] types = {"accounting", "airport", "amusement park", "aquarium", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         "art gallery", "atm", "bakery", "bank", "bar", "beauty salon", "bicycle store", "book store", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
         "bowling alley", "bus station", "cafe", "campground", "car dealer", "car rental", "car repair", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
@@ -330,6 +329,14 @@ public class Misc {
         String[] arr = new String[lst.size()];
         int i = 0;
         for (String s : lst)
+            arr[i++] = s;
+        return arr;
+    }
+
+    public static DPoint[] ListToArrayDPoint(List<DPoint> lst) {
+        DPoint[] arr = new DPoint[lst.size()];
+        int i = 0;
+        for (DPoint s : lst)
             arr[i++] = s;
         return arr;
     }
