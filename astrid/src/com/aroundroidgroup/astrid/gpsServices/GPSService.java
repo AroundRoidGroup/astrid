@@ -260,11 +260,13 @@ public class GPSService extends Service{
         }
     }
 
+
+
     private class DataRefresher extends Thread{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 30 * 1000;
+        private final int defaultSleepTime = 10 * 1000;
 
 
         private final int sleepTime = defaultSleepTime;
@@ -275,14 +277,40 @@ public class GPSService extends Service{
 
         private final int peiodicDataScanMax = 5;
 
-        private final int sendRoundsMax = 3;
-
         private int loopCounter = -1;
 
         private boolean reported = false;
 
         public void setExit(){
             this.toExit = true;
+        }
+
+        private void handleConnection(){
+            if (!prs.isConnected()){
+                if (!prs.isConnecting()){
+
+                    if (connectCount>0){
+                        reported = false;
+                        prs.stop();
+                        connectCount--;
+                        lastConnectionTime = DateUtilities.now();
+                        startPeopleRequests(account);
+                    }
+                    else if (!reported && (prs.isOn())){
+                        reported = true;
+                        toastMe("Connection lost!!!");//$NON-NLS-1$
+                    }
+                }
+                else if (DateUtilities.now()-lastConnectionTime>maxWait){
+                    prs.stop();
+                    reported = true;
+                    toastMe("Connection lost!!!");//$NON-NLS-1$
+                }
+            }
+            else if (!reported){
+                reported = true;
+                toastMe("Connected! Hooray!"); //$NON-NLS-1$
+            }
         }
 
         @Override
@@ -294,74 +322,23 @@ public class GPSService extends Service{
                 } catch (InterruptedException e) {
                     continue;
                 }
-                if (!prs.isConnected()){
-                    if (!prs.isConnecting()){
 
-                        if (connectCount>0){
-                            reported = false;
-                            prs.stop();
-                            connectCount--;
-                            lastConnectionTime = DateUtilities.now();
-                            startPeopleRequests(account);
-                        }
-                        else if (!reported && (prs.isOn())){
-                            reported = true;
-                            toastMe("Connection lost!!!");//$NON-NLS-1$
-                        }
-                    }
-                    else if (DateUtilities.now()-lastConnectionTime>maxWait){
-                        prs.stop();
-                        reported = true;
-                        toastMe("Connection lost!!!");//$NON-NLS-1$
-                    }
-                }
-                else if (!reported){
-                    reported = true;
-                    toastMe("Connected! Hooray!"); //$NON-NLS-1$
-                }
-
-
+                handleConnection();
                 //check if friends is enabled and connected and needed
                 if (prs.isConnected()){
-
                     ++loopCounter;
-
                     if ((loopCounter % peiodicDataScanMax == 0)){
                         //periodcly cleaning the database
                         loopCounter = 0;
                         cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
-
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     FriendProps myFp = aDba.specialUserToFP();
-                    List<FriendProps> lfp;
-                    if ((loopCounter % sendRoundsMax) == 0){
-                        //periodicly update the server and from the server
-                       lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
-                    }
-                    else{
-                        lfp = new ArrayList<FriendProps>(peopleArr.length);
-                        for (String dude : peopleArr){
-                            Cursor cur = aDba.fetchByMail(dude);
-                            if (cur==null){
-                                continue;
-                            }
-                            if (cur.moveToFirst()){
-                                FriendProps fp = AroundroidDbAdapter.userToFP(cur);
-                                if (fp!=null){
-                                    lfp.add(fp);
-                                }
-                            }
-                            cur.close();
-                        }
-                    }
-                    if (lfp!=null && myFp!=null && myFp.isValid()){
-                        Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+                    if ((loopCounter % 3)==0){
+                    //periodicly update the server and from the server
+                    prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
-
-
-
             }
             //TODO debug remove this
             int x = 3;
@@ -382,6 +359,28 @@ public class GPSService extends Service{
             cur.close();
         }
         this.mySpeed = ls.getSpeed();
+
+
+        FriendProps myFp = aDba.specialUserToFP();
+        String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+        List<FriendProps> lfp = new ArrayList<FriendProps>(peopleArr.length);
+        for (String dude : peopleArr){
+            Cursor curPeople = aDba.fetchByMail(dude);
+            if (curPeople==null){
+                continue;
+            }
+            if (curPeople.moveToFirst()){
+                FriendProps fp = AroundroidDbAdapter.userToFP(curPeople);
+                if (fp!=null){
+                    lfp.add(fp);
+                }
+            }
+            curPeople.close();
+        }
+
+        if (myFp!=null && myFp.isValid()){
+            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+        }
         Notificator.handleByTypeAndBySpecificNotification(ls);
 
     }
