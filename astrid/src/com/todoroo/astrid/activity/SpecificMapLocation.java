@@ -94,8 +94,6 @@ public class SpecificMapLocation extends MapActivity{
     public static final String PEOPLE_TO_SEND = "people"; //$NON-NLS-1$
 
     private long mTaskID;
-    private double mRadius;
-    private String mLastPeople;
     private Button mViewAll;
     private String mSearchText;
     private String mLastPeople;
@@ -425,7 +423,6 @@ public class SpecificMapLocation extends MapActivity{
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
 
-        mRadius = 100;
         mPeopleDB.open();
         mMapView.setSatellite(false);
         mLocationDB = new LocationsDbAdapter(this);
@@ -436,7 +433,7 @@ public class SpecificMapLocation extends MapActivity{
             @Override
             public void handleMyEventClassEvent(EventObject e) {
                 mLocationDB.close();
-                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), mRadius, mTaskID);
+                mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, Misc.ListToArray(mTypes), getMapRadius(), mTaskID);
                 mLocationDB.open();
 
             }
@@ -476,7 +473,7 @@ public class SpecificMapLocation extends MapActivity{
                 try {
                     String searchText = mAutoTextView.getText().toString();
                     DPoint center = Misc.geoToDeg(mMapView.getMapCenter());
-                    c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
+                    c = Misc.googleAutoCompleteQuery(searchText, center, getMapRadius());
                     if (!s.equals(mAutoTextView.getText().toString()))
                         return;
                     for (String type : Misc.types)
@@ -528,6 +525,27 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+        /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
+        /* @@@@@ visible to the user.                                                                  @@@@@    */
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+        mDeviceLocation = mMapView.getDeviceLocation();
+        if (mDeviceLocation != null) {
+            /* Centralizing the map to the last known location of the device */
+            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
+        }
+        else {
+            /* in case device location cannot be obtained, center the map on google headquarters */
+            mMapView.getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
+        }
+        mMapView.setBuiltInZoomControls(true);
+        mMapView.setZoomByAllLocations();
+        //        getMapRadius() = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
+
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
+
+        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Getting the data from the calling activity (TaskEditActivity). this data contains the @@@@@    */
         /* @@@@@ taskID and the locations that already been added.                                     @@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
@@ -556,7 +574,7 @@ public class SpecificMapLocation extends MapActivity{
         for (String type : existedTypes)
             mTypes.add(type);
         mLocationDB.close();
-        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, existedTypes, mRadius, mTaskID);
+        mapFunctions.addTagsToMap(mMapView, TYPE_OVERLAY, existedTypes, getMapRadius(), mTaskID);
         mLocationDB.open();
 
         mPeople = new HashMap<String, DPoint>();
@@ -601,41 +619,6 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
-
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@ Enabling zooming and setting the initial zoom level so all the locations will be      @@@@@    */
-        /* @@@@@ visible to the user.                                                                  @@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-
-        mDeviceLocation = mMapView.getDeviceLocation();
-        if (mDeviceLocation != null) {
-            /* Centralizing the map to the last known location of the device */
-            mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
-        }
-        else {
-            /* in case device location cannot be obtained, center the map on google headquarters */
-            mMapView.getController().setCenter(Misc.degToGeo(new DPoint(37.422032, -122.084059)));
-        }
-        mMapView.setBuiltInZoomControls(true);
-        mMapView.setZoomByAllLocations();
-        //        mRadius = AdjustedMap.equatorLen / Math.pow(2, mMapView.getZoomLevel() - 1);
-
-        int lon = mMapView.getLongitudeSpan();
-        int lat = mMapView.getLatitudeSpan();
-        float[] hight = new float[1], width = new float[1];
-        if (lat==0 || lon==0){
-            hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
-            width[0]=241; //initialized map width. need to be changed if initial zoom level changes
-        }else{
-            Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
-            Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
-        }
-
-        mRadius = Math.min(hight[0], width[0]) / 2;
-
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-        /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
-
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         /* @@@@@ Setting the mechanism of reading user input and interpreting it whether it's specific @@@@@    */
         /* @@@@@ location or Type location                                                             @@@@@    */
@@ -657,7 +640,7 @@ public class SpecificMapLocation extends MapActivity{
                 if (Misc.isType(text)) {
                     if (!mTypes.contains(text)) {
                         String a = Misc.geoToDeg(mMapView.getMapCenter()).toString();
-                        new AsyncGooglePlacesQuery().execute(text, a, (new Double(mRadius).toString()));
+                        new AsyncGooglePlacesQuery().execute(text, a, (new Double(getMapRadius()).toString()));
                     }
                     else {
                         AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
@@ -808,7 +791,7 @@ public class SpecificMapLocation extends MapActivity{
                     if (Misc.isType(searchText)) {
                         if (!mTypes.contains(searchText)) {
                             String a = Misc.geoToDeg(mMapView.getMapCenter()).toString();
-                            new AsyncGooglePlacesQuery().execute(searchText, a, (new Double(mRadius).toString()));
+                            new AsyncGooglePlacesQuery().execute(searchText, a, (new Double(getMapRadius()).toString()));
                         }
                         else {
                             AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
@@ -830,6 +813,20 @@ public class SpecificMapLocation extends MapActivity{
             }
         }
     }
+    private double getMapRadius() {
+        int lon = mMapView.getLongitudeSpan();
+        int lat = mMapView.getLatitudeSpan();
+        float[] hight = new float[1], width = new float[1];
+        if (lat==0 || lon==0){ // the function is called from onCreate
+            hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
+            width[0]=241; //initialized map width. need to be changed if initial zoom level changes
+        }else{
+            Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
+            Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
+        }
+        return Math.min(hight[0], width[0])/2;
+    }
+
     private void saveAndQuit() {
         Intent intent = new Intent();
 

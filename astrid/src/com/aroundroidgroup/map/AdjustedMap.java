@@ -16,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.util.AttributeSet;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
@@ -387,6 +386,11 @@ public class AdjustedMap extends MapView {
         return 0;
     }
 
+    /**
+     * the number of the items in the overlay with the given ID
+     * @param identifier
+     * @return
+     */
     public int getOverlaySize(int identifier) {
         MapItemizedOverlay iOver = overlays.get(identifier);
         if (iOver == null)
@@ -590,17 +594,6 @@ public class AdjustedMap extends MapView {
             GeoPoint pdf = getMapCenter();
             if (!pdf.equals(lastCenter)) {
                 /* map center changed */
-                int lon = getLongitudeSpan();
-                int lat = getLatitudeSpan();
-                float[] hight = new float[1], width = new float[1];
-                if (lat==0 || lon==0){
-                    hight[0]=286; // initialized map hight. need to be changed if initial zoom level changes
-                    width[0]=241; //initialized map width. need to be changed if initial zoom level changes
-                }else{
-                    Location.distanceBetween(0, 0, 0, ((double)lon)/1000000, hight);
-                    Location.distanceBetween(0, 0, ((double)lat)/1000000, 0, width);
-                }
-
 
                 fireEvent();
                 lastCenter = getMapCenter();
