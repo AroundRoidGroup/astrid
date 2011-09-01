@@ -1653,6 +1653,9 @@
 
 	<!-- =============================== AroundRoid - people's location== -->
 
+	<!-- the text in the logout dialog -->
+	<string name="AD_logout_text">האם אתה בטוח שברצונך להתנתק?</string>
+	
 	<!-- Credentials list is empty text -->
 	<string name="AD_noCreds">אין אנשי קשר שמשויכים למכשיר זה</string>
 
@@ -1741,7 +1744,7 @@
 	<string name="AD_ace_mail">כתובת אימייל:</string>
 	<string name="AD_ace_name"> שם אישר קשר:</string>
 	<string name="AD_ace_unregistered">מיקום לא נגיש או לא רשום</string>
-	<string name="AD_ace_title">אינפורמציה נוספת</string>
+	<string name="AD_ace_title">מידע נוסף</string>
 	<string name="AD_ace_contact_card">לך למסך איש קשר</string>
 
 	<!-- confirm specific location  -->
@@ -1764,7 +1767,7 @@
 	<string name="AD_your_location_title">המיקום שלך</string>
 
 	<!-- map information dialog -->
-	<string name="AD_map_alert_dialog_title">אינפורמציה</string>
+	<string name="AD_map_alert_dialog_title">מידע</string>
 
 	<!-- the location is already attached to the task -->
 	<string name="AD_location_already_attached">מיקום זה כבר מקושר למשימה</string>

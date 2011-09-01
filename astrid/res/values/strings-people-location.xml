@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- the text in the logout dialog -->
+	<string name="AD_logout_text">Are you sure you want to logout?</string>
+
 	<!-- Credentials list is empty text -->
 	<string name="AD_noCreds">There are no users associated with this Android
 		device.</string>

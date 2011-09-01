@@ -67,6 +67,12 @@ public class Misc {
 
     /* the service returns up to 20 results. */
     public static Map<String, DPoint> googlePlacesQuery(String type, DPoint location, double radius) throws IOException, JSONException {
+        String sstrr = "https://maps.googleapis.com/maps/api/place/search/json?" + //$NON-NLS-1$
+        "location=" + location.getX() + "," + location.getY() + //$NON-NLS-1$ //$NON-NLS-2$
+        "&radius=" + radius + //$NON-NLS-1$
+        "&types=" + type + //$NON-NLS-1$
+        "&sensor=false" + //$NON-NLS-1$
+        "&key=AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs";
         URL googlePlacesURL = new URL("https://maps.googleapis.com/maps/api/place/search/json?" + //$NON-NLS-1$
                 "location=" + location.getX() + "," + location.getY() + //$NON-NLS-1$ //$NON-NLS-2$
                 "&radius=" + radius + //$NON-NLS-1$
