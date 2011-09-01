@@ -74,10 +74,7 @@
 
 	<!--scanning the contact list dialog -->
 	<string name="AD_contacts_scan_title">Looking for contacts</string>
-	<string name="AD_contacts_scan_text">Scanning you Contact List to find friends that use AroundRoid. This may take a while...</string>
-
-    <!-- exit dialog-->
-	<string name="AD_DLG_exit_title">Are you sure you want to exit?</string>
+	<string name="AD_contacts_scan_text">Scanning your Contact List to find friends that use AroundRoid. This may take a while...</string>
 
 	<!-- Checking if your friend is using Aroundroid -->
 	<string name="AD_checking_friend_title">Checking friend</string>

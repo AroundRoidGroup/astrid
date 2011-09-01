@@ -66,10 +66,6 @@
 	<!-- view all header -->
 	<string name="AD_all_locations">All Locations</string>
 	
-	
-		<!-- text shown when pressing the device's location on map -->
-	<string name="AD_device_location">Your Location</string>
-
 	<!-- GOOGLE MAPS API KEY -->
 	<string name="AD_GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
 

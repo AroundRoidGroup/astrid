@@ -132,7 +132,7 @@ public class AdjustedMap extends MapView {
             if (deviceLocation != null) {
                 mDeviceOverlay = new MapItemizedOverlay(getResources().getDrawable(R.drawable.device_location));
                 mConfigurations.put(mDeviceOverlay, new String[] { Focaccia.SHOW_NAME, Focaccia.SHOW_ADDRESS });
-                mNames.put(mDeviceOverlay, r.getString(R.string.AD_device_location));
+                mNames.put(mDeviceOverlay, r.getString(R.string.AD_your_location_title));
                 DPoint lastDeviceLocationAsDPoint = Misc.geoToDeg(lastDeviceLocation);
                 String savedAddr = locDB.fetchByCoordinateAsString(lastDeviceLocation.getLatitudeE6(), lastDeviceLocation.getLongitudeE6());
                 if (savedAddr == null) {
@@ -149,7 +149,7 @@ public class AdjustedMap extends MapView {
                     if (savedAddr.equals(LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE))
                         savedAddr = lastDeviceLocationAsDPoint.toString();
                 }
-                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, r.getString(R.string.AD_device_location), null, savedAddr, -1, null, -1));
+                mDeviceOverlay.addOverlay(new AdjustedOverlayItem(lastDeviceLocation, r.getString(R.string.AD_your_location_title), null, savedAddr, -1, null, -1));
                 mapOverlays.add(mDeviceOverlay);
             }
         }
@@ -188,7 +188,7 @@ public class AdjustedMap extends MapView {
                 if (savedAddr == LocationsDbAdapter.DATABASE_COORDINATE_GEOCODE_FAILURE)
                     savedAddr = Misc.geoToDeg(lastDeviceLocation).toString();
             }
-            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(Misc.degToGeo(potentialNewLocation), r.getString(R.string.AD_device_location), null, savedAddr, currentTaskID, null, -1));
+            mDeviceOverlay.addOverlay(new AdjustedOverlayItem(Misc.degToGeo(potentialNewLocation), r.getString(R.string.AD_your_location_title), null, savedAddr, currentTaskID, null, -1));
             invalidate();
         }
 
@@ -759,7 +759,7 @@ public class AdjustedMap extends MapView {
             else if (mDeviceOverlay == this) {
                 intent.putExtra(Focaccia.READ_ONLY, Focaccia.READ_ONLY);
                 intent.putExtra(Focaccia.SHOW_ADDRESS, addr);
-                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.AD_device_location));
+                intent.putExtra(Focaccia.SHOW_NAME, r.getString(R.string.AD_your_location_title));
                 intent.putExtra(Focaccia.TASK_NAME, r.getString(R.string.AD_your_location_title));
             }
             else {
