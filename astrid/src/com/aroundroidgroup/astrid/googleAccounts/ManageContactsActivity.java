@@ -45,6 +45,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
+import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Geocoding;
@@ -156,24 +157,25 @@ public class ManageContactsActivity extends ListActivity{
                 Cursor cur = mDbHelper.fetchByMail(mails[which]);
                 if (cur==null){
                     ok = false;
-                }
-                if (!cur.moveToFirst()){
-                    //record not found
-                    mDbHelper.createPeople(mails[which],contactId);
-                }
-                else {
-                    Long currentcontactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
-                    if (currentcontactId == -2){
-                        //record found with no contact id.
-                        //UPDATE A NEW CONTACT ID
-                        Long oldRecordId = cur.getLong(cur.getColumnIndex((AroundroidDbAdapter.KEY_ROWID)));
-                        mDbHelper.updatePeople(oldRecordId, contactId);
+                }else{
+                    if (!cur.moveToFirst()){
+                        //record not found
+                        mDbHelper.createPeople(mails[which],contactId);
                     }
-                    else if  (currentcontactId != contactId){
-                        ok = false;
+                    else {
+                        Long currentcontactId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_CONTACTID));
+                        if (currentcontactId == -2){
+                            //record found with no contact id.
+                            //UPDATE A NEW CONTACT ID
+                            Long oldRecordId = cur.getLong(cur.getColumnIndex((AroundroidDbAdapter.KEY_ROWID)));
+                            mDbHelper.updatePeople(oldRecordId, contactId);
+                        }
+                        else if  (currentcontactId != contactId){
+                            ok = false;
+                        }
                     }
+                    cur.close();
                 }
-                cur.close();
                 if (ok){
                     dialog.dismiss();
                     new ScanOneFriendTask().execute(new String[]{mails[which]});
@@ -252,6 +254,7 @@ public class ManageContactsActivity extends ListActivity{
     protected void onDestroy() {
         super.onDestroy();
         mDbHelper.close();
+        GPSService.lockDeletes(false);
     }
 
     @Override
@@ -671,6 +674,7 @@ public class ManageContactsActivity extends ListActivity{
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        GPSService.lockDeletes(true);
         setContentView(R.layout.friend_list_layout);
         conHel = new ContactsHelper(getContentResolver());
         mDbHelper = new AroundroidDbAdapter(this);
@@ -916,7 +920,7 @@ public class ManageContactsActivity extends ListActivity{
                     createAddAnywayDialog(friend).show();
                 }
             }
-            //TODO check for error
+            Toast.makeText(ManageContactsActivity.this, "an error occurd. try again later", Toast.LENGTH_LONG); //$NON-NLS-1$
         }
 
         //assuming mail in lower case
@@ -933,9 +937,13 @@ public class ManageContactsActivity extends ListActivity{
 
             if (!cur.moveToFirst()){
                 cur.close();
-                error = true;
-                //GPSService.lockDeletes(false);
-                return false;
+                long rowId = mDbHelper.createPeople(friend);
+                if (rowId==-1){
+                    error = true;
+                    return false;
+                }
+            }else{
+                cur.close();
             }
 
 
@@ -947,7 +955,8 @@ public class ManageContactsActivity extends ListActivity{
             }
 
 
-            FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+
+            FriendProps fp = lfp.get(0);
             if (fp!=null){
                 if (fp.isRegistered()){
                     returnVal = true;

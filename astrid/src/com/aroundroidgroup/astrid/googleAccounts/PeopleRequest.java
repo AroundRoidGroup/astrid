@@ -135,8 +135,6 @@ public class PeopleRequest {
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
-        String s = convertStreamToString(is);
-        int x = 4;
         Document doc = db.parse(is);
         doc.getDocumentElement().normalize();
         NodeList nodeLst = doc.getElementsByTagName(FriendProps.root);
