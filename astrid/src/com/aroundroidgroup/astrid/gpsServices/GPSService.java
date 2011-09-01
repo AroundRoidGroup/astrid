@@ -254,7 +254,9 @@ public class GPSService extends Service{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 10 * 1000;
+        private final int defaultSleepTime = 3 * 1000;
+
+        private final int peiodicServer = 15;
 
 
         private final int sleepTime = defaultSleepTime;
@@ -263,7 +265,7 @@ public class GPSService extends Service{
 
         private final long maxWait = 1000 * 30;
 
-        private final int peiodicDataScanMax = 5;
+        private final int peiodicDataScanMax = 120;
 
         private int loopCounter = -1;
 
@@ -319,16 +321,14 @@ public class GPSService extends Service{
                         loopCounter = 0;
                         cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
-                    String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    FriendProps myFp = aDba.specialUserToFP();
-                    if ((loopCounter % 3)==0){
+                    if ((loopCounter % peiodicServer)==0){
+                        String peopleArr[] = threadLocationService.getAllLocationsByPeople();
+                        FriendProps myFp = aDba.specialUserToFP();
                         //periodicly update the server and from the server
                         prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
             }
-            int x = 3;
-            x = 2 +x;
         }
 
 
