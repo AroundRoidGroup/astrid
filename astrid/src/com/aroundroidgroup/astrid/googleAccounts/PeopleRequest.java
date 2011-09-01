@@ -1,7 +1,12 @@
 package com.aroundroidgroup.astrid.googleAccounts;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,6 +135,8 @@ public class PeopleRequest {
         //data is recieved. starts parsing:
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
+        String s = convertStreamToString(is);
+        int x = 4;
         Document doc = db.parse(is);
         doc.getDocumentElement().normalize();
         NodeList nodeLst = doc.getElementsByTagName(FriendProps.root);
@@ -157,7 +164,7 @@ public class PeopleRequest {
         return buf[0]=='s';
     }
 
-    /*
+
     private static String convertStreamToString(InputStream is)
 
     throws IOException {
@@ -166,7 +173,7 @@ public class PeopleRequest {
          * Reader.read(char[] buffer) method. We iterate until the
          * Reader return -1 which means there's no more data to
          * read. We use the StringWriter class to produce the string.
-         * /
+         */
         if (is != null) {
             Writer writer = new StringWriter();
             char[] buffer = new char[1024];
@@ -185,7 +192,7 @@ public class PeopleRequest {
             return "";
         }
     }
-    */
+
 
 
 

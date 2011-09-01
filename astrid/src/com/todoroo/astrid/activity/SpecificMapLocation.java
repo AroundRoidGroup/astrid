@@ -96,6 +96,7 @@ public class SpecificMapLocation extends MapActivity{
     private long mTaskID;
     private Button mViewAll;
     private String mSearchText;
+    private String mLastPeople;
     private List<String> mTypes;
     private AdjustedMap mMapView;
     private int mPressedItemIndex;

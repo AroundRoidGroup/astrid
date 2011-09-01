@@ -152,12 +152,20 @@ public class PeopleRequestService {
             }
             return lfp;
         } catch (ClientProtocolException e) {
+            int x = 5;
+            x = 3;
             //nothing
         } catch (IOException e) {
+            int x = 5;
+            x = 3;
             //nothing
         } catch (ParserConfigurationException e) {
+            int x = 5;
+            x = 3;
             //nothing
         } catch (SAXException e) {
+            int x = 5;
+            x = 3;
             //nothing
         }
         //on error the service is stopped and null is returned
