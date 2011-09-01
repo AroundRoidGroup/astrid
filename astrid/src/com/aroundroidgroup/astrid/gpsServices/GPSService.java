@@ -1,6 +1,7 @@
 package com.aroundroidgroup.astrid.gpsServices;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -263,7 +264,7 @@ public class GPSService extends Service{
         private boolean toExit = false;
 
 
-        private final int defaultSleepTime = 1 * 1000;
+        private final int defaultSleepTime = 30 * 1000;
 
 
         private final int sleepTime = defaultSleepTime;
@@ -273,6 +274,8 @@ public class GPSService extends Service{
         private final long maxWait = 1000 * 30;
 
         private final int peiodicDataScanMax = 5;
+
+        private final int sendRoundsMax = 3;
 
         private int loopCounter = -1;
 
@@ -285,11 +288,6 @@ public class GPSService extends Service{
         @Override
         public void run() {
             //TODO CRASHES WHEN NOT CONNECTED TO SYNC FOR USER (NAAMAKESHET@GMAIL.com RED EXCAMATION MARK)
-
-            //TODO consider making userLastLocation a database entry
-
-            //TODO if isConnecting for to long, force close
-            //initiate GPS
             while (!toExit){
                 try {
                     Thread.sleep(sleepTime);
@@ -301,7 +299,6 @@ public class GPSService extends Service{
 
                         if (connectCount>0){
                             reported = false;
-                            //TODO stop doesn't really works
                             prs.stop();
                             connectCount--;
                             lastConnectionTime = DateUtilities.now();
@@ -330,25 +327,45 @@ public class GPSService extends Service{
                     ++loopCounter;
 
                     if ((loopCounter % peiodicDataScanMax == 0)){
+                        //periodcly cleaning the database
                         loopCounter = 0;
                         cleanDataBase(threadLocationService.getAllLocationsByPeople());
                     }
 
-                    //TODO once a while delete from the database all records that are not in peopleArr
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
-                    if (loopCounter==0 || peopleArr.length>0){
-                        FriendProps myFp = aDba.specialUserToFP();
-                        List<FriendProps> lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
-                        //TODO doesn't notify!?
-                        if (lfp!=null && myFp!=null && myFp.isValid()){
-                            Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
+                    FriendProps myFp = aDba.specialUserToFP();
+                    List<FriendProps> lfp;
+                    if ((loopCounter % sendRoundsMax) == 0){
+                        //periodicly update the server and from the server
+                       lfp = prs.updatePeopleLocations(peopleArr,myFp,aDba);
+                    }
+                    else{
+                        lfp = new ArrayList<FriendProps>(peopleArr.length);
+                        for (String dude : peopleArr){
+                            Cursor cur = aDba.fetchByMail(dude);
+                            if (cur==null){
+                                continue;
+                            }
+                            if (cur.moveToFirst()){
+                                FriendProps fp = AroundroidDbAdapter.userToFP(cur);
+                                if (fp!=null){
+                                    lfp.add(fp);
+                                }
+                            }
+                            cur.close();
                         }
+                    }
+                    if (lfp!=null && myFp!=null && myFp.isValid()){
+                        Notificator.notifyAllPeople(myFp,mySpeed,lfp,threadLocationService);
                     }
                 }
 
 
 
             }
+            //TODO debug remove this
+            int x = 3;
+            x = 2 +x;
         }
 
 
