@@ -14,11 +14,18 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
+
+/***
+ * A servlet for inviting friend to use aroundroid if they are not using it.
+ */
 @SuppressWarnings("serial")
 public class InviteFriendServlet extends HttpServlet {
 
 	private final String myFriend = "FRIEND";
 
+	/***
+	 * does not need to support Get so redirects to welcome page
+	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		resp.sendRedirect("welcome.jsp");
@@ -28,8 +35,7 @@ public class InviteFriendServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 
-		//TODO need to limit the number of times for inviting a friend
-
+		//if user is not logged in redirect to login page
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
 		if (user==null){
@@ -37,10 +43,10 @@ public class InviteFriendServlet extends HttpServlet {
 		}
 
 		boolean mailSent = false;
-
-		//TODO assuming correct mail format for now
+		
 		String friendMail = req.getParameter(myFriend);
 
+		//if mail parmeter is valid tries to send mail
 		if (friendMail!=null && friendMail.compareTo("")!=0 && Mailer.validMail(friendMail)){
 
 			PersistenceManager pm = PMF.get().getPersistenceManager();
@@ -51,15 +57,15 @@ public class InviteFriendServlet extends HttpServlet {
 				//if cannot find friend registered to the service, sends mail
 				Mailer ml = new Mailer(user.getEmail(), user.getNickname());
 				try {
-					mailSent = ml.sendOneHtmlMail(friendMail, "Invitation for Aroundroid, People Location Service",AroundroidFTLMails.getInviteMail(user.getNickname(), friendMail.substring(0, friendMail.indexOf('@'))));
-					//ml.sendOneMail(friendMail, "Invitation for Aroundroid, People Location Service", "Hi!\n\n I am inviting you to download astrid and Aroundroid.\n\n It will allow me to set a reminder that will notify me when I am around you area!\n\nNow THAT'S cool!\n\nYours,\n\n"+user.getNickname());					
+					mailSent = ml.sendOneHtmlMail(friendMail, "Invitation for Aroundroid, People Location Service",AroundroidFTLMails.getInviteMail(user.getNickname(), friendMail.substring(0, friendMail.indexOf('@'))));					
 				} catch (MessagingException e) {
+					//if error occurd mailSent will stay false
 				}
 			}
 
 		}
 
-		//TODO set the response to be "MAIL SENT" or "MAIL NO SENT"
+		//send for mail sent, no send for error or user registered
 		resp.getWriter().write((mailSent?"send":"no send"));
 
 
