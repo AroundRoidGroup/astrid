@@ -373,9 +373,23 @@ public class SpecificMapLocation extends MapActivity{
 
         @Override
         public void performAction(View view) {
+            Resources r = getResources();
             mDeviceLocation = mMapView.getDeviceLocation();
             if (mDeviceLocation != null)
                 mMapView.getController().setCenter(Misc.degToGeo(mDeviceLocation));
+            else {
+                AlertDialog dialog = new AlertDialog.Builder(SpecificMapLocation.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage("Device location is not available.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
             return;
         }
 
