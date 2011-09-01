@@ -45,7 +45,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aroundroidgroup.astrid.gpsServices.ContactsHelper;
-import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Geocoding;
@@ -170,7 +169,7 @@ public class ManageContactsActivity extends ListActivity{
                         Long oldRecordId = cur.getLong(cur.getColumnIndex((AroundroidDbAdapter.KEY_ROWID)));
                         mDbHelper.updatePeople(oldRecordId, contactId);
                     }
-                    else{
+                    else if  (currentcontactId != contactId){
                         ok = false;
                     }
                 }
@@ -385,7 +384,7 @@ public class ManageContactsActivity extends ListActivity{
         //if no friends create ok dialog. if has friends create list dialog.
         if (numberOfFriends<=0){
             cur.close();
-            GPSService.lockDeletes(false);
+            ////GPSService.lockDeletes(false);
             return createNoFriendsDialog();
         }
         final ArrayList<String> mailList = new ArrayList<String>(numberOfFriends);
@@ -435,7 +434,7 @@ public class ManageContactsActivity extends ListActivity{
                         peopleHashSet.remove(mailList.get(i));
                     }
                 }
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
                 fillData();
 
             }
@@ -450,7 +449,7 @@ public class ManageContactsActivity extends ListActivity{
 
             @Override
             public void onCancel(DialogInterface dialog) {
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
 
             }
         });
@@ -770,7 +769,7 @@ public class ManageContactsActivity extends ListActivity{
                 mListFillHandler.post(new Runnable() {
                     public void run() {
                         fillData();
-                        GPSService.lockDeletes(false);
+                        //GPSService.lockDeletes(false);
                     }
                 });
             }
@@ -783,7 +782,7 @@ public class ManageContactsActivity extends ListActivity{
         @Override
         protected void onPostExecute(Boolean result) {
             if (isFinishing()){
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
                 return;
             }
             _progressDialog.dismiss();
@@ -825,7 +824,7 @@ public class ManageContactsActivity extends ListActivity{
                 return false;
             }
 
-            GPSService.lockDeletes(true);
+            //GPSService.lockDeletes(true);
             ArrayList<String> al = new ArrayList<String>();
             for(Entry<String, Long> en : friendSet){
                 Cursor cur = mDbHelper.fetchByMail(en.getKey());
@@ -849,17 +848,17 @@ public class ManageContactsActivity extends ListActivity{
                 cur.close();
             }
             if (isCancelled()){
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
                 return false;
             }
             //TODO limit update people location to few people
             if (al.size()<=0){
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
                 return true;
             }
             List <FriendProps> lfp = prs.updatePeopleLocations(al.toArray(new String[0]), null, mDbHelper);
             if (lfp == null){
-                GPSService.lockDeletes(false);
+                //GPSService.lockDeletes(false);
                 return false;
             }
             else{
@@ -923,30 +922,30 @@ public class ManageContactsActivity extends ListActivity{
         //assuming mail in lower case
         @Override
         protected Boolean doInBackground(String... params) {
+            //GPSService.lockDeletes(true);
             boolean returnVal = false;
             friend = params[0];
             Cursor cur  = mDbHelper.fetchByMail(friend);
             if (cur ==null){
+                //GPSService.lockDeletes(false);
                 return false;
             }
-            //TODO check option to scan again
+
             if (!cur.moveToFirst()){
                 cur.close();
-                //fetch
-                List<FriendProps> lfp =  prs.updatePeopleLocations(params,null,mDbHelper);
-                if (lfp==null){
-                    error = true;
-                    return false;
-                }
-                cur = mDbHelper.fetchByMail(params[0]);
-                if (cur == null || !cur.moveToFirst()){
-                    if (cur!=null){
-                        cur.close();
-                    }
-                    error = true;
-                    return false;
-                }
+                error = true;
+                //GPSService.lockDeletes(false);
+                return false;
             }
+
+
+            List<FriendProps> lfp =  prs.updatePeopleLocations(params,null,mDbHelper);
+            if (lfp==null){
+                error = true;
+                //GPSService.lockDeletes(false);
+                return false;
+            }
+
 
             FriendProps fp = AroundroidDbAdapter.userToFP(cur);
             if (fp!=null){
@@ -966,6 +965,7 @@ public class ManageContactsActivity extends ListActivity{
 
 
             cur.close();
+            //GPSService.lockDeletes(false);
             return returnVal;
         }
     }

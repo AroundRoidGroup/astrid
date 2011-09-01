@@ -48,12 +48,13 @@ public class GPSService extends Service{
 
     //private final ContactsHelper contactsHelper= new ContactsHelper(getContentResolver());
 
+
     public final String TAG = "GPSService"; //$NON-NLS-1$
 
     private final static LocationService threadLocationService = new LocationService();
 
 
-    private final AroundroidDbAdapter aDba = new AroundroidDbAdapter(this);
+    private AroundroidDbAdapter aDba;
 
     private final PeopleRequestService prs = PeopleRequestService.getPeopleRequestService();
 
@@ -65,14 +66,16 @@ public class GPSService extends Service{
     public static Account account = null;
     public static int connectCount = 0;
 
-    private static Object deleteObj = new Object();
-    private static boolean holdDeletes = false;
+    //private static Object deleteObj = new Object();
+    //private static boolean holdDeletes = false;
 
+    /*
     public static void lockDeletes(boolean lockIt){
         synchronized(deleteObj){
             holdDeletes = lockIt;
         }
     }
+     */
 
     int mStartMode;       // indicates how to behave if the service is killed
 
@@ -95,6 +98,7 @@ public class GPSService extends Service{
         // The service is being created
         refreshData = new DataRefresher();
         conHel = new ContactsHelper(getContentResolver());
+        aDba = new AroundroidDbAdapter(this);
         aDba.open();
         //TODO problem with "me"
         //aDba.dropPeople();
@@ -202,7 +206,10 @@ public class GPSService extends Service{
         }else{
             _xps.abort();
         }
-        this.aDba.close();
+        if (aDba!=null){
+            aDba.close();
+            aDba = null;
+        }
     }
 
     private final Handler mHandler = new Handler();
@@ -227,37 +234,37 @@ public class GPSService extends Service{
     }
 
     private void cleanDataBase(String[] realPeople) {
-        synchronized (deleteObj){
-            ManageContactsActivity.getAlreadyScannedSometime(false);
-            Set<String> hs = new TreeSet<String>();
-            for (String s : realPeople){
-                hs.add(s);
-            }
-            Cursor cur = aDba.fetchAllPeople();
-            if (cur==null){
-                return;
-            }
-            if (cur.moveToFirst()){
-                do{
-                    boolean deleted = false;
-                    //String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
-                    long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
-                    FriendPropsWithContactId fpwci = AroundroidDbAdapter.userToFPWithContactId(cur);
-                    if (!holdDeletes && !hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0){
-                        aDba.deletePeople(rowId);
-                        deleted = true;
-                    }
-                    else if (hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0 && conHel.oneDisplayName(fpwci.getContactId())==null){
-                        aDba.updatePeople(rowId, -2);
-                    }
-                    if (!deleted && !AroundRoidAppConstants.timeCheckValid(fpwci.getTimestamp()) && fpwci.isValid() ){
-                        aDba.updatePeople(rowId, fpwci.getDlat(), fpwci.getDlon(), fpwci.getTimestamp(),fpwci.getContactId(),AroundRoidAppConstants.STATUS_OFFLINE);
-                    }
-                }while (cur.moveToNext());
-            }
-            cur.close();
-
+        //synchronized (deleteObj){
+        ManageContactsActivity.getAlreadyScannedSometime(false);
+        Set<String> hs = new TreeSet<String>();
+        for (String s : realPeople){
+            hs.add(s);
         }
+        Cursor cur = aDba.fetchAllPeople();
+        if (cur==null){
+            return;
+        }
+        if (cur.moveToFirst()){
+            do{
+                boolean deleted = false;
+                //String mail = cur.getString(cur.getColumnIndex(AroundroidDbAdapter.KEY_MAIL));
+                long rowId = cur.getLong(cur.getColumnIndex(AroundroidDbAdapter.KEY_ROWID));
+                FriendPropsWithContactId fpwci = AroundroidDbAdapter.userToFPWithContactId(cur);
+                if (!hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0){
+                    aDba.deletePeople(rowId);
+                    deleted = true;
+                }
+                else if (hs.contains(fpwci.getMail()) && fpwci.getContactId()>=0 && conHel.oneDisplayName(fpwci.getContactId())==null){
+                    aDba.updatePeople(rowId, -2);
+                }
+                if (!deleted && !AroundRoidAppConstants.timeCheckValid(fpwci.getTimestamp()) && fpwci.isValid() ){
+                    aDba.updatePeople(rowId, fpwci.getDlat(), fpwci.getDlon(), fpwci.getTimestamp(),fpwci.getContactId(),AroundRoidAppConstants.STATUS_OFFLINE);
+                }
+            }while (cur.moveToNext());
+        }
+        cur.close();
+
+        //}
     }
 
 
@@ -275,7 +282,7 @@ public class GPSService extends Service{
 
         private final long maxWait = 1000 * 30;
 
-        private final int peiodicDataScanMax = 5;
+        private final int peiodicDataScanMax = 10;
 
         private int loopCounter = -1;
 
@@ -335,8 +342,8 @@ public class GPSService extends Service{
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     FriendProps myFp = aDba.specialUserToFP();
                     if ((loopCounter % 3)==0){
-                    //periodicly update the server and from the server
-                    prs.updatePeopleLocations(peopleArr,myFp,aDba);
+                        //periodicly update the server and from the server
+                        prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
             }
@@ -417,6 +424,9 @@ public class GPSService extends Service{
     }
 
     protected void makeUseOfNewLocation(WPSLocation location) {
+        if (aDba==null){
+            return;
+        }
         makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
@@ -432,6 +442,9 @@ public class GPSService extends Service{
     }
 
     protected void makeUseOfNewLocation(Location location){
+        if (aDba==null){
+            return;
+        }
         makeUseWithoutLocation(new LocStruct(location.getLatitude(),location.getLongitude(),location.getSpeed(),location.getTime()));
     }
 
