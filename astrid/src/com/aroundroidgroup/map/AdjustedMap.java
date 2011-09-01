@@ -1,11 +1,10 @@
 package com.aroundroidgroup.map;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -19,11 +18,11 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.util.AttributeSet;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
-import com.aroundroidgroup.locationTags.LocationService;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapView;
@@ -364,6 +363,7 @@ public class AdjustedMap extends MapView {
         db.open();
         locDB = new LocationsDbAdapter(mContext);
         locDB.open();
+        getOverlays().add(new MapGestureDetectorOverlay(new MapOnGestureListener()));
         overlays = new HashMap<Integer, MapItemizedOverlay>();
         mDoubleItem = new HashMap<Integer, Boolean>();
         mConfigurations = new HashMap<MapItemizedOverlay, String[]>();
@@ -471,11 +471,13 @@ public class AdjustedMap extends MapView {
     public int removeItemFromOverlayByExtras(int id, String extras) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null) {
-            for (AdjustedOverlayItem item : overlay) {
-                if (item.getExtras().equals(extras))
-                    overlay.removeOverlayByItem(item);
+            ListIterator<AdjustedOverlayItem> iterator = overlay.iterator();
+            while (iterator.hasNext()) {
+                AdjustedOverlayItem item = iterator.next();
+                if (item.getExtras() != null && item.getExtras().equals(extras)) {
+                    iterator.remove();
+                }
             }
-
         }
         invalidate();
         return getItemsByExtrasCount(id, extras);
@@ -502,57 +504,8 @@ public class AdjustedMap extends MapView {
                 }
 
 
-               fireEvent();
+                fireEvent();
                 lastCenter = getMapCenter();
-            }
-            // hopa
-            if (mTappedOverlay != null) {
-                if (event.getEventTime() - event.getDownTime() > 1500) {
-                    GeoPoint p = this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
-
-                    lastPointedLocation = Misc.geoToDeg(p);
-
-                    /* popping up a dialog so the user could confirm his location choice */
-                    AlertDialog dialog = new AlertDialog.Builder(mContext).create();
-                    dialog.setIcon(android.R.drawable.ic_dialog_alert);
-
-                    /* setting the dialog title */
-                    dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
-
-                    /* setting the dialog message. in this case, asking the user if he's sure he */
-                    /* wants to add the tapped location to the task, so the task will be specific- */
-                    /* location based */
-
-
-                    final String savedAddr = mapFunctions.getSavedAddressAndUpdate(p.getLatitudeE6(), p.getLongitudeE6());
-
-                    dialog.setMessage("Would you like to add the following location:\n" + savedAddr); //$NON-NLS-1$
-
-                    /* setting the confirm button text and action to be executed if it has been chosen */
-                    dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
-                            new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dg, int which) {
-                            /* adding the location to the task */
-                            LocationService x = new LocationService();
-                            String[] allSpecific = x.getLocationsBySpecificAsArray(currentTaskID);
-                            LinkedHashSet<String> la = new LinkedHashSet<String>();
-                            for (int i = 0 ; i < allSpecific.length ; i++)
-                                la.add(allSpecific[i]);
-                            la.add(lastPointedLocation.getX() + "," + lastPointedLocation.getY()); //$NON-NLS-1$
-                            addTappedLocation(Misc.degToGeo(lastPointedLocation), savedAddr, currentTaskID);
-                            refresh();
-                        }
-                    });
-                    /* setting the refuse button text and action to be executed if it has been chosen */
-                    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
-                            new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dg, int which) {
-                            return;
-                        }
-                    });
-                    dialog.show();
-
-                }
             }
         }
 
@@ -728,24 +681,29 @@ public class AdjustedMap extends MapView {
             AdjustedOverlayItem item = mOverlays.get(index);
             Intent intent = new Intent(ContextManager.getContext(), Focaccia.class);
 
-            /* getting task's title by its ID */
-            TaskService taskService = new TaskService();
-            TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(item.getTaskID()),
-                    TaskCriteria.isVisible()))).
-                    orderBy(SortHelper.defaultTaskOrder()).limit(100));
-            try {
+            if (item.getTaskID() != mapFunctions.MULTIPLE_TASKS_ID) {
 
-                Task task = new Task();
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    cursor.moveToNext();
-                    task.readFromCursor(cursor);
-                    intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
-                    break;
+                /* getting task's title by its ID */
+                TaskService taskService = new TaskService();
+                TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE).where(Criterion.and(TaskCriteria.isActive(),Criterion.and(TaskCriteria.byId(item.getTaskID()),
+                        TaskCriteria.isVisible()))).
+                        orderBy(SortHelper.defaultTaskOrder()).limit(100));
+                try {
+
+                    Task task = new Task();
+                    for (int i = 0; i < cursor.getCount(); i++) {
+                        cursor.moveToNext();
+                        task.readFromCursor(cursor);
+                        intent.putExtra(Focaccia.TASK_NAME, cursor.getString(cursor.getColumnIndex(Task.TITLE.toString())));
+                        break;
+                    }
+                } finally {
+                    cursor.close();
                 }
-            } finally {
-                cursor.close();
             }
-
+            else {
+                intent.putExtra(Focaccia.TASK_NAME, r.getString(R.string.AD_multiple_tasks));
+            }
             String addr = null;
             if (item.getAddress() == null)
                 addr = Misc.geoToDeg(item.getPoint()).toString();
@@ -827,8 +785,8 @@ public class AdjustedMap extends MapView {
         }
 
         @Override
-        public Iterator<AdjustedOverlayItem> iterator() {
-            return mOverlays.iterator();
+        public ListIterator<AdjustedOverlayItem> iterator() {
+            return mOverlays.listIterator();
         }
 
     }
@@ -848,4 +806,87 @@ public class AdjustedMap extends MapView {
             i.next().handleMyEventClassEvent(event);
         }
     }
+
+    public class MapOnGestureListener implements OnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent arg0) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                float velocityY) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent event) {
+            if (mTappedOverlay != null) {
+
+                GeoPoint p = AdjustedMap.this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
+                lastPointedLocation = Misc.geoToDeg(p);
+
+                /* popping up a dialog so the user could confirm his location choice */
+                AlertDialog dialog = new AlertDialog.Builder(mContext).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+
+                /* setting the dialog title */
+                dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
+
+                /* setting the dialog message. in this case, asking the user if he's sure he */
+                /* wants to add the tapped location to the task, so the task will be specific- */
+                /* location based */
+
+
+                final String savedAddr = mapFunctions.getSavedAddressAndUpdate(p.getLatitudeE6(), p.getLongitudeE6());
+
+                dialog.setMessage("Would you like to add the following location:\n" + savedAddr); //$NON-NLS-1$
+
+                /* setting the confirm button text and action to be executed if it has been chosen */
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        /* adding the location to the task */
+                        addTappedLocation(Misc.degToGeo(lastPointedLocation), savedAddr, currentTaskID);
+                        refresh();
+                    }
+                });
+                /* setting the refuse button text and action to be executed if it has been chosen */
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                float distanceY) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+    }
+
+
+
 }
+

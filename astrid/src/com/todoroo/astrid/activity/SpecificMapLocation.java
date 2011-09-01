@@ -3,6 +3,7 @@ package com.todoroo.astrid.activity;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -35,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.aroundroidgroup.astrid.googleAccounts.AroundroidDbAdapter;
 import com.aroundroidgroup.astrid.googleAccounts.FriendProps;
@@ -42,6 +44,7 @@ import com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity;
 import com.aroundroidgroup.locationTags.LocationService;
 import com.aroundroidgroup.map.AdjustedMap;
 import com.aroundroidgroup.map.AdjustedOverlayItem;
+import com.aroundroidgroup.map.AutoCompleteSuggestions;
 import com.aroundroidgroup.map.DPoint;
 import com.aroundroidgroup.map.Focaccia;
 import com.aroundroidgroup.map.Geocoding;
@@ -399,6 +402,8 @@ public class SpecificMapLocation extends MapActivity{
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
     /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -412,15 +417,27 @@ public class SpecificMapLocation extends MapActivity{
         actionBar.addAction(new DeviceLocation());
         actionBar.addAction(new InvitePeople());
 
-        //        Button b = new Button(this);
-        //        b.setWidth(250);
-        //        b.setText("Search Maps");
-        //        actionBar.addView(b);
+        ImageButton b = new ImageButton(this);
+        b.setImageResource(R.drawable.search_button_style);
+        actionBar.addView(b);
+
+        b.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent suggIntent = new Intent(SpecificMapLocation.this, AutoCompleteSuggestions.class);
+                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_CENTER, Misc.geoToDeg(mMapView.getMapCenter()).toString());
+                suggIntent.putExtra(AutoCompleteSuggestions.AUTOCOMPLETE_RADIUS, mRadius);
+                startActivityForResult(suggIntent, 12);
+
+            }
+        });
 
         mMapView = (AdjustedMap) findViewById(R.id.mapview);
+
         mRadius = 100;
         mPeopleDB.open();
-
+        mMapView.setSatellite(false);
         mLocationDB = new LocationsDbAdapter(this);
         mLocationDB.open();
 
@@ -457,6 +474,7 @@ public class SpecificMapLocation extends MapActivity{
         /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@    */
         mAutoTextView = (AutoCompleteTextView) findViewById(R.id.specificAddress);
         mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, Misc.types);
+
         mAutoTextView.setAdapter(mAdapter);
         mAutoTextView.addTextChangedListener(new TextWatcher() {
 
@@ -467,6 +485,8 @@ public class SpecificMapLocation extends MapActivity{
                     String searchText = mAutoTextView.getText().toString();
                     DPoint center = Misc.geoToDeg(mMapView.getMapCenter());
                     c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
+                    for (String type : Misc.types)
+                        c.add(type);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
@@ -474,6 +494,25 @@ public class SpecificMapLocation extends MapActivity{
                 }
                 if (c != null) {
                     mAdapter = new ArrayAdapter<String>(SpecificMapLocation.this, R.layout.search_result_list, c);
+                    mAdapter.sort(new Comparator<String>() {
+
+                        @Override
+                        public int compare(String object1, String object2) {
+                            boolean firstObj = false;
+                            boolean secondObj = false;
+                            for (String type : Misc.types) {
+                                if (type.equals(object1))
+                                    firstObj = true;
+                                if (type.equals(object2))
+                                    secondObj = true;
+                            }
+                            if (firstObj && !secondObj)
+                                return -1;
+                            if (!firstObj && secondObj)
+                                return 1;
+                            return 0;
+                        }
+                    });
                     mAutoTextView.setAdapter(mAdapter);
                 }
 
@@ -661,6 +700,9 @@ public class SpecificMapLocation extends MapActivity{
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus)
                     mAddress.setText(""); //$NON-NLS-1$
+                InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                // only will trigger it if no physical keyboard is open
+                mgr.showSoftInput(mAddress, InputMethodManager.SHOW_IMPLICIT);
             }
         });
         mLocationDB.close();

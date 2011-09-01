@@ -27,6 +27,8 @@ public class mapFunctions {
     public static final int PARTIAL_GOOD = 3;
     public static final int ALL_BAD = 4;
 
+    public static final int MULTIPLE_TASKS_ID = -17;
+
     public static String getSavedAddressAndUpdate(int latitude, int longitude) {
         LocationsDbAdapter locDB = new LocationsDbAdapter(ContextManager.getContext());
         locDB.open();
