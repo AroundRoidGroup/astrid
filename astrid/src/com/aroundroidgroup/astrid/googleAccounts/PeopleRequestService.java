@@ -13,20 +13,28 @@ import android.accounts.Account;
 import android.content.Context;
 import android.database.Cursor;
 
+/***
+ * responsible of handling requests and responses to the server, and updating the database (for people update request)
+ * @author Tomer
+ *
+ */
 public class PeopleRequestService {
 
     private final ConnectionManager arcm;
 
     private boolean isOn = false;
 
-
-    //Singleton
+    //private constuctor - singelton!
     private PeopleRequestService(){
         arcm = new ConnectionManager();
     }
 
     private static PeopleRequestService singleton = null;
 
+    /***
+     *
+     * @return people request service singleton instance
+     */
     public static PeopleRequestService getPeopleRequestService(){
         if (singleton==null){
             singleton = new PeopleRequestService();
@@ -34,31 +42,53 @@ public class PeopleRequestService {
         return singleton;
     }
 
+    /***
+     *
+     * @return is the service connected
+     */
     public boolean isConnected() {
         return arcm.isConnected();
     }
 
+    /***
+     *
+     * @return  is the service connecting
+     */
     public boolean isConnecting() {
         return arcm.isConnecting();
     }
 
 
+    /***
+     *
+     * @return the name of the connected account
+     */
     public String getAccountString(){
         return arcm.getAccountString();
     }
 
 
+    /***
+     * connects to the service using an account and context
+     * @param a the account to connect
+     * @param c context
+     */
     public void connectToService(Account a,Context c){
         setOn(true);
+        //if is connecting or connected igonres the call.
         if (arcm.isConnecting() || arcm.isConnected()){
             return;
         }
         arcm.setProps(a, c);
         arcm.connect();
-
     }
 
 
+    /***
+     * sending an invitation to a friend
+     * @param friend the mail of the friend to be invited
+     * @return true is mail was sent. false if mail not sent or error occured
+     */
     public boolean inviteFriend(String friend){
         if (!isConnected()){
             return false;
@@ -67,21 +97,25 @@ public class PeopleRequestService {
             boolean res = PeopleRequest.inviteMail(friend, arcm);
             return res;
         } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //do nothing
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //do nothing
         }
+        //if error occurs the service is stopped.
         this.stop();
         return false;
     }
 
+    /***
+     * create a new database record or updates an old one with the matching friend props
+     * @param fp the friend props to update
+     * @param aDba the aroundroid data base adapter that is connected to the database
+     */
     private void propsToDatabase(FriendProps fp , AroundroidDbAdapter aDba){
         Cursor cur = aDba.fetchByMail(fp.getMail());
         long rowid;
         if (cur==null){
-            //TODO what?
+            //ignore
             return;
         }
         if (!cur.moveToFirst()){
@@ -91,7 +125,7 @@ public class PeopleRequestService {
         }
         cur.close();
         if (rowid == -1L){
-            //TODO what?
+            //ignore
             return;
         }
         aDba.updatePeople(rowid, fp.getDlat(), fp.getDlon(), fp.getTimestamp(), null, fp.getValid());
@@ -99,14 +133,17 @@ public class PeopleRequestService {
 
     }
 
-    //TODO dont allow null myFp
-    //returns a sorted list!
+    /***
+     * updates the record (or creating) for every mail address in peopleArr, in the aroundroid local database. Stopping the service in case of error.
+     * @param peopleArr hold the email addresses
+     * @param myFp the current user gps coordinates and information. may be null
+     * @param aDba the aroundroid db adapter connected to the database
+     * @return sorted list of friend props of the people corresponding to the people in peopleArr, or null if error occured
+     */
     public List<FriendProps> updatePeopleLocations(String[] peopleArr, FriendProps myFp, AroundroidDbAdapter aDba) {
         if (!isConnected()){
             return null;
         }
-        // TODO check if location l is null
-        // TODO not good implementation, cancel PeopleRequest class!
         try {
             List<FriendProps> lfp = PeopleRequest.requestPeople(myFp,peopleArr, arcm);
             Collections.sort(lfp, FriendProps.getMailComparator());
@@ -115,34 +152,47 @@ public class PeopleRequestService {
             }
             return lfp;
         } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
+            //nothing
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            //TODO null SSL pointer exception - I think that this happens when cookie expaires!
-            //TODO or null SLL pointer is due frequent use (like parallel)
+            //nothing
         } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
+            //nothing
         } catch (SAXException e) {
-            // TODO Auto-generated catch block
+            //nothing
         }
+        //on error the service is stopped and null is returned
         this.stop();
         return null;
     }
 
+    /**
+     * sets server on or off
+     * @param isOn
+     */
     private void setOn(boolean isOn) {
         this.isOn = isOn;
     }
 
+    /***
+     *
+     * @return true if service is on (not connected, ON).
+     */
     public boolean isOn() {
         return isOn;
     }
 
+    /***
+     * resumes the service
+     */
     public void resume(){
         if (arcm.isProps()){
             arcm.connect();
         }
     }
 
+    /***
+     * stops the service
+     */
     public void stop(){
         setOn(false);
         arcm.stop();

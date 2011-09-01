@@ -93,6 +93,7 @@ public class SpecificMapLocation extends MapActivity{
 
     private long mTaskID;
     private double mRadius;
+    private String mLastPeople;
     private Button mViewAll;
     private List<String> mTypes;
     private AdjustedMap mMapView;
@@ -237,6 +238,7 @@ public class SpecificMapLocation extends MapActivity{
             mLastNullPeople = null;
             mPressedItemIndex = item.getItemId();
             AdjustedOverlayItem peopleItem = mMapView.getOverlay(PEOPLE_OVERLAY).getItem(mPressedItemIndex);
+            mLastPeople = peopleItem.getSnippet();
 
             DPoint da = mPeople.get(item.getTitle());
             if (da != null && !da.isNaN()) {
@@ -775,12 +777,14 @@ public class SpecificMapLocation extends MapActivity{
                     mNullPeople.remove(mLastNullPeople);
                     mLastNullPeople = null;
                 }
-                else mMapView.removeItemFromOverlay(PEOPLE_OVERLAY, mPressedItemIndex);
+                else {
+                    mMapView.removeItemFromOverlay(PEOPLE_OVERLAY, mPressedItemIndex);
+                    mPeople.remove(mLastPeople);
+                }
             }
             LinkedHashSet<String> locations = new LinkedHashSet<String>();
             locations.addAll(mPeople.keySet());
             locations.addAll(mNullPeople);
-            mLocationService.syncLocationsByPeople(mTaskID, locations);
         }
 
         if (requestCode == AdjustedMap.AM_REQUEST_CODE) {

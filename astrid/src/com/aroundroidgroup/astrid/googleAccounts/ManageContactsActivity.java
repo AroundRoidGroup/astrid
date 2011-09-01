@@ -1003,9 +1003,4 @@ public class ManageContactsActivity extends ListActivity{
         fillData();
     }
 
-
-
-
-
-
 }

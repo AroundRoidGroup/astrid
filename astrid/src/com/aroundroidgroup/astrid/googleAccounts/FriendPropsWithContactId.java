@@ -10,7 +10,6 @@ public class FriendPropsWithContactId extends FriendProps{
 
     public FriendPropsWithContactId(long contactID) {
         this.setContactId(contactID);
-
     }
 
     public FriendPropsWithContactId(long contactID, FriendProps fp) {
@@ -22,10 +21,18 @@ public class FriendPropsWithContactId extends FriendProps{
         this.setValid(fp.getValid());
     }
 
+    /***
+     * sets the contact id
+     * @param contactId
+     */
     public void setContactId(long contactId) {
         this.contactId = contactId;
     }
 
+    /***
+     *
+     * @return the contact id
+     */
     public long getContactId() {
         return contactId;
     }
