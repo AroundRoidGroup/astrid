@@ -29,8 +29,19 @@ import com.todoroo.astrid.service.TaskService;
 public class Notificator {
 
     private final static LocationService locationService = new LocationService();
+
+    /**  list of all people followed by any of the tasks   */
     private static List<FriendProps> listFriendProps;
 
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a person's location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a person's location
+     */
     private static boolean notifyAboutPeopleLocationNeeded(Task task,
             LocStruct locStruct, int radius) {
 
@@ -56,6 +67,15 @@ public class Notificator {
         return null;
     }
 
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a type of location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a type of location
+     */
     private static boolean notifyAboutTypeOfLocationNeeded(Task task,
             LocStruct locStruct, int radius) {
         DPoint loc = new DPoint(locStruct.getLatitude(),locStruct.getLongitude());
@@ -83,6 +103,15 @@ public class Notificator {
             return false;
     }
 
+    /**
+     * returns true if and only if the task should pop a notification about
+     * a specific location
+     * @param task: the task to check
+     * @param locStruct: the device's location
+     * @param radius: the task's alert radius
+     * @return true iff the task should pop a notification about
+     * a specific location
+     */
     private static boolean notifyAboutSpecificLocationNeeded(Task task,
             LocStruct locStruct, int radius) {
         for (String str: locationService.getLocationsBySpecificAsArray(task.getId())){
@@ -98,6 +127,12 @@ public class Notificator {
         return false;
     }
 
+    /**
+     * pops location based notifications to all tasks that should be popped
+     * @param mySpeed: the speed of the device
+     * @param lfp: list of all people followed by any of the tasks
+     * @param ls: the device's location
+     */
     public static void handleNotifications(double mySpeed,
             List<FriendProps> lfp, LocStruct ls) {
         listFriendProps = lfp;
@@ -128,7 +163,13 @@ public class Notificator {
 
     }
 
-
+    /**
+     * pops a location based notification to the user about the task if needed
+     *
+     * @param task: the task to notify about
+     * @param ls: the location of the device
+     * @param radius: the alert radius of the task
+     */
     private static void notifyAboutLocationIfNeeded(Task task, LocStruct ls,
             int radius) {
         if (!(notifyAboutSpecificLocationNeeded(task, ls, radius) ||
