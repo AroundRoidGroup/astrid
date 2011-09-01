@@ -94,6 +94,11 @@ public class AdjustedMap extends MapView {
         init();
     }
 
+    /**
+     *
+     * @return true if the map object contains any kind of overlay items except device location if enabled by showDeviceLocation().
+     * otherwise, returns false.
+     */
     public boolean hasPlaces() {
         if (getTappedPointsCount() > 0)
             return true;
@@ -103,6 +108,14 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * associating an ID of a task to the map, so all the items that will be added to the map and does not specify
+     * an ID of a task, will associate with this ID. if map is already associated with a task, the new task's ID
+     * will be the current associated task.
+     *
+     * @param taskID the ID of the task to associate with.
+     * @return true if map yet no associated with task ID. returns false if the map is already associated.
+     */
     public boolean associateMapWithTask(long taskID) {
         if (currentTaskID == -1) {
             currentTaskID = taskID;
@@ -112,18 +125,35 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * Enables the option to edit (add or remove) locations from the map.
+     * To cancel this option, a call to makeUneditable() has to be made.
+     */
     public void makeEditable() {
         editable = true;
     }
 
+    /**
+     * Disables the option to edit (add or remove) locations from the map.
+     * To allow this option, a call to makeEditable() has to be made.
+     */
     public void makeUneditable() {
         editable = false;
     }
 
+    /**
+     * tells if an overlay exists
+     *
+     * @param id the id of the overlay in which it has been registered with createOverlay()
+     * @return true if an overlay with this id is exists. otherwise, false is returned.
+     */
     public boolean hasOverlayWithID(int id) {
         return overlays.get(id) != null;
     }
 
+    /**
+     * shows the location of the device on the map in a special overlay
+     */
     public void showDeviceLocation() {
         Resources r = getResources();
         if (mDeviceOverlay == null) {
@@ -154,6 +184,10 @@ public class AdjustedMap extends MapView {
         }
     }
 
+    /**
+     * gives the location of the device
+     * @return location of the device if exists, otherwise returns null.
+     */
     public DPoint getDeviceLocation() {
         FriendProps fp = db.specialUserToFP();
         if (fp != null && fp.isValid()) {
@@ -165,6 +199,9 @@ public class AdjustedMap extends MapView {
             return null;
     }
 
+    /**
+     * updates the location of the device if it has a new location from the last call of this function.
+     */
     public void updateDeviceLocation() {
         Resources r = getResources();
         if (mDeviceOverlay == null)
@@ -193,6 +230,9 @@ public class AdjustedMap extends MapView {
 
     }
 
+    /**
+     * disable the view of the device overlay.
+     */
     public void removeDeviceLocation() {
         if (mDeviceOverlay != null) {
             mapOverlays.remove(mDeviceOverlay);
@@ -201,6 +241,12 @@ public class AdjustedMap extends MapView {
         }
     }
 
+    /**
+     * tells if an overlay has a configuration.
+     * @param uniqueName the ID of the overlay.
+     * @param configuaration the configuration to check for existence.
+     * @return true if the overlay contains this configuration. otherwise returns false.
+     */
     public boolean hasConfig(int uniqueName, String configuaration) {
         MapItemizedOverlay overlay = overlays.get(uniqueName);
         if (overlay == null || configuaration == null)
@@ -212,6 +258,15 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * creates an overlay
+     * @param doubles true if multiple items with the same coordinates are allowed to be added.
+     * @param uniqueName a unique number that will identify the overlay.
+     * @param d a drawable that will be painted in the coordinates of the overlay's items
+     * @param config configurations which tell what to show in the Focaccia activity
+     * @param name name of the overlay
+     * @return true if the overlay was created successfully, otherwise false.
+     */
     public boolean createOverlay(boolean doubles, int uniqueName, Drawable d, String[] config, String name) {
         if (d == null)
             return false;
@@ -225,15 +280,26 @@ public class AdjustedMap extends MapView {
         }
         return false;
     }
-
-    public boolean isContains(int id, String type) {
+    /**
+     * tells if an overlay contains item with the given snippet property
+     * @param id the ID of the overlay
+     * @param snippet the snippet to be matched.
+     * @return true if such an item exists, otherwise false.
+     */
+    public boolean isContains(int id, String snippet) {
         MapItemizedOverlay typeOverlay = overlays.get(id);
         for (int i = typeOverlay.size() - 1 ; i >= 0 ; i--)
-            if (typeOverlay.getItem(i).getSnippet().equals(type))
+            if (typeOverlay.getItem(i).getSnippet().equals(snippet))
                 return true;
         return false;
     }
 
+    /**
+     * tells if an overlay contains item with the given coordinates
+     * @param id the ID of the overlay
+     * @param coord the coordinates to be matched
+     * @return true if such an item exists, otherwise false.
+     */
     public boolean isContainsByCoords(int id, GeoPoint coord) {
         MapItemizedOverlay overlay = overlays.get(id);
         if (overlay != null && coord != null) {
@@ -245,10 +311,26 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * get an overlay.
+     * @param id the ID of the overlay.
+     * @return the overlay object with the given id, otherwise null.
+     */
     public MapItemizedOverlay getOverlay(int id) {
         return overlays.get(id);
     }
 
+    /**
+     * adds an item to an overlay.
+     * @param g the coordinates of the item.
+     * @param title the title of the item.
+     * @param snippet the snippet of the item.
+     * @param addr the address of the item.
+     * @param identifier the ID of the overlay that the item will be added to.
+     * @param taskID the ID of the task to associate this item to.
+     * @param extras some extra data to add to the item.
+     * @return true if the item has been added successfully, otherwise false.
+     */
     public boolean addItemToOverlay(GeoPoint g, String title, String snippet, String addr, int identifier, long taskID, String extras) {
         currentTaskID = taskID;
         MapItemizedOverlay overlay = overlays.get(identifier);
@@ -263,6 +345,14 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * updates an item with new details.
+     * @param oldG the old coordinates of the item.
+     * @param newG the new coordinates of the item.
+     * @param newAddr the new address for the item.
+     * @param identifier the ID of the overlay that the item is belong to.
+     * @return true if the update succeeded, otherwise returns false.
+     */
     public boolean updateItemInOverlay(GeoPoint oldG, GeoPoint newG, String newAddr, int identifier) {
         MapItemizedOverlay overlay = overlays.get(identifier);
         if (overlay != null && oldG != null && newG != null && newAddr != null) {
@@ -276,6 +366,10 @@ public class AdjustedMap extends MapView {
         return false;
     }
 
+    /**
+     * the number of locations in the map.
+     * @return returns the number of locations in the map.
+     */
     public int getAllPointsCount() {
         int count = 0;
         for (Map.Entry<Integer, MapItemizedOverlay> pair : overlays.entrySet())
@@ -283,6 +377,10 @@ public class AdjustedMap extends MapView {
         return count;
     }
 
+    /**
+     * the number of the locations that has been added by longPress on the map.
+     * @return the number of the locations that has been added by longPress on the map.
+     */
     public int getTappedPointsCount() {
         if (mTappedOverlay != null)
             return mTappedOverlay.size();
@@ -461,7 +559,7 @@ public class AdjustedMap extends MapView {
         List<String> xtraLst = new ArrayList<String>();
         if (overlay != null) {
             for (AdjustedOverlayItem item : overlay) {
-                if (item.getExtras().equals(extras))
+                if (item.getExtras() != null && item.getExtras().equals(extras))
                     xtraLst.add(Misc.geoToDeg(item.getPoint()).toString());
             }
         }
@@ -543,6 +641,21 @@ public class AdjustedMap extends MapView {
         return null;
     }
 
+    public AdjustedOverlayItem selectLastPressedItem() {
+        if (lastPressedOverlay == mDeviceOverlay)
+            return null;
+        if (lastPressedOverlay == mTappedOverlay) {
+            AdjustedOverlayItem removedCopy = mTappedOverlay.createItem(lastPressedIndex);
+            return removedCopy;
+        }
+        for (Map.Entry<Integer, MapItemizedOverlay> pair : overlays.entrySet())
+            if (pair.getValue() == lastPressedOverlay) {
+                AdjustedOverlayItem removedCopy = pair.getValue().createItem(lastPressedIndex);
+                return removedCopy;
+            }
+        return null;
+    }
+
     public AdjustedOverlayItem removeLastPressedItem() {
         if (lastPressedOverlay == mDeviceOverlay)
             return null;
@@ -557,6 +670,7 @@ public class AdjustedMap extends MapView {
                 removePoint(pair.getKey(), lastPressedIndex);
                 return removedCopy;
             }
+        invalidate();
         return null;
     }
 

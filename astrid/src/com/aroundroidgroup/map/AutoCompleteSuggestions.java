@@ -8,6 +8,7 @@ import org.json.JSONException;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.timsu.astrid.R;
+import com.todoroo.astrid.activity.SpecificMapLocation;
 
 public class AutoCompleteSuggestions extends ListActivity {
 
@@ -55,6 +57,18 @@ public class AutoCompleteSuggestions extends ListActivity {
         listView.addHeaderView(header);
 
         mSearchBox = (EditText) findViewById(R.id.searchbox);
+        mAdd = (Button) findViewById(R.id.addtomap);
+
+        mAdd.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent suggResultIntent = new Intent();
+                suggResultIntent.putExtra(SpecificMapLocation.SUGGESTION, mSearchBox.getText().toString());
+                setResult(RESULT_OK, suggResultIntent);
+                finish();
+            }
+        });
 
         setListAdapter(new ArrayAdapter<String>(this, R.layout.autocomplete_row, new String[] { "chicken" }));
 
@@ -79,14 +93,19 @@ public class AutoCompleteSuggestions extends ListActivity {
                     String searchText = mSearchBox.getText().toString();
                     DPoint center = new DPoint(mCenter);
                     c = Misc.googleAutoCompleteQuery(searchText, center, mRadius);
-                    for (String type : Misc.types)
-                        c.add(type);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 if (c != null) {
+                    if (!s.toString().equals("")) //$NON-NLS-1$
+                        for (String type : Misc.types) {
+                            if (type.contains(s))
+                                c.add(type);
+                        }
+
                     mAdapter = new ArrayAdapter<String>(AutoCompleteSuggestions.this, R.layout.autocomplete_row, c);
                     mAdapter.sort(new Comparator<String>() {
 
@@ -129,8 +148,11 @@ public class AutoCompleteSuggestions extends ListActivity {
 
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus)
-                    mSearchBox.setText(""); //$NON-NLS-1$
+                if (hasFocus) {
+                    if (!mSearchBox.getText().equals("")) //$NON-NLS-1$
+                        mSearchBox.setText(""); //$NON-NLS-1$
+                }
+
                 InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 // only will trigger it if no physical keyboard is open
                 mgr.showSoftInput(mSearchBox, InputMethodManager.SHOW_IMPLICIT);

@@ -19,7 +19,7 @@
 	<string name="AD_no_location_for_task">No locations for this task.</string>
 
 	<!-- searching in the autocomplete textbox -->
-	<string name="AD_map_searching">Searching...</string>
+	<string name="AD_map_searching">Searching For:</string>
 
 <!-- kinds of locations(by type, by people or a specific) -->
 <string name="AD_kind_type">Type Location</string>
