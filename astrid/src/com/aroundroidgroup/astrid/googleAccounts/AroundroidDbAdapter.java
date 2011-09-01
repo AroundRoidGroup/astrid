@@ -8,6 +8,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+/***
+ * Adapter for Aroundroid with fields of email, latitude longitude, timestamp, valid state, and attached contact id from the device contacts.
+ * Handles database connection, creation of new records, querys, updates and deletes.
+ * @author Tomer
+ *
+ */
 public class AroundroidDbAdapter {
 
     public static final String KEY_MAIL = "mail"; //$NON-NLS-1$
@@ -121,7 +127,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Create a new people using the title and body provided. If the people is
+     * Create a new person using mail provided. If the people is
      * successfully created return the new rowId for that people, otherwise return
      * a -1 to indicate failure.
      *
@@ -132,7 +138,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Delete the people with the given rowId
+     * Delete the person with the given rowId
      *
      * @param rowId id of people to delete
      * @return true if deleted, false otherwise
@@ -143,7 +149,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Return a Cursor over the list of all people in the database
+     * Return a Cursor over the list of all the people in the database
      *
      * @return Cursor over all people
      */
@@ -153,7 +159,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Return a Cursor over the list of all people in the database with real contact id connected to them
+     * Return a Cursor over the list of all people in the database with real contact id attached to them
      *
      * @return Cursor over all people
      */
@@ -163,7 +169,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Return a Cursor over the list of all people in the database with real contact id connected to them
+     * Return a Cursor over the list of all people in the database with real contact id connected to them, that are in a registered valid state
      *
      * @return Cursor over all people
      */
@@ -173,7 +179,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Return a Cursor over the list of all people in the database where the mail
+     * Return a Cursor over the list of all people in the database where the email address is 'mail'
      * @param mail mail
      * @return Cursor over all people
      */
@@ -190,7 +196,7 @@ public class AroundroidDbAdapter {
     }
 
     /**
-     * Return a Cursor over the contact id
+     * Return a Cursor over the list of all the people where contact_id is 'contactId'
      * @param contactId
      * @return Cursor over him
      */
@@ -255,8 +261,6 @@ public class AroundroidDbAdapter {
         if (valids!=null){
             args.put(KEY_VALIDS, valids);
         }
-
-
         return mDb.update(DATABASE_TABLE, args, KEY_ROWID + "=" + rowId, null) > 0; //$NON-NLS-1$
     }
     /**
@@ -268,22 +272,31 @@ public class AroundroidDbAdapter {
         return updatePeople(rowId,lat, lon, time,null,null);
     }
 
+    /*
     public void dropPeople(){
         mDbHelper.kill(mDb);
     }
+     */
 
+    /***
+     * creates the special user (device user) record
+     * @return  rowId of the user if successful. otherwise -1
+     */
     private long createSpecialUser(){
         long rowID = this.createPeople(MAIL_MY_FAKE_MAIL, CONTACTID_MY_ID);
         if (rowID==-1){
             return -1;
         }
-        this.updatePeople(rowID, 0.0, 0.0,0L, null,AroundRoidAppConstants.STATUS_OFFLINE);
-        return rowID;
+        boolean res = this.updatePeople(rowID, 0.0, 0.0,0L, null,AroundRoidAppConstants.STATUS_OFFLINE);
+        return (res?rowID:-1);
     }
 
+    /***
+     * Creates the special user (device user) record if needed, then fetches a cursor of it's record
+     * @return cursor over the special user on success, otherwise null
+     */
     public Cursor createAndfetchSpecialUser(){
         Cursor c = null;
-        //c = fetchByContactId(CONTACTID_MY_ID);
         c = fetchByContactId(CONTACTID_MY_ID);
         if (c!=null && c.moveToFirst()){
             return c;
@@ -295,6 +308,11 @@ public class AroundroidDbAdapter {
         }
     }
 
+    /***
+     * converts a specific user to friend props
+     * @param rowId the row id of the user
+     * @return friendprops of the user if user is found and no erros occurd. otherwise returns null.
+     */
     public FriendProps userToFP(long rowId){
         Cursor cur = fetchPeople(rowId);
         if (cur==null || !cur.moveToFirst()){
@@ -306,22 +324,40 @@ public class AroundroidDbAdapter {
         return fp;
     }
 
+    /***
+     * builds a new friend props of the first row of the cursor
+     * @param cur
+     * @return friend props if cursor is not empty otherwise null
+     */
     public static FriendProps userToFP(Cursor cur){
-        FriendProps fp  = new FriendProps();
-        fp.setDlat(cur.getDouble(cur.getColumnIndex(KEY_LAT)));
-        fp.setDlon(cur.getDouble(cur.getColumnIndex(KEY_LON)));
-        fp.setMail(cur.getString(cur.getColumnIndex(KEY_MAIL)));
-        fp.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
-        fp.setValid(cur.getString(cur.getColumnIndex(KEY_VALIDS)));
-        return fp;
+        if (cur.moveToFirst()){
+            FriendProps fp  = new FriendProps();
+            fp.setDlat(cur.getDouble(cur.getColumnIndex(KEY_LAT)));
+            fp.setDlon(cur.getDouble(cur.getColumnIndex(KEY_LON)));
+            fp.setMail(cur.getString(cur.getColumnIndex(KEY_MAIL)));
+            fp.setTimestamp(cur.getLong(cur.getColumnIndex(KEY_TIME)));
+            fp.setValid(cur.getString(cur.getColumnIndex(KEY_VALIDS)));
+            return fp;
+        }else{
+            return null;
+        }
     }
 
+    /***
+     * builds a new friend props with contact id of the first row of the cursor
+     * @param cur
+     * @return friend props with contact id if cursor is not empty otherwise null
+     */
     public static FriendPropsWithContactId userToFPWithContactId(Cursor cur){
         FriendProps fp  = userToFP(cur);
         FriendPropsWithContactId fpwci = new FriendPropsWithContactId(cur.getLong(cur.getColumnIndex(KEY_CONTACTID)), fp);
         return fpwci;
     }
 
+    /***
+     * builds a new friend props of the special user
+     * @return friend props of the special user if cursor is not empty and no error otherwise null
+     */
     public FriendProps specialUserToFP(){
         Cursor cur = createAndfetchSpecialUser();
         if (cur==null){

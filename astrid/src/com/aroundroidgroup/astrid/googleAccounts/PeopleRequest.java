@@ -22,8 +22,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/***
+ * preapering, sending and receiving the server's requests and response
+ * @author Tomer
+ *
+ */
 public class PeopleRequest {
 
+    /***
+     * creating name value pairs for server request
+     * @param myFp contains gps status. may be null
+     * @param people array of people to be requested
+     * @return kist of the name value pairs
+     */
     private static List<NameValuePair> createPostData(FriendProps myFp,String[] people){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
         if (myFp!=null && myFp.isValid()){
@@ -36,25 +47,44 @@ public class PeopleRequest {
             nameValuePairs.add(new BasicNameValuePair("GPSLON", String.valueOf(0.0))); //$NON-NLS-1$
             nameValuePairs.add(new BasicNameValuePair("TIMESTAMP", String.valueOf(0))); //$NON-NLS-1$
         }
+        //multivalue parametr
         for (String dude : people){
             nameValuePairs.add(new BasicNameValuePair("USERS",dude)); //$NON-NLS-1$
         }
         return nameValuePairs;
     }
 
+    /***
+     * excutes http request in the connection manager
+     * @param hr the request
+     * @param arcm conneciton manager
+     * @return input stream of the response
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
     private static InputStream requestToStream(HttpUriRequest hr, ConnectionManager arcm) throws ClientProtocolException, IOException{
         HttpResponse result = arcm.executeOnHttp(hr);
         InputStream is = result.getEntity().getContent();
         return is;
     }
 
+    /***
+     * create name value pairs for invitation mail server request
+     * @param mail email to invite
+     * @return the name value pairs
+     */
     private static List<NameValuePair> createMailPostData(String mail){
         List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
         nameValuePairs.add(new BasicNameValuePair("FRIEND",mail)); //$NON-NLS-1$
         return nameValuePairs;
     }
 
-    //TODO IMPORTANT FUNCTION
+    /***
+     * make an array representation each of the properties in the node list
+     * @param nodeLst
+     * @param props
+     * @return a list of string arrays of the extracted properties
+     */
     private static List<String[]> extractPropsArray(NodeList nodeLst,String[] props) {
         List<String[]> lfp = new ArrayList<String[]>();
 
@@ -81,6 +111,17 @@ public class PeopleRequest {
         return lfp;
     }
 
+    /***
+     * sending request to get gps status of multiple users
+     * @param myFp the current gps properties of the local user. may be null
+     * @param people an array of people requested
+     * @param arcm connection manager to execute the request
+     * @return list of the gps status of the requested people (sorted by mail address)
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
     public static List<FriendProps> requestPeople(FriendProps myFp,String[] people, ConnectionManager arcm) throws ClientProtocolException, IOException, ParserConfigurationException, SAXException{
         // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.gpsUrl);
@@ -99,9 +140,15 @@ public class PeopleRequest {
 
     }
 
-    //TODO CHANGE
+    /***
+     * send a request to send invitation to a specific person
+     * @param people the person's mail address
+     * @param arcm connection manager to execute the request
+     * @return true if the mail will be sent, otherwise false
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
     public static boolean inviteMail(String people, ConnectionManager arcm) throws ClientProtocolException, IOException{
-        // sending current location and request for users
         HttpPost http_post = new HttpPost(AroundRoidAppConstants.inviterUrl);
         http_post.setEntity(new UrlEncodedFormEntity(createMailPostData(people)));
         InputStream is  = requestToStream(http_post,arcm);

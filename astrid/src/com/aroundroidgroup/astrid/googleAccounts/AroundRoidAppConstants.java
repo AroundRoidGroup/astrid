@@ -27,7 +27,7 @@ public class AroundRoidAppConstants {
     /***
      * Checks if the timestamp provided represents a valid object.
      * @param timeStamp
-     * @return
+     * @return (nowTime - timeStamp) <= maximumValidTime
      */
     public static boolean timeCheckValid(long timeStamp){
         long nowTime = DateUtilities.now();
