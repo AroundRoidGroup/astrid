@@ -6,7 +6,7 @@
 
 	<!-- tracking list -->
 	<string name="AD_tracking_list_empty">You are not tracking any friends! Press menu to add some.</string>
-	
+
     <!--No additional contact information-->
 	<string name="AD_no_contact_info">No additional contact information</string>
 
@@ -101,9 +101,8 @@
 	<string name="AD_ace_unregistered">Location unavailable or not registered</string>
 	<string name="AD_ace_title">Friend Information</string>
 	<string name="AD_ace_contact_card">View Contact Card</string>
-	
+
 
 
 
 </resources>
-    

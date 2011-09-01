@@ -41,7 +41,7 @@ import com.todoroo.andlib.utility.DateUtilities;
 
 public class GPSService extends Service{
 
-    private final boolean USING_MOCK_LOCATIONS = false;
+    private final boolean USING_MOCK_LOCATIONS = true;
 
     private DataRefresher refreshData = null;
 

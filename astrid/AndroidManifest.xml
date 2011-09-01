@@ -569,7 +569,8 @@
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.ManageContactsActivity" 
     android:theme="@android:style/Theme"></activity>
     <activity android:name="com.aroundroidgroup.astrid.googleAccounts.PeopleLocationPreferneces"
-		android:theme="@android:style/Theme">></activity>
+		android:theme="@android:style/Theme"></activity>
+    <activity android:name="com.aroundroidgroup.map.AutoCompleteSuggestions" android:theme="@style/Theme"></activity>
 
     
 	
