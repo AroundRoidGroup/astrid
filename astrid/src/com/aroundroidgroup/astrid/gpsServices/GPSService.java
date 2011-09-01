@@ -335,8 +335,8 @@ public class GPSService extends Service{
                     String peopleArr[] = threadLocationService.getAllLocationsByPeople();
                     FriendProps myFp = aDba.specialUserToFP();
                     if ((loopCounter % 3)==0){
-                    //periodicly update the server and from the server
-                    prs.updatePeopleLocations(peopleArr,myFp,aDba);
+                        //periodicly update the server and from the server
+                        prs.updatePeopleLocations(peopleArr,myFp,aDba);
                     }
                 }
             }
@@ -413,6 +413,9 @@ public class GPSService extends Service{
     }
 
     protected void makeUseOfNewLocation(WPSLocation location) {
+        if (aDba==null){
+            return;
+        }
         int realMin = threadLocationService.minimalRadiusRelevant(location.getSpeed());
         if (realMin!=currMin){
             currMin = realMin;
