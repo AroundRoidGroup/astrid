@@ -824,6 +824,7 @@ public class AdjustedMap extends MapView {
 
         @Override
         public void onLongPress(MotionEvent event) {
+            Resources r = getResources();
             if (mTappedOverlay != null) {
 
                 GeoPoint p = AdjustedMap.this.getProjection().fromPixels((int)event.getX(), (int)event.getY());
@@ -834,7 +835,7 @@ public class AdjustedMap extends MapView {
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
 
                 /* setting the dialog title */
-                dialog.setTitle("Confirm Specific Location"); //$NON-NLS-1$
+                dialog.setTitle("Confirm Specific Location");
 
                 /* setting the dialog message. in this case, asking the user if he's sure he */
                 /* wants to add the tapped location to the task, so the task will be specific- */
@@ -843,10 +844,10 @@ public class AdjustedMap extends MapView {
 
                 final String savedAddr = mapFunctions.getSavedAddressAndUpdate(p.getLatitudeE6(), p.getLongitudeE6());
 
-                dialog.setMessage("Would you like to add the following location:\n" + savedAddr); //$NON-NLS-1$
+                dialog.setMessage("Would you like to add the following location:"+"\n" + savedAddr);
 
                 /* setting the confirm button text and action to be executed if it has been chosen */
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", //$NON-NLS-1$
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         /* adding the location to the task */
@@ -855,7 +856,7 @@ public class AdjustedMap extends MapView {
                     }
                 });
                 /* setting the refuse button text and action to be executed if it has been chosen */
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", //$NON-NLS-1$
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, r.getString(R.string.DLG_no),
                         new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dg, int which) {
                         return;
@@ -868,19 +869,16 @@ public class AdjustedMap extends MapView {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
                 float distanceY) {
-            // TODO Auto-generated method stub
             return false;
         }
 
         @Override
         public void onShowPress(MotionEvent e) {
-            // TODO Auto-generated method stub
-
+            //
         }
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            // TODO Auto-generated method stub
             return false;
         }
 

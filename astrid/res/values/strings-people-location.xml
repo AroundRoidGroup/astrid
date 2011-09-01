@@ -100,6 +100,10 @@
 	<string name="AD_ace_contact_card">View Contact Card</string>
 
 
+	<!-- manage contacts menu -->
+	<string name="AD_menu_mail">Mail</string>
+	<string name="AD_menu_contacts">Contacts</string>
+
 
 
 </resources>

@@ -58,6 +58,12 @@
 		restore your backups. As a favor, Astrid also automatically backs up
 		your tasks, just in case.</string>
 
+
+	<!-- ================================================= SyncPreferences 
+		== -->
+<!-- Sync Status: log in -->    
+  <string name="sync_status_loggedout">לא מחובר!</string>
+
 	<!-- ================================================= BackupActivity == -->
 
 	<!-- backup activity label -->
@@ -1598,13 +1604,15 @@
 	<!-- ================================================== AroundRoid - general== -->
 
 	<!-- dialog buttons and titles -->
-	<string name="AD_DLG_exit_title">האם אתה בטוח שאתה רוצה לצאת?</string>
+	<string name="AD_DLG_exit_title">האם ברצונך לצאת?</string>
 	<string name="AD_DLG_cancel">ביטול</string>
 	<string name="AD_DLG_add">הוספה</string>
 	<string name="AD_DLG_add_all">הוסף את כולם</string>
 	<string name="AD_DLG_ok">אוקי</string>
 	<string name="AD_DLG_hurray">הידד!</string>
-	<string name="AD_DLG_yes_recommanded">כן(מומלץ)</string>
+	<string name="AD_DLG_yes_recommanded">כן (מומלץ)</string>
+
+
 
 	<!-- dialog -->
 	<string name="AD_gps_not_enabled">ה GPS במכשירך כבוי. תרצה להפעיל אותו?</string>
@@ -1612,14 +1620,38 @@
 	<!-- button for enabling and disabling AroundRoid -->
 	<string name="AD_EPr_people_base_remainder">שירותי המיקום של AroundRoid</string>
 	<string name="AD_use_aroundroid_title">השתמש ב AroundRoid</string>
-	<string name="AD_use_aroundroid_text">AroundRoid מאפשרת לך להגדיר משימות תלויות מקום, כך שכאשר תתקרב למקום הרלוונטי, תוקפץ תזכורת על כך</string>
+	<string name="AD_use_aroundroid_text"> מאפשרת לך להגדיר משימות תלויות מקום, כך שכאשר תתקרב למקום הרלוונטי, תוקפץ תזכורת על כך AroundRoid</string>
 
 	<!-- radius bar -->
-	<string name="AD_meters">מרחק במטרים:</string>
+	<string name="AD_meters">מטר</string>
 
 
-	<!-- ================================================== AroundRoid - people's 
-		location== -->
+   	<string name="location_advanced_title">אינטגרציה עם מיקומים: </string>
+   	<string name="radius_advanced_title">רדיוס </string>
+   	<string name="foot_radius">בחר רדיוס התראה למצב הליכה </string>
+   	<string name="car_radius">בחר רדיוס התראה למצנ נהיגה </string>
+   	  <!-- Preference: Default Car Radius Title -->
+	  <string name="EPr_defaultCarRadius_title">רדיוס למצב נהיגה</string>
+  <!-- Preference: Default Radius Description (%s => setting) -->
+  <string name="EPr_default_Radius_desc">כרגע: %s</string>
+    <!-- Preference: Default Foot Radius Title -->
+	 <string name="EPr_defaultFootRadius_title">רדיוס למצב הליכה</string>
+  
+   	    
+   	 <string-array name="EPr_car_radius">
+    <!-- Radius Preference: car radius choices for preference page. -->
+    <item>קטן (קילומטר 1)</item>
+    <item>בינוני (2 קילומטר)</item>
+    <item>גדול (5 קילומטר)</item>
+  </string-array>
+    <string-array name="EPr_foot_radius">
+    <!-- Radius Preference: foot radius choices for preference page. -->
+    <item>קטן (50 מטר)</item>
+    <item>בינוני (200 מטר)</item>
+    <item>גדול (500 מטר)</item>
+  </string-array>
+
+	<!-- =============================== AroundRoid - people's location== -->
 
 	<!-- Credentials list is empty text -->
 	<string name="AD_noCreds">אין אנשי קשר שמשויכים למכשיר זה</string>
@@ -1632,7 +1664,7 @@
 
 	<!-- people location preference (login/logout) -->
 
-	<string name="AD_EPr_connect">מחובר לשירות מיקומי אנשים</string>
+	<string name="AD_EPr_connect">התחבר לשירות מיקומי אנשים</string>
 	<string name="AD_logging_in_status">מתחבר...</string>
 	<string name="AD_people_location_login">התחבר</string>
 	<string name="AD_people_location_logout">התנתק</string>
@@ -1648,8 +1680,8 @@
 	<string name="AD_email_title">כתובת אימייל</string>
 
 	<!-- Delete friend dialog -->
-	<string name="AD_DLG_delete_text_before_mail">מרשימת המעקב שלך?</string>
-	<string name="AD_DLG_delete_text_after_mail">האם אתה בטוח שברצונך למחוק את</string>
+	<string name="AD_DLG_delete_text_before_mail">האם אתה בטוח שברצונך למחוק את</string>
+	<string name="AD_DLG_delete_text_after_mail">מרשימת המעקב שלך?</string>
 	<string name="AD_DLG_delete_title">מחק חבר</string>
 
 	<!-- Toast -invitation sent or not sent to your friend -->
@@ -1657,8 +1689,8 @@
 	<string name="AD_invitation_not_sent">ההזמנה לא נשלחה</string>
 
 	<!-- invitation suggestion to your friend -->
-	<string name="AD_invitation_suggestion_before_mail"> ) אינו משתמש בשירות. תרצה להוסיף אותו בכל מקרה?</string>
-	<string name="AD_invitation_suggestion_after_mail"> נראה כי חברך, ()</string>
+	<string name="AD_invitation_suggestion_before_mail">נראה כי חברך (</string>
+	<string name="AD_invitation_suggestion_after_mail"> ) אינו משתמש בשירות. תרצה להוסיף אותו בכל מקרה?</string>
 
 	<!-- Friend not registered dialog -->
 	<string name="AD_DLG_not_registered_title">חברך לא רשום!</string>
@@ -1711,6 +1743,16 @@
 	<string name="AD_ace_unregistered">מיקום לא נגיש או לא רשום</string>
 	<string name="AD_ace_title">אינפורמציה נוספת</string>
 	<string name="AD_ace_contact_card">לך למסך איש קשר</string>
+
+	<!-- confirm specific location  -->
+	<string name="AD_confirm_specific">וודא הוספת מיקום קבוע</string>
+	
+	<!-- asks whether to add a chosen location -->
+	<string name="AD_add_location_question">האם תרצה להוסיף את המיקום הבא:</string>
+	
+	<!-- manage contacts menu -->
+	<string name="AD_menu_mail">אימייל</string>
+	<string name="AD_menu_contacts">אנשי קשר</string>
 
 
 	<!-- ============================================== AroundRoid - maps == -->

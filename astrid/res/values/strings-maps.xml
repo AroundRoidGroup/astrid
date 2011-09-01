@@ -66,10 +66,10 @@
 	<!-- view all header -->
 	<string name="AD_all_locations">All Locations</string>
 	
-	<!-- GOOGLE MAPS API KEY -->
-	<string name="AD_GOOGLE_MAPS_API_KEY">0gPZMWs1hQJHQuOt19AjiK-fu5ojqllaCkpLusA</string>
-
-	<!-- GOOGLE PLACES API KEY -->
-	<string name="AD_GOOGLE_PLACES_API_KEY">AIzaSyAqaQJGYnY4lOXZN-nqIS0EEkmlPBIGZFs</string>
-
+	<!-- confirm specific location  -->
+	<string name="AD_confirm_specific">Confirm Specific Location</string>
+	
+	<!-- asks whether to add a chosen location -->
+	<string name="AD_add_location_question">Would you like to add the following location:</string>
+	
 </resources>

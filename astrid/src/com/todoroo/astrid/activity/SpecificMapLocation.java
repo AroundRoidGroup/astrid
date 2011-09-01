@@ -418,7 +418,7 @@ public class SpecificMapLocation extends MapActivity{
         actionBar.addAction(new InvitePeople());
 
         ImageButton b = new ImageButton(this);
-        b.setImageResource(R.drawable.search_button_style);
+        b.setImageResource(R.drawable.timepicker_down_btn);
         actionBar.addView(b);
 
         b.setOnClickListener(new View.OnClickListener() {

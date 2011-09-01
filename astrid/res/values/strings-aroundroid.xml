@@ -10,18 +10,46 @@
 	<string name="AD_DLG_ok">OK</string>
 	<string name="AD_DLG_hurray">Hurray!</string>
 	<string name="AD_DLG_yes_recommanded">Yes (recommanded)</string>
-	
-	<!-- dialog  -->
-	<string name="AD_gps_not_enabled">Your GPS seems to be disabled, do you want to enable it?</string>
-	
+
+	<!-- dialog -->
+	<string name="AD_gps_not_enabled">Your GPS seems to be disabled, do you want to
+		enable it?</string>
+
 	<!-- button for enabling and disabling AroundRoid -->
-		<string name="AD_EPr_people_base_remainder">AroundRoid\'s location service</string>
+	<string name="AD_EPr_people_base_remainder">AroundRoid\'s location service</string>
 	<string name="AD_use_aroundroid_title">Use AroundRoid</string>
-	<string name="AD_use_aroundroid_text">AroundRoid allows you to have Astrid remind you of a task when you get near a location for it</string>
-	
+	<string name="AD_use_aroundroid_text">AroundRoid allows you to have Astrid remind you of
+		a task when you get near a location for it</string>
+
 	<!-- radius bar -->
-		<string name="AD_meters">meters</string>
-	
+	<string name="AD_meters">meters</string>
+
+	<string name="location_advanced_title">Location Integration: </string>
+	<string name="radius_advanced_title">Radius </string>
+	<string name="foot_radius">Choose foot radius: </string>
+	<string name="car_radius">Choose car radius: </string>
+	<!-- Preference: Default Car Radius Title -->
+	<string name="EPr_defaultCarRadius_title">Car Radius</string>
+	<!-- Preference: Default Radius Description (%s => setting) -->
+	<string name="EPr_default_Radius_desc">Currently: %s</string>
+	<!-- Preference: Default Foot Radius Title -->
+	<string name="EPr_defaultFootRadius_title">Foot Radius</string>
+
+
+	<string-array name="EPr_car_radius">
+		<!-- Radius Preference: car radius choices for preference page. -->
+		<item>small(1 kilometer)</item>
+		<item>medium (2 kilometer)</item>
+		<item>large (5 kilometer)</item>
+	</string-array>
+	<string-array name="EPr_foot_radius">
+		<!-- Radius Preference: foot radius choices for preference page. -->
+		<item>small(50 meter)</item>
+		<item>medium (200 meter)</item>
+		<item>large (500 meter)</item>
+	</string-array>
+
+
 
 
 

@@ -18,6 +18,10 @@ import android.view.View;
 import com.aroundroidgroup.astrid.gpsServices.GPSService;
 import com.timsu.astrid.R;
 
+/**
+ * login screen for AroundRoid - people's locations
+ *
+ */
 public class PeopleLocationPreferneces extends PreferenceActivity {
 
     protected AccountManager accountManager;
