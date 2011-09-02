@@ -11,6 +11,7 @@ import java.util.Set;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -93,9 +94,23 @@ public class MapFilterActivity extends MapActivity {
 
         @Override
         public void performAction(View view) {
+            Resources r = getResources();
             DPoint deviceLocation = mMapView.getDeviceLocation();
             if (deviceLocation != null)
                 mMapView.getController().setCenter(Misc.degToGeo(deviceLocation));
+            else {
+                AlertDialog dialog = new AlertDialog.Builder(MapFilterActivity.this).create();
+                dialog.setIcon(android.R.drawable.ic_dialog_alert);
+                dialog.setTitle(R.string.AD_map_alert_dialog_title);
+                dialog.setMessage("Device location is not available.");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, r.getString(R.string.AD_DLG_ok),
+                        new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dg, int which) {
+                        return;
+                    }
+                });
+                dialog.show();
+            }
             return;
         }
 
