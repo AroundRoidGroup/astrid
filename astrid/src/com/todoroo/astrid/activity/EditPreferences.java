@@ -257,6 +257,7 @@ public class EditPreferences extends TodorooPreferences {
                 startService(serviceIntent);
                 loginButton.setEnabled(true);
             }
+            Flags.set(Flags.REFRESH);
         }
 
         // statistics service

@@ -775,9 +775,11 @@ public class SpecificMapLocation extends MapActivity{
                     mPeople.remove(removedItem.getExtras());
                 }
                 AdjustedOverlayItem removedItemForSure = mMapView.removeLastPressedItem();
-                List<DPoint> bla = mLocationService.getLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras());
-                bla.add(Misc.geoToDeg(removedItemForSure.getPoint()));
-                mLocationService.syncLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras(), Misc.ListToArrayDPoint(bla));
+                if (!(lstType.size() == 0 && lstPeople.size() == 0)) {
+                    List<DPoint> bla = mLocationService.getLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras());
+                    bla.add(Misc.geoToDeg(removedItemForSure.getPoint()));
+                    mLocationService.syncLocationsByTypeBlacklist(mTaskID, removedItemForSure.getExtras(), Misc.ListToArrayDPoint(bla));
+                }
                 LinkedHashSet<String> locations = new LinkedHashSet<String>();
                 locations.addAll(mPeople.keySet());
                 locations.addAll(mNullPeople);
